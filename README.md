@@ -1,2 +1,21 @@
-# RunesWeb
-符文是一种基于合约形式的数据交互新尝试
+# Swanlake
+
+## Project setup
+```
+yarn install
+```
+
+### Compiles and hot-reloads for development
+```
+yarn serve
+```
+
+### Compiles and minifies for production
+```
+yarn build
+```
+
+### Lints and fixes files
+```
+yarn lint
+```
