@@ -204,7 +204,7 @@ async function getBaseData(chainId, accounts, address) {
   }
   const versionName = localStorage.getItem('versionName');
   if(versionName === 'chain') { //公链版才获取pools池子数据
-    __ownInstance__.$store.dispatch('poolsTokenList') //获取pools池子数据
+    // __ownInstance__.$store.dispatch('poolsTokenList') //获取pools池子数据
   }
   __ownInstance__.$store.commit("isConnected", true);
 }

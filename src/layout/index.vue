@@ -4,7 +4,7 @@
         <headerNav />
         <div class="appmain-container">
             <AppMain/>
-            <Footer/>
+            <!-- <Footer/> -->
         </div>
     </div>
 </template>

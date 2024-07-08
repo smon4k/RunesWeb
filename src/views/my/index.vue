@@ -5,7 +5,7 @@
             <el-breadcrumb-item>投注</el-breadcrumb-item>
         </el-breadcrumb> -->
         <div class="content">
-            市场
+            我的
         </div>
     </div>
 </template>
@@ -64,7 +64,7 @@ export default {
             immediate: true,
             async handler(val) {
                 if (val.address) {
-                    // await this.getIsApprove();
+                    await this.getIsApprove();
                 }
             }
         },

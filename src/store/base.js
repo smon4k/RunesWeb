@@ -153,26 +153,26 @@ export default {
         },
         async getAddress(state, value) { //设置钱包地址
             state.address = value;
-            let userInfo = await getUserAddressInfo(value, state.transactionCurrency);
-            console.log(userInfo)
-            if(userInfo) {
-                state.userInfo = userInfo;
-                state.isAdmin = userInfo.is_admin;
-                state.userId = userInfo.id;
-            }
+            // let userInfo = await getUserAddressInfo(value, state.transactionCurrency);
+            // console.log(userInfo)
+            // if(userInfo) {
+            //     state.userInfo = userInfo;
+            //     state.isAdmin = userInfo.is_admin;
+            //     state.userId = userInfo.id;
+            // }
             // console.log(state.transactionCurrency);
-            let currencyTokenInfo = await getCurrencyToken(state.transactionCurrency);
-            if(currencyTokenInfo) {
-                console.log(currencyTokenInfo)
-                state.transactionCurrencyToken = currencyTokenInfo.token;
-                state.minBetNum = keepDecimalNotRounding(currencyTokenInfo.minbet_num, 10, true);
-            }
-            if(state.versionName === 'speed') {
-                // console.log(transactionCurrency);
-                let platformBalance = await getUserPlatformBalance(transactionCurrency, state.decimalLen);
-                // console.log(platformBalance);
-                state.platformBalance = platformBalance;
-            }
+            // let currencyTokenInfo = await getCurrencyToken(state.transactionCurrency);
+            // if(currencyTokenInfo) {
+            //     console.log(currencyTokenInfo)
+            //     state.transactionCurrencyToken = currencyTokenInfo.token;
+            //     state.minBetNum = keepDecimalNotRounding(currencyTokenInfo.minbet_num, 10, true);
+            // }
+            // if(state.versionName === 'speed') {
+            //     // console.log(transactionCurrency);
+            //     let platformBalance = await getUserPlatformBalance(transactionCurrency, state.decimalLen);
+            //     // console.log(platformBalance);
+            //     state.platformBalance = platformBalance;
+            // }
         },  
         // async setCurrencyTokenInfo(state, value) {
         //     let currencyTokenInfo = await getCurrencyToken(value);

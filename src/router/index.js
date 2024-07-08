@@ -18,6 +18,25 @@ export const constantRoutes = [
           meta: { title: 'home', keepAlive: true }
         },
         {
+          path: 'my',
+          name: 'my',
+          component: () => import('@/views/my/index'),
+          meta: { title: 'my', keepAlive: true }
+        },
+        {
+          path: 'inscribe',
+          name: 'inscribe',
+          component: () => import('@/views/inscribe/index'),
+          meta: { title: 'inscribe', keepAlive: true }
+        },
+        {
+          path: 'documents',
+          name: 'documents',
+          component: () => import('@/views/documents/index'),
+          meta: { title: 'documents', keepAlive: true }
+        },
+        
+        {
           path: 'banker',
           name: 'banker',
           component: () => import('@/views/banker/index'),
@@ -29,80 +48,11 @@ export const constantRoutes = [
           component: () => import('@/views/banker/indexSpeed'),
           meta: { title: 'bankerSpeed', keepAlive: false }
         },
-         // 公链版 猜数字
-        {
-          path: 'NumRange',
-          name: 'number',
-          component: () => import('@/views/game/number'),
-          meta: { title: 'number', keepAlive: false }
-        },
-        // 极速版 猜数字
-        {
-          path: 'NumRangeSpeed',
-          name: 'numberSpeed',
-          component: () => import('@/views/game/numberSpeed'),
-          meta: { title: 'number', keepAlive: false }
-        },
-        // 公链版 猜大小
-        {
-          path: 'SmallOrBig',
-          name: 'size',
-          component: () => import('@/views/game/size'),
-          meta: { title: 'size', keepAlive: false }
-        },
-        // 极速版 猜大小
-        {
-          path: 'SmallOrBigSpeed',
-          name: 'sizeSpeed',
-          component: () => import('@/views/game/sizeSpeed'),
-          meta: { title: 'size', keepAlive: false }
-        },
-        //公链版 猜单双
-        {
-          path: 'OddOrEven',
-          name: 'sindouble',
-          component: () => import('@/views/game/sindouble'),
-          meta: { title: 'sindouble', keepAlive: false }
-        },
-        //极速版 猜单双
-        {
-          path: 'OddOrEvenSpeed',
-          name: 'sindoubleSpeed',
-          component: () => import('@/views/game/sindoubleSpeed'),
-          meta: { title: 'sindoubleSpeed', keepAlive: false }
-        },
-        //公链版 百家乐
-        {
-          path: 'Baccarat',
-          name: 'baccarat',
-          component: () => import('@/views/game/baccarat'),
-          meta: { title: 'baccarat', keepAlive: false }
-        },
-        //极速版 百家乐
-        {
-          path: 'BaccaratSpeed',
-          name: 'baccaratSpeed',
-          component: () => import('@/views/game/baccaratSpeed'),
-          meta: { title: 'baccaratSpeed', keepAlive: false }
-        },
         {
           path: 'exchange/:assets',
           name: 'exchange',
           component: () => import('@/views/exchange/index'),
           meta: { title: 'exchange', keepAlive: false }
-        },
-        // 公链版 理财
-        {
-          path: 'PoolsList',
-          name: 'PoolsList',
-          component: () => import('@/views/pools/list'),
-          meta: { title: 'PoolsList', keepAlive: false }
-        },
-        {
-          path: 'PoolsDetail',
-          name: 'PoolsDetail',
-          component: () => import('@/views/pools/detail'),
-          meta: { title: 'PoolsDetail', keepAlive: false }
         },
         //充提
         {
@@ -116,19 +66,6 @@ export const constantRoutes = [
           name: 'depositWithdrawal',
           component: () => import('@/views/depositWithdrawal/index'),
           meta: { title: 'depositWithdrawal', keepAlive: false }
-        },
-        // 极速版 理财
-        {
-          path: 'PoolsListSpeed',
-          name: 'PoolsListSpeed',
-          component: () => import('@/views/poolsSpeed/list'),
-          meta: { title: 'PoolsListSpeed', keepAlive: false }
-        },
-        {
-          path: 'PoolsDetailSpeed',
-          name: 'PoolsDetailSpeed',
-          component: () => import('@/views/poolsSpeed/detail'),
-          meta: { title: 'PoolsDetailSpeed', keepAlive: false }
         },
         // 申请代币
         {
