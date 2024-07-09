@@ -1,11 +1,29 @@
 <template>
     <div class="container">
-        <!-- <el-breadcrumb separator="/">
-            <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-            <el-breadcrumb-item>投注</el-breadcrumb-item>
-        </el-breadcrumb> -->
         <div class="content">
-            inscribe
+            <!-- 样式  -->
+            <div class="boxin">
+                <div class="titlename">
+                    <span>Inscribe CFXs</span>
+                </div>
+                <el-tabs v-model="activeName" @tab-click="handleClick">
+                    <el-tab-pane label="File" name="1">
+                        <el-upload
+                        class="upload-demo"
+                        drag
+                        action="https://jsonplaceholder.typicode.com/posts/"
+                        multiple>
+                        
+                        <div class="el-upload__text">Drag and drop your file here, or click to select file</div>
+                        <div class="el-upload__tip" >.jpg, .png, .gif, .mp4, .mp3 + more!. Limit 10MB</div>
+                        </el-upload>
+                    </el-tab-pane>
+                    <el-tab-pane label="Text" name="2">
+                        <el-input type="textarea" placeholder="Enter text here" v-model="textname"></el-input>
+                    </el-tab-pane>
+                </el-tabs>
+            </div>
+
         </div>
     </div>
 </template>
@@ -24,6 +42,7 @@ export default {
             activeName: '1',
             loading: false,
             approve: false,
+            textname: '',
         }
     },
     mounted() {
@@ -72,6 +91,7 @@ export default {
     components: {
 
     },
+    // 事件
     methods: {
         handleClick(row) {
             console.log(row);
@@ -123,7 +143,94 @@ export default {
 <style lang="scss" scoped>
 .container {
     /deep/ {
-        .content {}
+        .content {
+            padding-top: 70px;
+            width: 100%;
+            .boxin {
+                display: block;
+                margin: 0 auto;
+                padding: 16px;
+                width: 500px;
+                height: 450px;
+                background-color: #202020;
+                border-radius: 4px;
+                .titlename {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    margin-bottom: 20px;
+                    font-size: 16px;
+                }
+                .el-tabs__nav-wrap::after {
+                    display: none;
+                }
+                .el-tabs__item {
+                    color: #aaa;
+                    font-size: 12px;
+                    height: 28px;
+                    line-height: 28px;
+                }
+                .el-tabs__item.is-active {
+                    color: #ad8d65;
+                    background-color: #282828;
+                    border-radius: 6px;
+                }
+                .el-tabs__active-bar {
+                    display: none;
+                    
+                }
+                .el-tabs--top .el-tabs__item.is-top:last-child {
+                    padding-right:20px;
+                }
+                .el-tabs--top .el-tabs__item.is-top:nth-child(2) {
+                    padding-left: 20px;
+                }
+                .el-textarea__inner {
+                    background-color:transparent !important;
+                    border: 0.5px dashed #ad8d65;
+                    border-radius: 8px;
+                    height: 100px;
+                }
+                .el-textarea__inner::placeholder {
+                    color: #6b7280;
+                    padding: 10px;
+                }
+                .upload-demo {
+                    align-items: center;
+                    .el-upload {
+                        width: 100% !important;
+                    }
+                    .el-upload-dragger:hover {
+                        border-color: #ad8d65 !important;
+                    }
+                    .el-upload-dragger {
+                        width:100%;
+                        text-align: left;
+                        padding-left: 16px;
+                        background-color:transparent;
+                        height: 100px;
+                     
+                        .el-upload__text {
+                            margin-top:10px ;
+                            text-align: left;
+                            color: #fff;
+                            font-size: 14px;
+                        }
+                        .el-upload__tip {
+                            color: #fff;
+                            font-size: 12px;
+                        }
+                    }
+
+                }
+
+            }
+        }
+        @media (max-width: 768px) {
+            .boxin{
+                width:85% !important;
+            }
+        }
     }
 }
 </style>
