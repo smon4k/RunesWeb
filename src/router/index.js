@@ -9,7 +9,7 @@ export const constantRoutes = [
     {
       path: '/',
       component: Layout,
-      redirect: versionName === 'chain' ? '/NumRange' : '/NumRangeSpeed',
+      redirect: versionName === 'chain' ? '/home' : '/home',
       children: [
         {
           path: 'home',
