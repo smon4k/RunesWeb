@@ -2,7 +2,7 @@
     <div class="card">
         <el-row :gutter="screenWidth > adaptiveSize ? 24 : 10">
             <el-col :xs="12" :sm="6" :md="4" v-for="(item, index) in dataList" :key="index">
-                <div class="content" :class="{ 'highlight-border': isSelected(index) }" ref="card" @click="toggleHighlight(index)">
+                <div class="content" :class="{ 'highlight-border': isSelected(index) }" ref="card" @click="toggleHighlightEvent(index)">
                     <div class="top">
                         <div class="currency">
                             <img :src="require('@/assets/svg/rune.svg')" alt="" width="20">
@@ -38,11 +38,10 @@
 <script>
 import { mapGetters, mapState } from "vuex";
 export default {
-    props: ['dataList', 'buyNowClick'],
+    props: ['dataList', 'buyNowClick', 'highlightedIndices', 'toggleHighlight'],
     data() {
         return {
             screenWidth: document.body.clientWidth,
-            highlightedIndices: [], 
         }
     },
     computed: {
@@ -72,21 +71,15 @@ export default {
     },
     methods: {
         handleClick(row) {
-            this.$emit('buyNowClick', row)  //将当前页传给主组件
+            this.$emit('buyNowClick', row);
         },
         isSelected(index) {
-            // 检查索引是否在高亮数组中
-            return this.highlightedIndices.includes(index);
-        },
-        toggleHighlight(index) {
-            const currentIndex = this.highlightedIndices.indexOf(index);
-            if (currentIndex > -1) {
-                // 如果索引已高亮，移除它
-                this.highlightedIndices.splice(currentIndex, 1);
-            } else {
-                // 否则，添加这个索引到高亮数组
-                this.highlightedIndices.push(index);
+            if(this.highlightedIndices) {
+                return this.highlightedIndices.includes(index);
             }
+        },
+        toggleHighlightEvent(index) {
+            this.$emit('toggleHighlight', index)
         },
     },
     mounted() {

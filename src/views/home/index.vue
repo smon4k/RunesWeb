@@ -148,7 +148,7 @@
                         </el-form-item>
                     </el-form>
                     <el-tab-pane label="General" name="general">
-                        <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                        <Card :dataList="dataList" @buyNowClick="buyNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight"></Card>
                     </el-tab-pane>
                     <el-tab-pane label="Images" name="image">
                         <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
@@ -171,11 +171,11 @@
               <div class="select-card">
                 <div class="select-content">
                     <div class="left">
-                        <div class="item-num">1 item</div>
+                        <div class="item-num">{{ highlightedIndices.length }} item</div>
                         <div class="select-all">
-                            <el-checkbox v-model="checked">Select All</el-checkbox>
+                            <el-checkbox v-model="checked" @change="selectAllChange">Select All</el-checkbox>
                         </div>
-                        <div class="clear">Clear</div>
+                        <div class="clear" @click="clearSelectAll()">Clear</div>
                     </div>
                     <div class="right">
                         <div class="total">Total: <font color="#ad8d65">0.0000 USDT</font></div>
@@ -283,7 +283,8 @@ export default {
                 number: '100',
                 address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
             }],
-            checked: true,
+            checked: false,
+            highlightedIndices: [],
         }
     },
     mounted() {
@@ -334,6 +335,30 @@ export default {
         "Card": CardBox,
     },
     methods: {
+        toggleHighlight(index) {
+            const currentIndex = this.highlightedIndices.indexOf(index);
+            if (currentIndex > -1) {
+                // 如果索引已高亮，移除它
+                this.highlightedIndices.splice(currentIndex, 1);
+            } else {
+                // 否则，添加这个索引到高亮数组
+                this.highlightedIndices.push(index);
+            }
+        },
+        selectAllChange(row) {
+            console.log(row);
+            if (!row) {
+                // 如果所有项已高亮，点击全选按钮将取消所有高亮
+                this.highlightedIndices = [];
+            } else {
+                // 否则，添加所有项的索引到 highlightedIndices
+                this.highlightedIndices = this.dataList.map((_, index) => index);
+            }
+        },
+        clearSelectAll() {
+            this.highlightedIndices = [];
+            this.checked = false;
+        },
         handleClickData(row) {
             console.log(row);
         },
