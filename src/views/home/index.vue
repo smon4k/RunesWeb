@@ -103,8 +103,8 @@
                 </el-row>
               </div>
 
-              <data class="list">
-                <el-tabs v-model="activeName" @tab-click="handleClick">
+              <div class="list">
+                <el-tabs v-model="activeName" @tab-click="handleClickData">
                     <el-form :inline="true" :model="formSearch">
                         <el-form-item label="">
                             <el-select v-model="formSearch.searchName" placeholder="请选择">
@@ -148,81 +148,43 @@
                         </el-form-item>
                     </el-form>
                     <el-tab-pane label="General" name="general">
-                        <div class="card">
-                            <el-row :gutter="screenWidth > adaptiveSize ? 24 : 10">
-                                <el-col :xs="12" :sm="6" :md="4">
-                                    <div class="content">
-                                        <div class="top">
-                                            <div class="currency">
-                                                <img :src="require('@/assets/svg/rune.svg')" alt="" width="20">
-                                                <div class="currency-name">CFXs</div>
-                                            </div>
-                                            <div class="quantity">
-                                                <div class="count-num">100</div>
-                                                <div class="price-currency"><font color="#ad8d65">$0.065</font> / CFXs</div>
-                                            </div>
-                                            <div class="time">
-                                                <img :src="require('@/assets/svg/time.svg')" alt="" width="12">
-                                                10-16 10:06
-                                            </div>
-                                        </div>
-                                        <div class="bottom">
-                                            <div class="ids-num">
-                                                <div class="ids">#1235897445</div>
-                                                <div class="num">
-                                                    <img :src="require('@/assets/svg/usdt.svg')" alt="" width="16">
-                                                    <div class="">25.500</div>
-                                                </div>
-                                            </div>
-                                            <div class="address-but">
-                                                <div class="address">0xd5...A845</div>
-                                                <div class="buy-now"><el-button @click="buyNowClick()">Buy Now</el-button></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </el-col>
-                                <el-col :xs="12" :sm="6" :md="4">
-                                    <div class="content">
-                                        <div class="top">
-                                            <div class="currency">
-                                                <img :src="require('@/assets/svg/rune.svg')" alt="" width="20">
-                                                <div class="currency-name">CFXs</div>
-                                            </div>
-                                            <div class="quantity">
-                                                <div class="count-num">100</div>
-                                                <div class="price-currency"><font color="#ad8d65">$0.065</font> / CFXs</div>
-                                            </div>
-                                            <div class="time">
-                                                <img :src="require('@/assets/svg/time.svg')" alt="" width="12">
-                                                10-16 10:06
-                                            </div>
-                                        </div>
-                                        <div class="bottom">
-                                            <div class="ids-num">
-                                                <div class="ids">#1235897445</div>
-                                                <div class="num">
-                                                    <img :src="require('@/assets/svg/usdt.svg')" alt="" width="16">
-                                                    <div class="">25.500</div>
-                                                </div>
-                                            </div>
-                                            <div class="address-but">
-                                                <div class="address">0xd5...A845</div>
-                                                <div class="buy-now"><el-button @click="buyNowClick()">Buy Now</el-button></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </el-col>
-                            </el-row>
-                        </div>
+                        <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
                     </el-tab-pane>
-                    <el-tab-pane label="Images" name="image">配置管理</el-tab-pane>
-                    <el-tab-pane label="Audio" name="audio">角色管理</el-tab-pane>
-                    <el-tab-pane label="Text" name="text">定时任务补偿</el-tab-pane>
-                    <el-tab-pane label="Inscription" name="inscription">定时任务补偿</el-tab-pane>
-                    <el-tab-pane label="Name" name="name">定时任务补偿</el-tab-pane>
+                    <el-tab-pane label="Images" name="image">
+                        <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                    </el-tab-pane>
+                    <el-tab-pane label="Audio" name="audio">
+                        <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                    </el-tab-pane>
+                    <el-tab-pane label="Text" name="text">
+                        <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                    </el-tab-pane>
+                    <el-tab-pane label="Inscription" name="inscription">
+                        <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                    </el-tab-pane>
+                    <el-tab-pane label="Name" name="name">
+                        <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                    </el-tab-pane>
                   </el-tabs>
-              </data>
+              </div>
               
+              <div class="select-card">
+                <div class="select-content">
+                    <div class="left">
+                        <div class="item-num">1 item</div>
+                        <div class="select-all">
+                            <el-checkbox v-model="checked">Select All</el-checkbox>
+                        </div>
+                        <div class="clear">Clear</div>
+                    </div>
+                    <div class="right">
+                        <div class="total">Total: <font color="#ad8d65">0.0000 USDT</font></div>
+                        <div class="sweep-button">
+                            <el-button class="search-button" type="primary" @click="onSubmit">SWEEP</el-button>
+                        </div>
+                    </div>
+                </div>
+              </div>
         </div>
     </div>
 </template>
@@ -233,12 +195,13 @@ import { keepDecimalNotRounding } from "@/utils/tools";
 import { approve } from "@/wallet/trade";
 import { getBalance, isApproved } from "@/wallet/serve";
 import Address from '@/wallet/address.json'
+import CardBox from './card.vue';
 export default {
     name: '',
     data() {
         return {
             screenWidth: document.body.clientWidth,
-            activeName: '1',
+            activeName: 'general',
             loading: false,
             approve: false,
             formSearch: {
@@ -246,7 +209,81 @@ export default {
                 minPrice: '',
                 maxPrice: '',
                 address: '',
-            }
+            },
+            dataList: [{
+                id: '123456',
+                date: '2016-05-02',
+                price: '0.001',
+                number: '100',
+                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
+            }, {
+                id: '123456',
+                date: '2016-05-02',
+                price: '0.001',
+                number: '100',
+                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
+            }, {
+                id: '123456',
+                date: '2016-05-02',
+                price: '0.001',
+                number: '100',
+                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
+            }, {
+                id: '123456',
+                date: '2016-05-02',
+                price: '0.001',
+                number: '100',
+                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
+            }, {
+                id: '123456',
+                date: '2016-05-02',
+                price: '0.001',
+                number: '100',
+                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
+            }, {
+                id: '123456',
+                date: '2016-05-02',
+                price: '0.001',
+                number: '100',
+                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
+            }, {
+                id: '123456',
+                date: '2016-05-02',
+                price: '0.001',
+                number: '100',
+                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
+            }, {
+                id: '123456',
+                date: '2016-05-02',
+                price: '0.001',
+                number: '100',
+                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
+            }, {
+                id: '123456',
+                date: '2016-05-02',
+                price: '0.001',
+                number: '100',
+                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
+            }, {
+                id: '123456',
+                date: '2016-05-02',
+                price: '0.001',
+                number: '100',
+                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
+            }, {
+                id: '123456',
+                date: '2016-05-02',
+                price: '0.001',
+                number: '100',
+                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
+            }, {
+                id: '123456',
+                date: '2016-05-02',
+                price: '0.001',
+                number: '100',
+                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
+            }],
+            checked: true,
         }
     },
     mounted() {
@@ -294,17 +331,17 @@ export default {
         },
     },
     components: {
-
+        "Card": CardBox,
     },
     methods: {
-        handleClick(row) {
+        handleClickData(row) {
             console.log(row);
         },
         onSubmit() {
             console.log('submit!');
         },
-        buyNowClick() {
-            console.log('buyNowClick!');
+        buyNowClick(row) {
+            console.log(row);
         },
         refreshData() { //定时刷新数据
             this.timeInterval = setInterval(async () => {
@@ -473,94 +510,74 @@ export default {
                     color: rgb(12, 12, 12);
                 }
             }
-            .card {
-                .content {
-                    display: block;
-                    background-color: #181818;
-                    border: 2px solid #202020;
-                    border-radius: 8px;
-                    // height: 276px;
-                    margin-bottom: 24px;
-                    .top {
-                        padding: 16px;
-                        .currency {
-                            display: flex;
-                            align-items: center;
-                            .currency-name {
+            .select-card {
+                position: fixed;
+                right: 0;
+                left: 0;
+                bottom: 0;
+                height: 78px;
+                background-color: hsla(0, 0%, 9%, .9);
+                border-color: #202020;
+                border-width: 1px;
+                color: #aaa;
+                font-size: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding-left: 24px;
+                padding-right: 24px;
+                .select-content {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    width: 100%;
+                    max-width: 1368px;
+                    .left {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        .item-num {
+                            width: 80px;
+                        }
+                        .select-all {
+                            margin-right: 32px;
+                            .el-checkbox__inner {
+                                background-color: transparent;
+                                border-color: #ad8d65;
+                                border-width: 1px;
+                                cursor: pointer;
+                                width: 18px;
+                                height: 19px;
+                                border-radius: 0;
+                            }
+                            .el-checkbox__inner::after {
+                                width: 6px;
+                                height: 11px;
+                            }
+                            .el-checkbox__input.is-checked+.el-checkbox__label {
                                 color: #ad8d65;
-                                font-size: 16px;
-                                margin-left: 8px;
                             }
                         }
-                        .quantity {
-                            display: block;
-                            justify-content: center;
-                            margin-top: 16px;
-                            margin-bottom: 16px;
-                            text-align: center;
-                            .count-num {
-                                font-size: 24px;
-                                font-weight: 500;
-                                color: #fff;
-                            }
-                            .price-currency {
-                                font-size: 14px;
-                                margin-top: 4px;
-                            }
-                        }
-                        .time {
-                            display: flex;
-                            width: max-content;
-                            align-items: center;
-                            border: 0 solid #e5e7eb;
-                            color: #aaa;
-                            background-color: #202020;
-                            gap: 5px;
-                            font-size: 12px;
-                            padding: 0 5px;
-                            border-radius: 3px;
+                        .clear {
+                            cursor: pointer;
+                            color: #ad8d65;
                         }
                     }
-                    .bottom {
+                    .right {
                         display: flex;
-                        // height: 77px;
-                        padding: 16px;
-                        background-color: #282828;
-                        justify-content: space-between;
-                        flex-direction: column;
-                        border-bottom-left-radius: 8px; 
-                        border-bottom-right-radius: 8px; 
-                        font-size: 12px;
-                        .ids-num {
-                            display: flex;
-                            justify-content: space-between;
-                            align-items: center;
-                            .ids {
-                                color: #aaa;
-                            }
-                            .num {
-                                display: flex;
-                                gap: 3px;
-                                align-items: center;
-                            }
+                        align-items: center;
+                        justify-content: center;
+                        .total {
+                            font-size: 20px;
+                            margin-right: 32px;
+                            color: #fff;
                         }
-                        .address-but {
-                            display: flex;
-                            margin-top: 15px;
-                            justify-content: space-between;
-                            align-items: center;
-                            .address {
-                                color: #aaa;
-                            }
+                        .sweep-button {
                             .el-button {
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                border-color: #ad8d65;
-                                background-color: transparent;
-                                height: 30px;
-                                width: 80px;
-                                color: #ad8d65;
+                                background: hsla(0, 0%, 50%, .2);
+                                color: #aaa;
+                                border: 1px solid transparent;
+                                height: 48px;
                             }
                         }
                     }
@@ -594,11 +611,6 @@ export default {
                     .price {
                         font-size: 16px !important;
                     }
-                }
-            }
-            .card {
-                .content {
-                    margin-bottom: 10px !important;
                 }
             }
         }
