@@ -4,7 +4,6 @@
         <headerNav />
         <div class="appmain-container">
             <AppMain/>
-            <!-- <Footer/> -->
         </div>
     </div>
 </template>
@@ -12,11 +11,10 @@
 import sidebar from './components/sidebar.vue'
 import headerNav from './components/headerNav.vue'
 import AppMain from './components/AppMain.vue'
-import Footer from '@/layout/components/footer.vue'
 import { mapGetters, mapState } from 'vuex'
 export default {
     name:'Layout',
-    components:{sidebar , headerNav, AppMain, Footer},
+    components:{sidebar , headerNav, AppMain},
     created(){
         this.$store.commit('copyDefaultState')
     },
@@ -61,7 +59,6 @@ export default {
         },
         FailedHash:{
             handler(val){
-                console.log(val);
                 if(val){
                     this.$notify.error({
                         title: 'Failed!',

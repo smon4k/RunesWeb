@@ -1,30 +1,63 @@
 <template>
   <div class="container">
-    <!-- INPUT  -->
-    <div class="input">
+    <!-- 删除流动性的时候才会有 WBNB -->
+    <div class="input" v-show="pageState == 3">
       <el-row>
-        <el-col :span="12">
-          <!-- <el-button class="input-b" @click="handleClickOpen('INPUT')" :disabled="false">
+        <el-col :span="5">
+          <el-button class="input-b">
             <div class="input-b-box" v-if="exchangeArray.INPUT !== '' && exchangeArray.INPUT >= 0">
-              <img size="small" :src="getFilersSwapPoolsArr(exchangeArray.INPUT).logo" width="20" />
-              <span>{{getFilersSwapPoolsArr(exchangeArray.INPUT).name}}</span>
-              <i class="el-icon-arrow-down el-icon--down"></i>
+                <img size="small" :src="getFilersSwapPoolsArr(exchangeArray.INPUT).logo" width="20" />
+                <img size="small" :src="getFilersSwapPoolsArr(exchangeArray.OUTPUT).logo" width="20" style="margin-left:5px;" />
+                <span>{{getFilersSwapPoolsArr(exchangeArray.INPUT).name}}:{{getFilersSwapPoolsArr(exchangeArray.OUTPUT).name}}</span>
+              <!-- <i class="el-icon-arrow-down el-icon--down"></i> -->
             </div>
             <div class="input-b-box" v-else>
               <span>{{ $t('swap:SelectCurrency') }}：</span> 
               <i class="el-icon-arrow-down el-icon--down"></i>
             </div>
-          </el-button> -->
-          <el-dropdown trigger="click">
-            <span class="el-dropdown-link">
-              选择代币<i class="el-icon-arrow-down el-icon--right"></i>
-            </span>
-            <el-dropdown-menu slot="dropdown" :append-to-body="false">
-              <el-dropdown-item>HT</el-dropdown-item>
-              <el-dropdown-item>USDT</el-dropdown-item>
-              <el-dropdown-item>LUSD</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
+          </el-button>
+        </el-col>
+        <el-col :span="19" class="textRight">{{ $t('swap:Balance') }}: {{currentPools && currentPools.tokenBalance && computeTokenBalanceChange(currentPools.tokenBalance, currentPools.tokenDecimals, 10)}}</el-col>
+      </el-row>
+      <el-row class="input-box">
+        <el-col :span="24">
+          <el-input
+            class="input-input"
+            v-model="formToTokenBlance"
+            placeholder="0.0"
+            @input="inputFormChangeValue"
+          ></el-input>
+          <el-button 
+            v-show="currentPools && formToTokenBlance && (formToTokenBlance < computeTokenBalanceChange(currentPools.tokenBalance, currentPools.tokenDecimals, 10) || formToTokenBlance > computeTokenBalanceChange(currentPools.tokenBalance, currentPools.tokenDecimals, 10))" 
+            class="input-max" 
+            size="small" 
+            round 
+            @click="inputFormChangeValue(computeTokenBalanceChange(currentPools.tokenBalance, currentPools.tokenDecimals, 10)
+            ) ">{{ $t('swap:Max') }}</el-button>
+        </el-col>
+      </el-row>
+      <div class="arrow">
+          <el-button size="small" circle>
+            <i class="el-icon-bottom"></i>
+          </el-button>
+      </div>
+    </div>
+
+    <!-- INPUT  -->
+    <div class="input">
+      <el-row>
+        <el-col :span="12">
+          <el-button class="input-b" @click="handleClickOpen('INPUT')" :disabled="pageState == 3 ? true : false">
+            <div class="input-b-box" v-if="exchangeArray.INPUT !== '' && exchangeArray.INPUT >= 0">
+              <img size="small" :src="getFilersSwapPoolsArr(exchangeArray.INPUT).logo" width="20" />
+              <span>{{getFilersSwapPoolsArr(exchangeArray.INPUT).name}}</span>
+              <i v-show="pageState !== 3" class="el-icon-arrow-down el-icon--down"></i>
+            </div>
+            <div class="input-b-box" v-else>
+              <span>{{ $t('swap:SelectCurrency') }}：</span> 
+              <i class="el-icon-arrow-down el-icon--down"></i>
+            </div>
+          </el-button>
         </el-col>
         <el-col :span="12" class="textRight">{{ $t('swap:Balance') }}: {{balanceTransformation(getFilersSwapPoolsArr(exchangeArray.INPUT).tokenBalance)}}</el-col>
       </el-row>
@@ -37,7 +70,7 @@
             @input="inputChangeValue"
           ></el-input>
           <el-button 
-            v-show="getFilersSwapPoolsArr(exchangeArray.INPUT).tokenBalance > 0 && keepDecimalNotRounding(exchangeMoney.INPUT) != keepDecimalNotRounding(getFilersSwapPoolsArr(exchangeArray.INPUT).tokenBalance)" 
+            v-show="pageState < 3 && getFilersSwapPoolsArr(exchangeArray.INPUT).tokenBalance > 0 && keepDecimalNotRounding(exchangeMoney.INPUT) != keepDecimalNotRounding(getFilersSwapPoolsArr(exchangeArray.INPUT).tokenBalance)" 
             class="input-max" 
             size="small" 
             round 
@@ -46,9 +79,14 @@
       </el-row>
     </div>
 
-    <div class="arrow">
-      <el-button size="small" ci  rcle @click="switchCurrencyClick">
+    <div class="arrow" v-if="pageState == 1">
+      <el-button size="small" circle @click="switchCurrencyClick">
         <i class="el-icon-sort"></i>
+      </el-button>
+    </div>
+    <div class="arrow" v-else>
+      <el-button size="small" circle>
+        <i class="el-icon-plus"></i>
       </el-button>
     </div>
 
@@ -56,29 +94,19 @@
     <div class="output">
       <el-row>
         <el-col :span="12">
-          <!-- <el-button class="input-b" @click="handleClickOpen('OUTPUT')" :disabled="false">
+          <el-button class="input-b" @click="handleClickOpen('OUTPUT')" :disabled="pageState == 3 ? true : false">
             <div class="input-b-box" v-if="exchangeArray.OUTPUT !== '' && exchangeArray.OUTPUT >= 0">
                 <img size="small" :src="getFilersSwapPoolsArr(exchangeArray.OUTPUT).logo" width="20" />
                 <span>{{getFilersSwapPoolsArr(exchangeArray.OUTPUT).name}}</span>
-                <i class="el-icon-arrow-down el-icon--down"></i>
+                <i v-show="pageState !== 3" class="el-icon-arrow-down el-icon--down"></i>
             </div>
             <div class="input-b-box" v-else>
                 <span>{{ $t('swap:SelectCurrency') }}：</span> 
                 <i class="el-icon-arrow-down el-icon--down"></i>
             </div>
-          </el-button> -->
-          <el-dropdown>
-            <span class="el-dropdown-link">
-              选择代币<i class="el-icon-arrow-down el-icon--right"></i>
-            </span>
-            <el-dropdown-menu slot="dropdown" :append-to-body="false">
-              <el-dropdown-item>HT</el-dropdown-item>
-              <el-dropdown-item>USDT</el-dropdown-item>
-              <el-dropdown-item>LUSD</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
+          </el-button>
         </el-col>
-        <el-col :span="12" class="textRight">{{ $t('swap:Balance') }}: {{balanceTransformation(getFilersSwapPoolsArr(exchangeArray.OUTPUT).tokenBalance)}}</el-col>
+        <el-col :span="12" class="textRight">Balance: {{balanceTransformation(getFilersSwapPoolsArr(exchangeArray.OUTPUT).tokenBalance)}}</el-col>
       </el-row>
       <el-row class="input-box">
         <el-col :span="24">
@@ -89,7 +117,7 @@
             @input="outputChangeValue"
           ></el-input>
           <el-button 
-            v-show="getFilersSwapPoolsArr(exchangeArray.OUTPUT).tokenBalance > 0 && keepDecimalNotRounding(exchangeMoney.OUTPUT) != keepDecimalNotRounding(getFilersSwapPoolsArr(exchangeArray.OUTPUT).tokenBalance)"
+            v-show="pageState < 3 && getFilersSwapPoolsArr(exchangeArray.OUTPUT).tokenBalance > 0 && keepDecimalNotRounding(exchangeMoney.OUTPUT) != keepDecimalNotRounding(getFilersSwapPoolsArr(exchangeArray.OUTPUT).tokenBalance)"
             class="input-max" 
             size="small" 
             round 
@@ -140,7 +168,7 @@
 import { keepDecimalNotRounding, replaceParamVal, getUrlParams, changeURLPar, scientificNotationToString} from '@/utils/tools'
 import configAddress from '@/wallet/swap_pools';
 const publicAddress = configAddress.publicAddress;
-// import { getTokenAmountsoutPrice,getTokenAmountsIntPrice } from "@/wallet/serve";
+import { getTokenAmountsoutPrice,getTokenAmountsIntPrice } from "@/wallet/Inquire";
 import merge from 'webpack-merge';
 export default {
   props: [
@@ -250,6 +278,15 @@ export default {
     }
   },
   mounted() {
+    if(this.$route.name === 'Swap') {
+      this.pageState = 1;
+    } else if(this.$route.name === 'LiquidityAdd') {
+      this.pageState = 2;
+    } else if(this.$route.name === 'LiquidityRemove') {
+      this.pageState = 3;
+    } else {
+      this.pageState = 0;
+    }
   },
   created(){
     if(this.childExchangeArray) {
@@ -523,8 +560,8 @@ export default {
         // console.log(toValue);
         // const toValue = "0.00001";
         const inputArray = this.getFilersSwapPoolsArr(this.exchangeArray.INPUT);
-        const outPrice = inputArray.tokenBalanceUsd;
-        // let outPrice = await getTokenAmountsoutPrice(inputArray.tk0Address, inputArray.tk1Address, toValue);
+        // const outPrice = inputArray.tokenBalanceUsd;
+        let outPrice = await getTokenAmountsoutPrice(inputArray.tk0Address, inputArray.tk1Address, toValue);
         // console.log(outPrice);
         let formValue = 0;
         // console.log(inputArray);
@@ -537,20 +574,58 @@ export default {
 
                 // console.log(toValue.toString());
                 // console.log(toValue, outPrice, toNonExponential(toValue * outPrice));
-                this.exchangeMoney = {
-                  INPUT: toValue, 
-                  OUTPUT: formValue > 0 ? formValue : '' 
-                };
+                if (this.pageState < 3) {
+                  this.exchangeMoney = {
+                    INPUT: toValue, 
+                    OUTPUT: formValue > 0 ? formValue : '' 
+                  };
+                } else { //如果是删除流动性的话
+                    const blanceValue = keepDecimalNotRounding(inputArray.tokenBalance);
+                    if (toValue <= blanceValue) {
+                        this.exchangeMoney = {
+                          INPUT: toValue, 
+                          OUTPUT: formValue > 0 ? formValue : ''
+                        };
+                        if (this.currentPools) {
+                            const totalSupply = this.computeTokenBalanceChange(this.currentPools.totalSupply, this.currentPools.tokenDecimals, 18);
+                            const componentOneNumber = this.computeTokenBalanceChange(this.currentPools.reserves[0], this.currentPools.tokenDecimals, 18);
+                            const formLpValue = (toValue / componentOneNumber * totalSupply).toFixed(16);
+                            // console.log(formLpValue);
+                            if (formLpValue > 0) {
+                                this.formToTokenBlance = formLpValue;
+                                this.$emit('childFormTokenBlance', formLpValue);
+                            } else {
+                              this.formToTokenBlance = 0;
+                              this.$emit('childFormTokenBlance', 0);
+                            }
+                        }
+                    } else {
+                      this.exchangeMoney = {
+                        INPUT: toValue, 
+                        OUTPUT: ''
+                      };
+                      this.formToTokenBlance = 0;
+                      this.$emit('childFormTokenBlance', 0);
+                    }
+                }
             } else {
                 this.exchangeMoney = {
                   INPUT: toValue, 
                   OUTPUT: ''
                 };
+                if (this.pageState == 3) {
+                  this.formToTokenBlance = 0;
+                  this.$emit('childFormTokenBlance', 0);
+                }
             }
             this.valuationState = 'OUTPUT';
             // console.log(exchangeMoney.INPUT);
         } else {
             this.exchangeMoney = {INPUT: '', OUTPUT: ''};
+            if (this.pageState == 3) {
+              this.formToTokenBlance = 0;
+              this.$emit('childFormTokenBlance', 0);
+            }
         }
     },
     //Form Value 触发事件
@@ -558,8 +633,8 @@ export default {
       // console.log(fromValue);
         // console.log(outputArray);
         const outputArray = this.getFilersSwapPoolsArr(this.exchangeArray.OUTPUT);
-        const inputPrice = outputArray.tokenBalanceUsd;
-        // let inputPrice = await getTokenAmountsIntPrice(outputArray.tk1Address, outputArray.tk0Address, fromValue);
+        // const inputPrice = outputArray.tokenBalanceUsd;
+        let inputPrice = await getTokenAmountsIntPrice(outputArray.tk1Address, outputArray.tk0Address, fromValue);
         // console.log(inputPrice);
         // let fromValue = event.target.value;
         let toValue = 0;
@@ -567,15 +642,49 @@ export default {
             if (this.exchangeArray.INPUT >= 0) {
                 // toValue = fromValue > 0 ? keepDecimalNotRounding(fromValue * inputPrice, 16, true) : 0;
                 toValue = fromValue > 0 ? keepDecimalNotRounding(inputPrice, 16, true) : 0;
-                this.exchangeMoney = {
-                  OUTPUT: fromValue, 
-                    INPUT: toValue > 0 ? toValue : ''
-                };
+                if (this.pageState < 3) {
+                  this.exchangeMoney = {
+                    OUTPUT: fromValue, 
+                      INPUT: toValue > 0 ? toValue : ''
+                    };
+                } else {  //如果是删除流动性的话
+                    const blanceValue = keepDecimalNotRounding(outputArray.tokenBalance);
+                      // console.log(toValue);
+                    if (fromValue <= blanceValue) {
+                        this.exchangeMoney = {
+                          OUTPUT: fromValue, 
+                          INPUT: toValue > 0 ? toValue : ''
+                        };
+                        if (this.currentPools) {
+                            const totalSupply = this.computeTokenBalanceChange(this.currentPools.totalSupply, this.currentPools.tokenDecimals, 18);
+                            const componentTwoNumber = this.computeTokenBalanceChange(this.currentPools.reserves[1], this.currentPools.tokenDecimals, 18);
+                            const formLpValue = (fromValue / componentTwoNumber * totalSupply).toFixed(16);
+                            if (formLpValue > 0) {
+                                this.formToTokenBlance = formLpValue;
+                                this.$emit('childFormTokenBlance', formLpValue);
+                            } else {
+                              this.formToTokenBlance = 0;
+                              this.$emit('childFormTokenBlance', 0);
+                            }
+                        }
+                    } else {
+                        this.exchangeMoney = {
+                          OUTPUT: fromValue, 
+                          INPUT: ''
+                        };
+                        this.formToTokenBlance = 0;
+                        this.$emit('childFormTokenBlance', 0);
+                    }
+                }
             } else {
                 this.exchangeMoney = {
                   OUTPUT: fromValue, 
                   INPUT: '' 
                 };
+                if (this.pageState == 3) {
+                  this.formToTokenBlance = 0;
+                  this.$emit('childFormTokenBlance', 0);
+                }
             }
             this.valuationState = 'INPUT';
             // console.log(exchangeMoney.INPUT);
@@ -583,6 +692,10 @@ export default {
             this.exchangeMoney = {
               OUTPUT: '', 
               INPUT: '' 
+            }
+            if (this.pageState == 3) {
+              this.formToTokenBlance = 0;
+              this.$emit('childFormTokenBlance', 0);
             }
         }
     },
@@ -641,48 +754,15 @@ export default {
 </script>
 <style lang="scss" scoped>
 .container {
-  /deep/ {
-  .el-dropdown {
-    color: #fff;
-    font-size: 16px;
-    cursor: pointer;
-    .el-dropdown-menu {
-      background-color: #1b1c23;
-      width: 100%;
-      border: 0;
-      left: 0;
-    }
-    .el-dropdown-menu__item {
-          padding: 0 15px;
-          color: #fff;
-          font-weight: bold;
-          display: flex;
-          justify-content: space-around;
-          align-items: center;
-          img {
-              margin-right: 5px;
-          }
-      }
-      .el-dropdown-menu__item:hover {
-          background-color: #606266;
-      }
-      .el-popper[x-placement^=bottom] {
-          .popper__arrow::after {
-              border-bottom-color: #1b1c23;
-          }
-          .popper__arrow {
-              border-bottom-color: transparent;
-          }
-      }
-  }
   .input-box {
-    background-color: #21313b;
+    @include sideBarSwapInputBgc($claimCardSwapInput-light);
     min-height: 60px;
     line-height: 30px;
     border-radius: 16px;
     margin-top: 6px;
     padding: 0.75rem 0.75rem 0.75rem 1rem;
     .input-input {
+      /deep/ {
         .el-input__inner {
           // width: 0px;
           position: relative;
@@ -690,6 +770,7 @@ export default {
           outline: none;
           border: none;
           flex: 1 1 auto;
+          background-color: transparent;
           font-size: 16px;
           white-space: nowrap;
           overflow: hidden;
@@ -697,14 +778,14 @@ export default {
           padding: 0px;
           text-align: right;
           appearance: textfield;
-          color: #fff;
-          background-color: #21313b;
+          @include mainFont($color-mainFont-light);
         }
+      }
     }
     .input-max {
       @include sideBarSwapInputBgc($claimCardSwapInput-light);
       border: 1px solid #0096ff;
-      color: #fff;
+      @include mainFont($color-mainFont-light);
       float: right;
     }
   }
@@ -721,7 +802,7 @@ export default {
     letter-spacing: 0.03em;
     padding: 0px 16px;
     background-color: transparent;
-    color: #fff;
+    @include mainFont($color-mainFont-light);
     box-shadow: none;
     .input-b-box {
       display: flex;
@@ -738,7 +819,7 @@ export default {
     text-align: center;
     margin: 10px 0 10px 0;
     button {
-      background-color: #21313b;
+      @include sideBarSwapInputBgc($claimCardSwapInput-light);
       border: 0;
       i {
         color: #0096ff;
@@ -752,54 +833,55 @@ export default {
     padding: 0 16px;
   }
 
-    .dialogClass {
-        .el-dialog--center {
-          width: 100%;
-          max-width: 420px;
-          min-height: 70vh;
-          border-radius: 32px;
-          @include sideBarSwapInputBgc($claimCardSwapInput-light);
-          margin: 0 auto;
-          // margin-left: 45%;
-        }
-        .el-dialog__title{
-          color: #fff;
-          // float: left;
-        }
-        .el-table__row {
-          // background-color: red;
-          @include sideBarSwapInputBgc($claimCardSwapInput-dark);
-          color: #fff;
-        }
-        .el-table .select-row {
-          // background: rgba(255, 255, 255, 0.16);
-          @include selectSwapTokenBgc($selectSwapToken-dark);
-          cursor:pointer;
-          // background: #909399;
-        }
-        .el-table__body-wrapper {
-          @include sideBarSwapInputBgc($claimCardSwapInput-light);
-        }
-        .el-table--enable-row-hover .el-table__body tr:hover>td {
-          // background-color: rgba(255, 255, 255, 0.16);
-          @include selectSwapTokenBgc($selectSwapToken-dark);
-          // @include sideBarSwapInputBgc($claimCardSwapInput-light);
-          @include mainFont($color-mainFont-light);
-        }
-        // .el-table__body tr.current-row>td.el-table__cell {
-        //   background-color: rgba(255, 255, 255, 0.16);
-        // }
-        .el-table td.el-table__cell {
-          border-bottom: 0;
-        }
-        .el-table::before {
-          z-index: 0;
-        }
-      .balance {
-        td {
-          float: right;
-        } 
+  .dialogClass {
+    /deep/ {
+      .el-dialog--center {
+        width: 100%;
+        max-width: 420px;
+        min-height: 70vh;
+        border-radius: 32px;
+        @include sideBarSwapInputBgc($claimCardSwapInput-light);
+        margin: 0 auto;
+        // margin-left: 45%;
       }
+      .el-dialog__title{
+        @include mainFont($color-mainFont-light);
+        // float: left;
+      }
+      .el-table__row {
+        // background-color: red;
+        @include sideBarSwapInputBgc($claimCardSwapInput-dark);
+        @include mainFont($color-mainFont-light);
+      }
+      .el-table .select-row {
+        // background: rgba(255, 255, 255, 0.16);
+        @include selectSwapTokenBgc($selectSwapToken-dark);
+        cursor:pointer;
+        // background: #909399;
+      }
+      .el-table__body-wrapper {
+        @include sideBarSwapInputBgc($claimCardSwapInput-light);
+      }
+      .el-table--enable-row-hover .el-table__body tr:hover>td {
+        // background-color: rgba(255, 255, 255, 0.16);
+        @include selectSwapTokenBgc($selectSwapToken-dark);
+        // @include sideBarSwapInputBgc($claimCardSwapInput-light);
+        @include mainFont($color-mainFont-light);
+      }
+      // .el-table__body tr.current-row>td.el-table__cell {
+      //   background-color: rgba(255, 255, 255, 0.16);
+      // }
+      .el-table td.el-table__cell {
+        border-bottom: 0;
+      }
+      .el-table::before {
+        z-index: 0;
+      }
+    }
+    .balance {
+      td {
+        float: right;
+      } 
     }
   }
 }

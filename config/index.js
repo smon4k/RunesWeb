@@ -11,7 +11,7 @@ module.exports = {
     // index: path.resolve(__dirname, '../../../application/index/view/index/index.html'),
     assetsRoot: path.resolve(__dirname, '../dist'),
     assetsSubDirectory: 'static',
-    // assetsPublicPath: '/DiceWeb/dist/',
+    // assetsPublicPath: '/SwanlakeWeb/dist/',
     assetsPublicPath: './',
     productionSourceMap: true,
     // Gzip off by default as many popular static hosts such as
@@ -28,12 +28,12 @@ module.exports = {
   },
   test: {
     env: require('./dev.env'),
-    index: path.resolve(__dirname, '../test/index.html'),
-    // index: path.resolve(__dirname, '../../../application/index/view/index/test.html'),
+    // index: path.resolve(__dirname, '../test/index.html'),
+    index: path.resolve(__dirname, '../../../application/index/view/index/test.html'),
     assetsRoot: path.resolve(__dirname, '../test'),
     assetsSubDirectory: 'static',
-    // assetsPublicPath: '/DiceWeb/test/',
-    assetsPublicPath: './',
+    assetsPublicPath: '/SwanlakeWeb/test/',
+    // assetsPublicPath: './',
     productionSourceMap: true,
     // Gzip off by default as many popular static hosts such as
     // Surge or Netlify already gzip all static assets for you.
@@ -49,16 +49,32 @@ module.exports = {
   },
   dev: {
     env: require('./dev.env'),
-    port: process.env.PORT || 8018,
+    port: process.env.PORT || 8007,
     autoOpenBrowser: false, //浏览器自动运行
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {
       "/Api": {
-        target: "http://www.dice.com",
+        target: "http://www.swan.com",
         changeOrigin: true,
         pathRewrite: {
           "^/Api": "/Api"
+        },
+        timeout: 600000,
+      },
+      "/Hashpower": {
+        target: "http://www.swan.com",
+        changeOrigin: true,
+        pathRewrite: {
+          "^/Hashpower": "/Hashpower"
+        },
+        timeout: 600000,
+      },
+      "/Power": {
+        target: "http://www.swan.com",
+        changeOrigin: true,
+        pathRewrite: {
+          "^/Power": "/Power"
         },
         timeout: 600000,
       },

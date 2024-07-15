@@ -6,9 +6,7 @@ import store from './store'
 import 'normalize.css/normalize.css'
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
-import enLocale from 'element-ui/lib/locale/lang/en'
 import VueClipboard from 'vue-clipboard2'
-import VConsole from 'vconsole';
 import {
   $inputLimit,
   toFixed,
@@ -18,8 +16,7 @@ import {
   toolNumber,
   keepDecimalNotRounding
 } from './utils/tools'
-import { connectWallet,  disconnectWallet } from './wallet/connect/metaMask'
-// import { connectTronWebWallet,  disconnectTronWebWallet } from './wallet/connect/tronWeb'
+import { connectWallet, disconnectWallet } from './wallet/connect/metaMask'
 import Web3 from 'web3'
 import { $post , $get } from '@/utils/request'  
 import i18next from 'i18next';
@@ -42,7 +39,7 @@ else if(typeof web3 !== 'undefined') {
 } 
 else {
     // set the provider you want from Web3.providers
-    window.web3 = new Web3(new Web3.providers.HttpProvider("https://http-mainnet.hecochain.com"));
+    window.web3 = new Web3(new Web3.providers.HttpProvider("https://bsc-dataseed.binance.org"));
 }
 
 Vue.use(ElementUI);
@@ -52,9 +49,6 @@ Vue.use(VueI18Next);
 
 Vue.use(visibility);
 Vue.config.productionTip = false
-
-// 实例化vConsole
-// const vconsole = new VConsole();
 
 // 语言包配置
 i18next.use(XHR).use(LngDetector).init({
@@ -78,7 +72,6 @@ const i18n = new VueI18Next(i18next);
 Object.assign(Vue.prototype, {
   $inputLimit,
   $connect:connectWallet,
-  // $tronWebWalletConnect:connectTronWebWallet,
   $disconnect:disconnectWallet,
   toFixed,
   toWei,

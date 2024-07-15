@@ -3,8 +3,7 @@ export default {
         mainTheme:localStorage.getItem('theme') ? localStorage.getItem('theme') : 'dark',
         positionFinish:false,
         screenWidth: document.body.clientWidth,
-        isMobel: document.body.clientWidth < 960 ? true : false,
-        adaptiveSize: 960,
+        isMobel: document.body.clientWidth < 600 ? true : false,
     },
     mutations:{
         setMainTheme(state , val){
@@ -15,7 +14,7 @@ export default {
         },
         setScreenWidth(state , val){
             state.screenWidth = val;
-            if(val < 960) {
+            if(val < 600) {
                 state.isMobel = true;
             } else {
                 state.isMobel = false;

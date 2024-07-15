@@ -38,7 +38,7 @@
             <transition name="slide-fade">
               <ul v-show="showSubMenu">
 
-                <!-- Dice -->
+                <!-- 算力币 -->
                 <li
                   :class="[
                     'item',

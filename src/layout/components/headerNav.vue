@@ -23,7 +23,7 @@
                             <template v-for="(item, index) in navList">
                                 <el-menu-item :index="item.path" v-if="!item.children.length" :key="index">{{ item.name
                                     }}</el-menu-item>
-                                <el-submenu v-else :index="item.path == '#' ? item.path + item.id : item.path" :key="index">
+                                <el-submenu v-else :index="item.path == '#' ? item.path + item.id : item.path" :key="item.id">
                                     <template slot="title">{{ item.name }}</template>
                                     <div v-for="(childe, keye) in item.children" :key="keye">
                                         <el-menu-item :index="childe.path">{{ childe.name }}</el-menu-item>
@@ -254,7 +254,7 @@
                     <template v-for="(item, index) in navList">
                         <el-menu-item :index="item.path" v-if="!item.children.length" :key="index">{{ item.name
                             }}</el-menu-item>
-                        <el-submenu v-else :index="item.path == '#' ? item.path + item.id : item.path" :key="index">
+                        <el-submenu v-else :index="item.path == '#' ? item.path + item.id : item.path" :key="item.id">
                             <template slot="title">{{ item.name }}</template>
                             <div v-for="(childe, keye) in item.children" :key="keye">
                                 <el-menu-item :index="childe.path">{{ childe.name }}</el-menu-item>
