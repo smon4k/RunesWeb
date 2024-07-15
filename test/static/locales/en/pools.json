@@ -1,0 +1,18 @@
+{
+    "header": "Simply stake tokens to earn",
+    "pool": "Pool",
+    "APR": "APR",
+    "APY": "APY",
+    "TVL": "TVL",
+    "Deposited": "Deposited",
+    "Reward": "Reward",
+    "receive": "You will receive",
+    "wowAprHint": "Withdrawals can only be made after the deposited price has doubled.",
+    "Action": "Action",
+    "pledgeObtainIncome": "Pledge GLS to obtain LUSD income",
+    "AvailableBalanceExceeded": "Available balance exceeded",
+    "InsufficientNumberShares": "Insufficient number of investment shares",
+    "PleaseInvestmentAmount": "Please enter the investment amount",
+    "successfulInvestment": "successful investment",
+    "successfulRedemption": "successful redemption"
+}

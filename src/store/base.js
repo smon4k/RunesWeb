@@ -35,7 +35,6 @@ if(walletName === 'MetaMask') {
 } else if(walletName === 'WalletConnect') {
     chainName = localStorage.getItem('chainName') ? localStorage.getItem('chainName') : 'HECO';;
 }
-
 const versionName = localStorage.getItem('versionName') ? localStorage.getItem('versionName') : 'speed';
 // let transactionCurrency = 'ETH';
 // let transactionCurrencyName = localStorage.getItem(chainName + '_transactionCurrency');

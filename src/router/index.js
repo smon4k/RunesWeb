@@ -9,32 +9,32 @@ export const constantRoutes = [
     {
       path: '/',
       component: Layout,
-      redirect: versionName === 'chain' ? '/home' : '/home',
+      redirect: '/banker',
       children: [
-        {
-          path: 'home',
-          name: 'home',
-          component: () => import('@/views/home/index'),
-          meta: { title: 'home', keepAlive: true }
-        },
-        {
-          path: 'my',
-          name: 'my',
-          component: () => import('@/views/my/index'),
-          meta: { title: 'my', keepAlive: true }
-        },
-        {
-          path: 'inscribe',
-          name: 'inscribe',
-          component: () => import('@/views/inscribe/index'),
-          meta: { title: 'inscribe', keepAlive: true }
-        },
-        {
-          path: 'documents',
-          name: 'documents',
-          component: () => import('@/views/documents/index'),
-          meta: { title: 'documents', keepAlive: true }
-        },
+        // {
+        //   path: 'home',
+        //   name: 'home',
+        //   component: () => import('@/views/home/index'),
+        //   meta: { title: 'home', keepAlive: true }
+        // },
+        // {
+        //   path: 'my',
+        //   name: 'my',
+        //   component: () => import('@/views/my/index'),
+        //   meta: { title: 'my', keepAlive: true }
+        // },
+        // {
+        //   path: 'inscribe',
+        //   name: 'inscribe',
+        //   component: () => import('@/views/inscribe/index'),
+        //   meta: { title: 'inscribe', keepAlive: true }
+        // },
+        // {
+        //   path: 'documents',
+        //   name: 'documents',
+        //   component: () => import('@/views/documents/index'),
+        //   meta: { title: 'documents', keepAlive: true }
+        // },
         
         {
           path: 'banker',

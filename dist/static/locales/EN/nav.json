@@ -1,4 +1,9 @@
 {
+    "Market": "Market",
+    "Wormhole": "Wormhole",
+    "My": "My",
+    "Inscribe": "Inscribe",
+    "Documents": "Documents",
     "Number": "Num Range",
     "Size": "SmallOrBig",
     "Monoduplex": "OddOrEven",

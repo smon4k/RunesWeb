@@ -109,7 +109,6 @@
                         <el-form-item label="">
                             <el-select v-model="formSearch.searchName" placeholder="请选择">
                                 <el-option label="Price low to high" value="1">
-                                    <img :src="require('@/assets/svg/price-low-high.svg')" alt="" width="20">
                                     <span style="margin-left: 5px;">Price low to high</span>
                                 </el-option>
                                 <el-option label="Price high to low" value="2">
