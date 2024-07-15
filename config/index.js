@@ -28,12 +28,12 @@ module.exports = {
   },
   test: {
     env: require('./dev.env'),
-    // index: path.resolve(__dirname, '../test/index.html'),
-    index: path.resolve(__dirname, '../../../application/index/view/index/test.html'),
+    index: path.resolve(__dirname, '../test/index.html'),
+    // index: path.resolve(__dirname, '../../../application/index/view/index/test.html'),
     assetsRoot: path.resolve(__dirname, '../test'),
     assetsSubDirectory: 'static',
-    assetsPublicPath: '/SwanlakeWeb/test/',
-    // assetsPublicPath: './',
+    // assetsPublicPath: '/SwanlakeWeb/test/',
+    assetsPublicPath: './',
     productionSourceMap: true,
     // Gzip off by default as many popular static hosts such as
     // Surge or Netlify already gzip all static assets for you.
