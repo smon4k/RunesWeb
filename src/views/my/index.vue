@@ -80,7 +80,7 @@ import { keepDecimalNotRounding } from "@/utils/tools";
 import { approve } from "@/wallet/trade";
 import { getBalance, isApproved } from "@/wallet/serve";
 import Address from '@/wallet/address.json'
-import CardBox from '../home/card.vue';
+import CardBox from './card.vue';
 export default {
     name: '',
     data() {
@@ -115,6 +115,7 @@ export default {
                 number: '100',
                 address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
             }],
+            highlightedIndices: [],
         }
     },
     mounted() {
