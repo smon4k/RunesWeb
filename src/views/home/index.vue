@@ -146,6 +146,20 @@
                             <el-button class="search-button" type="primary" @click="onSubmit">Apply</el-button>
                         </el-form-item>
                     </el-form>
+                    <div class="count-number">
+                        <div class="listings">
+                            <span><img :src="require('@/assets/svg/listings.svg')" alt="" width="24"></span>
+                            <span>Listings</span>
+                        </div>
+                        <div class="text-numcer">
+                            <span class="text-secondary">
+                                <span>Result: {{ dataList.length }}</span>
+                            </span>
+                            <span class="refresh">
+                                <img :src="require('@/assets/svg/refresh.svg')" alt="" width="48">
+                            </span>
+                        </div>
+                    </div>
                     <el-tab-pane label="General" name="general">
                         <Card :dataList="dataList" @buyNowClick="buyNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight"></Card>
                     </el-tab-pane>
@@ -177,9 +191,9 @@
                         <div class="clear" @click="clearSelectAll()">Clear</div>
                     </div>
                     <div class="right">
-                        <div class="total">Total: <font color="#ad8d65">0.0000 USDT</font></div>
+                        <div class="total">Total: <font color="#ad8d65">{{ calcTotalNumber }} USDT</font></div>
                         <div class="sweep-button">
-                            <el-button class="search-button" type="primary" @click="onSubmit">SWEEP</el-button>
+                            <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" class="search-button" type="primary" @click="onSubmit" :disabled="highlightedIndices.length <= 0">SWEEP</el-button>
                         </div>
                     </div>
                 </div>
@@ -307,6 +321,16 @@ export default {
                 address
             };
         },
+        calcTotalNumber() {
+            if (!this.dataList || !this.dataList.length) return 0;
+            const totalUSDT = this.dataList.reduce((total, item, index) => {
+                if (this.highlightedIndices.includes(index)) {
+                    return total + Number(item.price);
+                }
+                return total;
+            }, 0); 
+            return totalUSDT;
+        }
     },
     created() {
         try {
@@ -534,6 +558,39 @@ export default {
                     color: rgb(12, 12, 12);
                 }
             }
+            .count-number {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-top: 6px;
+                height: 48px;
+                .listings {
+                    display: flex;
+                    justify-content: center;
+                    font-weight: 700;
+                    font-size: 16px;
+                    color: #ad8d65;
+                    gap: 5px;
+                }
+                .text-numcer {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    .text-secondary {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: #aaa;
+                        gap: 12px;
+                        flex-shrink: 0;
+                        font-size: 16px;
+                    }
+                    .refresh {
+                        margin-left: 16px;
+                        cursor: pointer;
+                    }
+                }
+            }
             .select-card {
                 position: fixed;
                 right: 0;
@@ -602,6 +659,18 @@ export default {
                                 color: #aaa;
                                 border: 1px solid transparent;
                                 height: 48px;
+                            }
+                            .el-button--primary.is-disabled:hover {
+                                background: hsla(0, 0%, 50%, .2);
+                                color: #aaa;
+                            }
+                            .batch-listing {
+                                background: #ad8d65;
+                                color: rgb(0, 0, 0/1);
+                            }
+                            .el-button:hover {
+                                background: #ad8d65;
+                                color: rgb(0, 0, 0/1);
                             }
                         }
                     }

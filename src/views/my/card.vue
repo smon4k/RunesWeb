@@ -88,6 +88,7 @@ export default {
             border-radius: 8px;
             // height: 276px;
             margin-bottom: 24px;
+            margin-top: 32px;
             cursor: pointer;
             .top {
                 padding: 16px;

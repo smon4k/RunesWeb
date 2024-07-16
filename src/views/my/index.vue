@@ -45,6 +45,15 @@
                                         <el-button class="search-button" type="primary" @click="onSubmit">Apply</el-button>
                                     </el-form-item>
                                 </el-form>
+                                <div class="count-number">
+                                    <span class="text-secondary">
+                                        <span>Slots: {{ dataList.length }}</span>
+                                        <span>Balance: {{ dataList.length }}</span>
+                                    </span>
+                                    <span class="refresh">
+                                        <img :src="require('@/assets/svg/refresh.svg')" alt="" width="48">
+                                    </span>
+                                </div>
                                 <el-tab-pane label="General" name="general">
                                     <Card :dataList="dataList" @buyNowClick="buyNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight"></Card>
                                 </el-tab-pane>
@@ -70,6 +79,31 @@
                     <el-tab-pane label="CLS" name="3">CLS</el-tab-pane>
                 </el-tabs>
             </div>
+
+            <div class="select-card">
+                <div class="select-content">
+                    <div class="left">
+                        <div class="item-num">{{ highlightedIndices.length }} item</div>
+                        <div class="select-all">
+                            <el-checkbox v-model="checked" @change="selectAllChange">Select All</el-checkbox>
+                        </div>
+                        <div class="clear" @click="clearSelectAll()">Clear</div>
+                    </div>
+                    <div class="right">
+                        <div class="sweep-button">
+                            <el-button :class="{ 'merge-border': highlightedIndices.length > 0 }" type="primary" @click="onSubmit" :disabled="highlightedIndices.length <= 0">
+                                <img :src="require('@/assets/svg/rune-select.svg')" alt="" width="20">
+                                MERGE
+                            </el-button>
+                            <el-button :class="{ 'merge-border': highlightedIndices.length > 0 }" type="primary" @click="onSubmit" :disabled="highlightedIndices.length <= 0">
+                                <img :src="require('@/assets/svg/transfer.svg')" alt="" width="20">
+                                TRANSFER
+                            </el-button>
+                            <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" type="primary" @click="onSubmit" :disabled="highlightedIndices.length <= 0">BATCH LISTING</el-button>
+                        </div>
+                    </div>
+                </div>
+              </div>
         </div>
     </div>
 </template>
@@ -381,6 +415,124 @@ export default {
                         background-color: #ad8d65;
                         border: 0;
                         color: rgb(12, 12, 12);
+                    }
+                }
+                .count-number {
+                    display: flex;
+                    align-items: center;
+                    margin-top: 16px;
+                    box-sizing: border-box;
+                    border: 0 solid #e5e7eb;
+                    height: 48px;
+                    .text-secondary {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        color: #aaa;
+                        gap: 12px;
+                        flex-shrink: 0;
+                        font-size: 16px;
+                    }
+                    .refresh {
+                        margin-left: 16px;
+                        cursor: pointer;
+                    }
+                }
+            }
+
+            .select-card {
+                position: fixed;
+                right: 0;
+                left: 0;
+                bottom: 0;
+                height: 78px;
+                background-color: hsla(0, 0%, 9%, .9);
+                border-color: #202020;
+                border-width: 1px;
+                color: #aaa;
+                font-size: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding-left: 24px;
+                padding-right: 24px;
+                .select-content {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    width: 100%;
+                    max-width: 1368px;
+                    .left {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        .item-num {
+                            width: 80px;
+                        }
+                        .select-all {
+                            margin-right: 32px;
+                            .el-checkbox__inner {
+                                background-color: transparent;
+                                border-color: #ad8d65;
+                                border-width: 1px;
+                                cursor: pointer;
+                                width: 18px;
+                                height: 19px;
+                                border-radius: 0;
+                            }
+                            .el-checkbox__inner::after {
+                                width: 6px;
+                                height: 11px;
+                            }
+                            .el-checkbox__input.is-checked+.el-checkbox__label {
+                                color: #ad8d65;
+                            }
+                        }
+                        .clear {
+                            cursor: pointer;
+                            color: #ad8d65;
+                        }
+                    }
+                    .right {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        .total {
+                            font-size: 20px;
+                            margin-right: 32px;
+                            color: #fff;
+                        }
+                        .sweep-button {
+                            display: flex;
+                            .el-button {
+                                display: flex;
+                                align-items: center;
+                                gap: 5px;
+                                background: hsla(0, 0%, 50%, .2);
+                                color: #aaa;
+                                border: 1px solid transparent;
+                                height: 48px;
+                                span {
+                                    display: contents;
+                                }
+                            }
+                            .el-button--primary.is-disabled:hover {
+                                background: hsla(0, 0%, 50%, .2);
+                                color: #aaa;
+                            }
+                            .merge-border {
+                                border: 1px solid #ad8d65;
+                                color: #ad8d65;
+                            }
+                            .batch-listing {
+                                background: #ad8d65;
+                                color: rgb(0, 0, 0/1);
+                            }
+                            .el-button:hover {
+                                background: #ad8d65;
+                                color: rgb(0, 0, 0/1);
+                            }
+                        }
                     }
                 }
             }
