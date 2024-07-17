@@ -198,6 +198,29 @@
                     </div>
                 </div>
               </div>
+
+            <el-dialog
+                title="Approve Purchase"
+                :visible.sync="buyNowDialogShow"
+                width="35%"
+                :before-close="buyNowDialogClose"
+                class="buy-now-dialog"
+                top="30vh">
+                <div class="dialog-content">
+                    <div class="you-wall-pay">
+                        <span class="title">You will pay</span>
+                        <span class="value">{{ buyNowData.youWillPay }} USDT</span>
+                    </div>
+                    <div class="for">
+                        <span class="title">For</span>
+                        <span class="value">{{ buyNowData.slots }} <span class="title">Slots</span> {{ buyNowData.cfxs }} <span class="title">CFXs</span></span>
+                    </div>
+                    <div class="button-dialog">
+                        <span class="text">You will be asked to approve this purchase from your wallet.</span>
+                        <el-button type="primary">APPROVE</el-button>
+                    </div>
+                </div>
+            </el-dialog>
         </div>
     </div>
 </template>
@@ -298,6 +321,12 @@ export default {
             }],
             checked: false,
             highlightedIndices: [],
+            buyNowDialogShow: false,
+            buyNowData: {
+                youWillPay: 0,
+                slots: 0,
+                cfxs: 0,
+            },
         }
     },
     mounted() {
@@ -390,6 +419,15 @@ export default {
         },
         buyNowClick(row) {
             console.log(row);
+            this.buyNowData = {
+                youWillPay: row.number,
+                slots: row.price,
+                cfxs: row.price,
+            };
+            this.buyNowDialogShow = true;
+        },
+        buyNowDialogClose() {
+            this.buyNowDialogShow = false;
         },
         refreshData() { //定时刷新数据
             this.timeInterval = setInterval(async () => {
@@ -670,6 +708,54 @@ export default {
                             }
                             .el-button:hover {
                                 background: #ad8d65;
+                                color: rgb(0, 0, 0/1);
+                            }
+                        }
+                    }
+                }
+            }
+            .buy-now-dialog {
+                .el-dialog {
+                    background-color: #202020;
+                    .el-dialog__header {
+                        .el-dialog__title {
+                            color: #fff;
+                        }
+                    }
+                    .dialog-content {
+                        display: flex;
+                        padding: 16px;
+                        flex-direction: column;
+                        .you-wall-pay, .for {
+                            color: #fff;
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            margin-bottom: 12px;
+                            font-size: 16px;
+                            .title {
+                                color: #aaa;
+                            }
+                            .value {
+                                color: #fff;
+                            }
+                        }
+                        .button-dialog {
+                            color: #aaa;
+                            font-size: 14px;
+                            padding-top: 12px;
+                            border-top: 1px solid #282828;
+                            border-width: 1px;
+                            margin-top: 32px;
+                            .text {
+                                display: block;
+                                margin-bottom: 24px;
+                            }
+                            .el-button {
+                                height: 48px;
+                                width: 100%;
+                                background-color: #ad8d65;
+                                border: 0;
                                 color: rgb(0, 0, 0/1);
                             }
                         }
