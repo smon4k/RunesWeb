@@ -27,7 +27,7 @@
                 <!-- 公共样式按钮 -->
                 <div class="publicbutton">
                     <span class="buttoninscrible">Select CFXs to inscribe</span>
-                    <el-button size="mini">Select</el-button>
+                    <el-button size="mini" @click="open">Select</el-button>
                 </div>
                 <div class="disbutton">
                     <el-button disabled>CONNECT WALLET</el-button>
@@ -160,6 +160,12 @@ export default {
                 return this.address.substring(0, 4) + "***" + address.substring(address.length - 3)
             }
         },
+        open() {
+        this.$alert('<strong>这是 <i>HTML</i> 片段</strong>', 'HTML ', {
+          dangerouslyUseHTMLString: true,
+          center: true
+        });
+      }
     },
 }
 </script>
