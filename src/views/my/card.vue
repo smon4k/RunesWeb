@@ -1,37 +1,53 @@
 <template>
-    <div class="card">
-        <el-row :gutter="screenWidth > adaptiveSize ? 24 : 10">
-            <el-col :xs="12" :sm="6" :md="4" v-for="(item, index) in dataList" :key="index">
-                <div class="content" :class="{ 'highlight-border': isSelected(index) }" ref="card" @click.stop="toggleHighlightEvent(index)">
-                    <div class="top">
-                        <div class="currency">
-                            <div class="left">
-                                <img :src="require('@/assets/svg/rune-my.svg')" alt="" width="20">
-                                <div class="currency-name">CFXs</div>
+    <div>
+        <div class="card">
+            <el-row :gutter="screenWidth > adaptiveSize ? 24 : 10">
+                <el-col :xs="12" :sm="6" :md="4" v-for="(item, index) in dataList" :key="index">
+                    <div class="content" :class="{ 'highlight-border': isSelected(index) }" ref="card" @click.stop="toggleHighlightEvent(index)">
+                        <div class="top">
+                            <div class="currency">
+                                <div class="left">
+                                    <img :src="require('@/assets/svg/rune-my.svg')" alt="" width="20">
+                                    <div class="currency-name">CFXs</div>
+                                </div>
+                                <div class="right">
+                                    <div class="ids">#{{ item.id }}</div>
+                                </div>
                             </div>
-                            <div class="right">
-                                <div class="ids">#{{ item.id }}</div>
+                            <div class="quantity">
+                                <div class="count-num">{{ item.number }}</div>
                             </div>
                         </div>
-                        <div class="quantity">
-                            <div class="count-num">{{ item.number }}</div>
+                        <div class="bottom">
+                            <el-button @click.stop="handleClick(item)">List for sale</el-button>
                         </div>
                     </div>
-                    <div class="bottom">
-                        <el-button @click.stop="handleClick(item)">List for sale</el-button>
+                </el-col>
+            </el-row>
+        </div>
+        <div class="no-more">
+            <span v-if="isNoMoreData">No More</span>
+            <div v-else class="load-more">
+                <div v-if="!isLoading" @click="onLoadMoreDataClick">Load more</div>
+                <div v-if="isLoading" class="loading-icon">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
                     </div>
+                    <span>加载中</span>
                 </div>
-            </el-col>
-        </el-row>
+            </div>
+        </div>
     </div>
+
 </template>
 <script>
 import { mapGetters, mapState } from "vuex";
 export default {
-    props: ['dataList', 'sellNowClick', 'highlightedIndices', 'toggleHighlight'],
+    props: ['dataList', 'sellNowClick', 'highlightedIndices', 'toggleHighlight', 'isNoMoreData', 'onLoadMoreData'],
     data() {
         return {
             screenWidth: document.body.clientWidth,
+            isLoading: false,
         }
     },
     computed: {
@@ -52,7 +68,9 @@ export default {
         dataList: {
             immediate: true,
             async handler(val) {
-                // console.log(val);
+                if(val) {
+                    this.isLoading = false;
+                }
             }
         },
     },
@@ -71,6 +89,10 @@ export default {
         toggleHighlightEvent(index) {
             this.$emit('toggleHighlight', index)
         },
+        onLoadMoreDataClick() { //加载更多数据
+            this.isLoading = true;
+            this.$emit('onLoadMoreData');
+        }
     },
     mounted() {
         window.onresize = () => {
@@ -147,6 +169,51 @@ export default {
         }
         .highlight-border {
             border-color: #ad8d65 !important;
+        }
+    }
+    .no-more {
+        width: 100%;
+        height: 60px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+        font-size: 14px;
+        .load-more {
+            color: #ad8d65;
+            cursor: pointer;
+            .loading-icon {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 5px;
+            }
+            /* 定义动画名称为 spinner */
+            @keyframes spinner {
+                from {
+                    transform: rotate(0deg);
+                }
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            /* 应用动画到加载圈的类 */
+            .loading-spinner {
+                border: 3px solid #282828; /* 灰色边框 */
+                border-top: 3px solid #ad8d65; /* 蓝色顶部边框 */
+                border-radius: 50%; /* 圆形 */
+                width: 10px;
+                height: 10px;
+                animation: spinner 1s linear infinite; /* 应用动画 */
+            }
+
+            /* 可选：添加一些样式来隐藏加载圈的溢出 */
+            .loading-container {
+                display: inline-block;
+                position: relative;
+                overflow: hidden;
+            }
         }
     }
     @media (max-width: 960px) {

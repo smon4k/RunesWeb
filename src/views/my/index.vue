@@ -55,7 +55,7 @@
                                     </span>
                                 </div>
                                 <el-tab-pane label="General" name="general">
-                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData"></Card>
                                 </el-tab-pane>
                                 <el-tab-pane label="Images" name="image">
                                     <Card :dataList="dataList" @sellNowClick="sellNowClick"></Card>
@@ -212,6 +212,7 @@ export default {
                 number: '100',
                 address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
             }],
+            isNoMoreData: false,
             highlightedIndices: [],
             quickListDialogShow: false,
             quickListData: {
@@ -254,7 +255,7 @@ export default {
             immediate: true,
             async handler(val) {
                 if (val) {
-                    this.refreshData();
+                    // this.refreshData();
                 }
             }
         },
@@ -301,6 +302,9 @@ export default {
         sellNowClick(row) {
             console.log(row);
             this.quickListDialogShow = true;
+        },
+        onLoadMoreData() {
+            console.log('Load More');
         },
         onBatchListingFun() {
             this.quickListDialogShow = true;
