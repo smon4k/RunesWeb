@@ -2,7 +2,7 @@
     <div class="card">
         <el-row :gutter="screenWidth > adaptiveSize ? 24 : 10">
             <el-col :xs="12" :sm="6" :md="4" v-for="(item, index) in dataList" :key="index">
-                <div class="content" :class="{ 'highlight-border': isSelected(index) }" ref="card" @click="toggleHighlightEvent(index)">
+                <div class="content" :class="{ 'highlight-border': isSelected(index) }" ref="card" @click.stop="toggleHighlightEvent(index)">
                     <div class="top">
                         <div class="currency">
                             <div class="left">
@@ -18,7 +18,7 @@
                         </div>
                     </div>
                     <div class="bottom">
-                        <el-button @click="handleClick(item)">Buy Now</el-button>
+                        <el-button @click.stop="handleClick(item)">List for sale</el-button>
                     </div>
                 </div>
             </el-col>
@@ -28,7 +28,7 @@
 <script>
 import { mapGetters, mapState } from "vuex";
 export default {
-    props: ['dataList', 'buyNowClick', 'highlightedIndices', 'toggleHighlight'],
+    props: ['dataList', 'sellNowClick', 'highlightedIndices', 'toggleHighlight'],
     data() {
         return {
             screenWidth: document.body.clientWidth,
@@ -61,7 +61,7 @@ export default {
     },
     methods: {
         handleClick(row) {
-            this.$emit('buyNowClick', row);
+            this.$emit('sellNowClick', row);
         },
         isSelected(index) {
             if(this.highlightedIndices) {

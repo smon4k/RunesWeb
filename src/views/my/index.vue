@@ -55,22 +55,22 @@
                                     </span>
                                 </div>
                                 <el-tab-pane label="General" name="general">
-                                    <Card :dataList="dataList" @buyNowClick="buyNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight"></Card>
                                 </el-tab-pane>
                                 <el-tab-pane label="Images" name="image">
-                                    <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick"></Card>
                                 </el-tab-pane>
                                 <el-tab-pane label="Audio" name="audio">
-                                    <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick"></Card>
                                 </el-tab-pane>
                                 <el-tab-pane label="Text" name="text">
-                                    <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick"></Card>
                                 </el-tab-pane>
                                 <el-tab-pane label="Inscription" name="inscription">
-                                    <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick"></Card>
                                 </el-tab-pane>
                                 <el-tab-pane label="Name" name="name">
-                                    <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick"></Card>
                                 </el-tab-pane>
                               </el-tabs>
                           </div>
@@ -85,7 +85,7 @@
                     <div class="left">
                         <div class="item-num">{{ highlightedIndices.length }} item</div>
                         <div class="select-all">
-                            <el-checkbox v-model="checked" @change="selectAllChange">Select All</el-checkbox>
+                            <el-checkbox v-model="selectAllChecked" @change="selectAllChange">Select All</el-checkbox>
                         </div>
                         <div class="clear" @click="clearSelectAll()">Clear</div>
                     </div>
@@ -108,7 +108,7 @@
               <el-dialog
                 title="Quick List"
                 :visible.sync="quickListDialogShow"
-                width="40%"
+                width="30%"
                 :before-close="quickListDialogClose"
                 class="buy-now-dialog"
                 top="10vh">
@@ -127,7 +127,7 @@
                                     <span>1</span>
                                 </div>
                                 <div class="input-number">
-                                    <el-input v-model="input" placeholder="请输入内容">
+                                    <el-input v-model="input" placeholder="0.00">
                                         <div slot="suffix"> <img :src="require('@/assets/usdt.png')" alt="" width="18"> USDT</div>
                                     </el-input>
                                 </div>
@@ -138,9 +138,32 @@
                             </div>
                         </div>
                     </div>
+                    <div class="duration">
+                        <div class="title">Duration</div>
+                        <el-date-picker
+                            v-model="duration"
+                            type="date"
+                            placeholder="选择日期">
+                        </el-date-picker>
+                    </div>
+                    <div class="locked">
+                        <span>Locked</span>
+                        <span>0 h</span>
+                    </div>
+                    <div class="sale-price">
+                        <span>Sale price</span>
+                        <span class="number">0.0000 USDT</span>
+                    </div>
+                    <div class="market-fee">
+                        <span>Market fee</span>
+                        <span>0.3%</span>
+                    </div>
+                    <div class="total-potear">
+                        <span>Total potentail earnings</span>
+                        <span class="number">0.000 USDT</span>
+                    </div>
                     <div class="button-dialog">
-                        <span class="text">You will be asked to approve this purchase from your wallet.</span>
-                        <el-button type="primary">APPROVE</el-button>
+                        <el-button type="primary">COMPLETE LISTING</el-button>
                     </div>
                 </div>
             </el-dialog>
@@ -197,6 +220,8 @@ export default {
                 cfxs: 0,
             },
             samePriceChecked: false,
+            duration: new Date(),
+            selectAllChecked: false,
         }
     },
     mounted() {
@@ -273,8 +298,9 @@ export default {
         onSubmit() {
             console.log('submit!');
         },
-        buyNowClick(row) {
+        sellNowClick(row) {
             console.log(row);
+            this.quickListDialogShow = true;
         },
         onBatchListingFun() {
             this.quickListDialogShow = true;
@@ -697,6 +723,33 @@ export default {
                                 display: flex;
                                 justify-content: space-between;
                             }
+                        }
+                    }
+                    .duration {
+                        display: flex;
+                        gap: 8px;
+                        margin-top: 5px;
+                        flex-direction: column;
+                        .el-date-editor.el-input, .el-date-editor.el-input__inner {
+                            width: auto;
+                        }
+                        .el-input__inner {
+                            background-color: transparent;
+                            border-color: #525252;
+                            color: #fff;
+                        }
+                        .el-input__inner::placeholder {
+                            color: #aaa;
+                        }
+                    }
+                    .locked, .sale-price, .market-fee, .total-potear {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        margin-top: 10px;
+                        color: #aaa;
+                        .number {
+                            color: #fff;
                         }
                     }
                 }
