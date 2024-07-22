@@ -55,22 +55,22 @@
                                     </span>
                                 </div>
                                 <el-tab-pane label="General" name="general">
-                                    <Card :dataList="dataList" @buyNowClick="buyNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData"></Card>
                                 </el-tab-pane>
                                 <el-tab-pane label="Images" name="image">
-                                    <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick"></Card>
                                 </el-tab-pane>
                                 <el-tab-pane label="Audio" name="audio">
-                                    <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick"></Card>
                                 </el-tab-pane>
                                 <el-tab-pane label="Text" name="text">
-                                    <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick"></Card>
                                 </el-tab-pane>
                                 <el-tab-pane label="Inscription" name="inscription">
-                                    <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick"></Card>
                                 </el-tab-pane>
                                 <el-tab-pane label="Name" name="name">
-                                    <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick"></Card>
                                 </el-tab-pane>
                               </el-tabs>
                           </div>
@@ -85,7 +85,7 @@
                     <div class="left">
                         <div class="item-num">{{ highlightedIndices.length }} item</div>
                         <div class="select-all">
-                            <el-checkbox v-model="checked" @change="selectAllChange">Select All</el-checkbox>
+                            <el-checkbox v-model="selectAllChecked" @change="selectAllChange">Select All</el-checkbox>
                         </div>
                         <div class="clear" @click="clearSelectAll()">Clear</div>
                     </div>
@@ -99,7 +99,7 @@
                                 <img :src="require('@/assets/svg/transfer.svg')" alt="" width="20">
                                 TRANSFER
                             </el-button>
-                            <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" type="primary" @click="onSubmit" :disabled="highlightedIndices.length <= 0">BATCH LISTING</el-button>
+                            <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" type="primary" @click="onBatchListingFun" :disabled="highlightedIndices.length <= 0">BATCH LISTING</el-button>
                         </div>
                     </div>
                 </div>
@@ -144,6 +144,69 @@
                     </div>
                     <div class="button-dialog">
                         <el-button :class="{ 'merge-border': transferAddressValue }" type="primary" :disabled="!transferAddressValue">TRANSFER {{ highlightedIndices.length }} CFXs</el-button>
+                    </div>
+                </div>
+            </el-dialog>
+            
+            <el-dialog
+                title="Quick List"
+                :visible.sync="quickListDialogShow"
+                width="30%"
+                :before-close="quickListDialogClose"
+                class="buy-now-dialog"
+                top="10vh">
+                <div class="dialog-content">
+                    <div class="items-count">
+                        <span>List 2 Items</span>
+                        <span><el-checkbox v-model="samePriceChecked">Same price</el-checkbox></span>
+                    </div>
+                    <div class="set-unit-price">
+                        <div class="title">Set unit price</div>
+
+                        <div v-for="(item, index) in highlightedIndices" :key="index">
+                            <div class="input-price">
+                                <div class="top-text">
+                                    <span>#123456</span>
+                                    <span>1</span>
+                                </div>
+                                <div class="input-number">
+                                    <el-input v-model="input" placeholder="0.00">
+                                        <div slot="suffix"> <img :src="require('@/assets/usdt.png')" alt="" width="18"> USDT</div>
+                                    </el-input>
+                                </div>
+                                <div class="total-price">
+                                    <span>Total Price</span>
+                                    <span>10000</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="duration">
+                        <div class="title">Duration</div>
+                        <el-date-picker
+                            v-model="duration"
+                            type="date"
+                            placeholder="选择日期">
+                        </el-date-picker>
+                    </div>
+                    <div class="locked">
+                        <span>Locked</span>
+                        <span>0 h</span>
+                    </div>
+                    <div class="sale-price">
+                        <span>Sale price</span>
+                        <span class="number">0.0000 USDT</span>
+                    </div>
+                    <div class="market-fee">
+                        <span>Market fee</span>
+                        <span>0.3%</span>
+                    </div>
+                    <div class="total-potear">
+                        <span>Total potentail earnings</span>
+                        <span class="number">0.000 USDT</span>
+                    </div>
+                    <div class="button-dialog">
+                        <el-button type="primary">COMPLETE LISTING</el-button>
                     </div>
                 </div>
             </el-dialog>
@@ -192,6 +255,7 @@ export default {
                 number: '100',
                 address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
             }],
+            isNoMoreData: false,
             highlightedIndices: [],
             messageItemsDialogShow: false,
             transferItemsDialogShow: false,
@@ -200,7 +264,16 @@ export default {
                 slots: 0,
                 cfxs: 0,
             },
+            quickListDialogShow: false,
+            quickListData: {
+                youWillPay: 0,
+                slots: 0,
+                cfxs: 0,
+            },
             transferAddressValue: '',
+            samePriceChecked: false,
+            duration: new Date(),
+            selectAllChecked: false,
         }
     },
     mounted() {
@@ -233,7 +306,7 @@ export default {
             immediate: true,
             async handler(val) {
                 if (val) {
-                    this.refreshData();
+                    // this.refreshData();
                 }
             }
         },
@@ -283,8 +356,18 @@ export default {
         onTransferItems() {
             this.transferItemsDialogShow = true;
         },
-        buyNowClick(row) {
+        sellNowClick(row) {
             console.log(row);
+            this.quickListDialogShow = true;
+        },
+        onLoadMoreData() {
+            console.log('Load More');
+        },
+        onBatchListingFun() {
+            this.quickListDialogShow = true;
+        },
+        quickListDialogClose() {
+            this.quickListDialogShow = false;
         },
         async getIsApprove() { //获取余额 查看是否授权
             let balance = await getBalance(Address.BUSDT, 18); //获取余额
@@ -708,6 +791,145 @@ export default {
                                 background: #ad8d65;
                                 color: rgb(0, 0, 0/1);
                             }
+                        }
+                    }
+                }
+            }
+
+            .buy-now-dialog {
+                .el-dialog {
+                    background-color: #202020;
+                    .el-dialog__header {
+                        .el-dialog__title {
+                            color: #fff;
+                        }
+                    }
+                    .el-dialog__body {
+                        padding-top: 10px;
+                    }
+                    .dialog-content {
+                        display: flex;
+                        flex-direction: column;
+                        .items-count {
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            color: #aaa;
+                            .el-checkbox {
+                                color: #aaa;
+                            }
+                            .el-checkbox__label {
+                                font-size: 12px;
+                                padding-left: 3px;
+                            }
+                            .el-checkbox__inner {
+                                background-color: transparent;
+                            }
+                            .el-checkbox__input.is-checked+.el-checkbox__label {
+                                color: #aaa;
+                            }
+                            .el-checkbox__input.is-checked .el-checkbox__inner {
+                                background-color: #ad8d65;
+                                border-color: #ad8d65;
+                            }
+                        }
+                        .button-dialog {
+                            color: #aaa;
+                            font-size: 14px;
+                            border-top: 1px solid #282828;
+                            border-width: 1px;
+                            margin-top: 32px;
+                            .text {
+                                display: block;
+                                margin-bottom: 24px;
+                            }
+                            .el-button {
+                                height: 48px;
+                                width: 100%;
+                                background-color: #ad8d65;
+                                border: 0;
+                                color: rgb(0, 0, 0/1);
+                            }
+                        }
+                    }
+                    .set-unit-price {
+                        display: flex;
+                        padding: 20px;
+                        background-color: #282828;
+                        border-radius: 8px;
+                        overflow-y: auto;
+                        gap: 10px;
+                        flex-direction: column;
+                        max-height: 300px;
+                        margin-top: 5px;
+                        margin-bottom: 24px;
+                        color: #aaa;
+                        .input-price {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 8px;
+                            .top-text {
+                                display: flex;
+                                align-items: center;
+                                justify-content: space-between;
+                                margin-top: 10px;
+                            }
+                            .input-number {
+                                display: flex;
+                                width: 100%;
+                                position: relative;
+                                .el-input {
+                                    .el-input__inner {
+                                        background-color: transparent;
+                                        border-color: #525252;
+                                    }
+                                    .el-input__inner:hover {
+                                        border: 1px solid#ad8d65;
+                                    }
+                                    .el-input__suffix {
+                                        display: flex;
+                                        align-items: center;
+                                        margin-right: 5px;
+                                        div {
+                                            display: flex;
+                                            align-items: center;
+                                            font-size: 12px;
+                                            gap: 5px;
+                                        }
+                                    }
+                                }
+                            }
+                            .total-price {
+                                display: flex;
+                                justify-content: space-between;
+                            }
+                        }
+                    }
+                    .duration {
+                        display: flex;
+                        gap: 8px;
+                        margin-top: 5px;
+                        flex-direction: column;
+                        .el-date-editor.el-input, .el-date-editor.el-input__inner {
+                            width: auto;
+                        }
+                        .el-input__inner {
+                            background-color: transparent;
+                            border-color: #525252;
+                            color: #fff;
+                        }
+                        .el-input__inner::placeholder {
+                            color: #aaa;
+                        }
+                    }
+                    .locked, .sale-price, .market-fee, .total-potear {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        margin-top: 10px;
+                        color: #aaa;
+                        .number {
+                            color: #fff;
                         }
                     }
                 }

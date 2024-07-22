@@ -75,12 +75,12 @@ export default {
         },
         async getAddress(state, value) { //设置钱包地址
             state.address = value;
-            let userInfo = await getUserAddressInfo(value);
-            console.log(userInfo)
-            if(userInfo) {
-                state.userInfo = userInfo;
-                state.isAdmin = userInfo.is_admin;
-            }
+            // let userInfo = await getUserAddressInfo(value);
+            // console.log(userInfo)
+            // if(userInfo) {
+            //     state.userInfo = userInfo;
+            //     state.isAdmin = userInfo.is_admin;
+            // }
         },  
         async removeAddress(state) {
             state.address = '';
