@@ -91,11 +91,11 @@
                     </div>
                     <div class="right">
                         <div class="sweep-button">
-                            <el-button :class="{ 'merge-border': highlightedIndices.length > 0 }" type="primary" @click="onSubmit" :disabled="highlightedIndices.length <= 0">
+                            <el-button :class="{ 'merge-border': highlightedIndices.length > 0 }" type="primary" @click="onMessageItems" :disabled="highlightedIndices.length <= 0">
                                 <img :src="require('@/assets/svg/rune-select.svg')" alt="" width="20">
                                 MERGE
                             </el-button>
-                            <el-button :class="{ 'merge-border': highlightedIndices.length > 0 }" type="primary" @click="onSubmit" :disabled="highlightedIndices.length <= 0">
+                            <el-button :class="{ 'merge-border': highlightedIndices.length > 0 }" type="primary" @click="onTransferItems" :disabled="highlightedIndices.length <= 0">
                                 <img :src="require('@/assets/svg/transfer.svg')" alt="" width="20">
                                 TRANSFER
                             </el-button>
@@ -104,6 +104,49 @@
                     </div>
                 </div>
               </div>
+
+              <el-dialog
+                title="Merge Items"
+                :visible.sync="messageItemsDialogShow"
+                width="35%"
+                :before-close="messageItemsDialogShow"
+                class="merge-items"
+                top="30vh">
+                <div class="dialog-content">
+                    <div class="you-wall-pay">
+                        <span class="title">YYou will merge</span>
+                        <span class="value">{{ buyNowData.youWillPay }} USDT</span>
+                    </div>
+                    <div class="for">
+                        <span class="title">The amount of new CFXs will be</span>
+                        <span class="value">{{ buyNowData.slots }} CFXs</span>
+                    </div>
+                    <div class="button-dialog">
+                        <span class="text">The merged CFXs will generate a new CFXs ID. The amount of new CFXs according to the total amount of merged CFXs.</span>
+                        <el-button type="primary">CONFIRM MERGE</el-button>
+                    </div>
+                </div>
+            </el-dialog>
+
+            <el-dialog
+                title="Transfer Items"
+                :visible.sync="transferItemsDialogShow"
+                width="35%"
+                :before-close="transferItemsDialogShow"
+                class="transfer-items"
+                top="30vh">
+                <div class="dialog-content">
+                    <div class="set-address">
+                        Set a address
+                    </div>
+                    <div class="input-address">
+                        <el-input v-model="transferAddressValue" placeholder="Destination address e.g 0x1234...1234"></el-input>
+                    </div>
+                    <div class="button-dialog">
+                        <el-button :class="{ 'merge-border': transferAddressValue }" type="primary" :disabled="!transferAddressValue">TRANSFER {{ highlightedIndices.length }} CFXs</el-button>
+                    </div>
+                </div>
+            </el-dialog>
         </div>
     </div>
 </template>
@@ -150,6 +193,14 @@ export default {
                 address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
             }],
             highlightedIndices: [],
+            messageItemsDialogShow: false,
+            transferItemsDialogShow: false,
+            buyNowData: {
+                youWillPay: 0,
+                slots: 0,
+                cfxs: 0,
+            },
+            transferAddressValue: '',
         }
     },
     mounted() {
@@ -225,6 +276,12 @@ export default {
         },
         onSubmit() {
             console.log('submit!');
+        },
+        onMessageItems() {
+            this.messageItemsDialogShow = true;
+        },
+        onTransferItems() {
+            this.transferItemsDialogShow = true;
         },
         buyNowClick(row) {
             console.log(row);
@@ -522,7 +579,126 @@ export default {
                             }
                             .merge-border {
                                 border: 1px solid #ad8d65;
-                                color: #ad8d65;
+                                color: #ad8d65
+                            }
+                            .batch-listing {
+                                background: #ad8d65;
+                                color: rgb(0, 0, 0/1);
+                            }
+                            .el-button:hover {
+                                background: #ad8d65;
+                                color: rgb(0, 0, 0/1);
+                            }
+                        }
+                    }
+                }
+            }
+
+            .merge-items {
+                .el-dialog {
+                    background-color: #202020;
+                    .el-dialog__header {
+                        .el-dialog__title {
+                            color: #fff;
+                        }
+                    }
+                    .dialog-content {
+                        display: flex;
+                        padding: 16px;
+                        flex-direction: column;
+                        .you-wall-pay, .for {
+                            color: #fff;
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            margin-bottom: 12px;
+                            font-size: 16px;
+                            .title {
+                                color: #aaa;
+                            }
+                            .value {
+                                color: #fff;
+                            }
+                        }
+                        .button-dialog {
+                            color: #aaa;
+                            font-size: 14px;
+                            padding-top: 12px;
+                            border-top: 1px solid #282828;
+                            border-width: 1px;
+                            margin-top: 32px;
+                            .text {
+                                display: block;
+                                margin-bottom: 24px;
+                            }
+                            .el-button {
+                                height: 48px;
+                                width: 100%;
+                                background-color: #ad8d65;
+                                border: 0;
+                                color: rgb(0, 0, 0/1);
+                            }
+                        }
+                    }
+                }
+            }
+            .transfer-items {
+                .el-dialog {
+                    background-color: #202020;
+                    .el-dialog__header {
+                        .el-dialog__title {
+                            color: #fff;
+                        }
+                    }
+                    .dialog-content {
+                        display: flex;
+                        padding: 0 16px;
+                        flex-direction: column;
+                        gap: 8px;
+                        .set-address {
+                            justify-content: space-between;
+                            display: flex;
+                            color: #aaa;
+                        }
+                        .input-address {
+                            .el-input:hover {
+                                border: 0;
+                            }
+                            .el-input__inner:hover {
+                                border: 1px solid #ad8d65;
+                            }
+                            .el-input__inner {
+                                background-color: transparent;
+                            }
+                        }
+                        .button-dialog {
+                            color: #aaa;
+                            font-size: 14px;
+                            padding-top: 12px;
+                            border-top: 1px solid #282828;
+                            border-width: 1px;
+                            margin-top: 32px;
+                            .text {
+                                display: block;
+                                margin-bottom: 24px;
+                            }
+                            .el-button {
+                                height: 48px;
+                                width: 100%;
+                                background-color: #ad8d65;
+                                border: 0;
+                                color: rgb(0, 0, 0/1);
+                            }
+                            .el-button--primary.is-disabled {
+                                background: hsla(0, 0%, 50%, .2);
+                                color: #aaa;
+                            }
+                            .el-button--primary.is-disabled:hover {
+                                background: hsla(0, 0%, 50%, .2);
+                                color: #aaa;
+                            }
+                            .merge-border {
+                                border: 1px solid #ad8d65;
                             }
                             .batch-listing {
                                 background: #ad8d65;
