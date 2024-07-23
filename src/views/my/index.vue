@@ -75,12 +75,27 @@
                               </el-tabs>
                           </div>
                     </el-tab-pane>
-                    <el-tab-pane label="Orders" name="2">Orders</el-tab-pane>
-                    <el-tab-pane label="CLS" name="3">CLS</el-tab-pane>
+                    <el-tab-pane label="Orders" name="2">
+                        <div class="count-number">
+                            <span class="text-secondary">
+                                <span>Listing: 0</span>
+                            </span>
+                            <span class="refresh">
+                                <img :src="require('@/assets/svg/refresh.svg')" alt="" width="48">
+                            </span>
+                        </div>
+                        <OrdersCardBox :dataList="dataList" @cancelListingClick="cancelListingClick" />
+                    </el-tab-pane>
+                    <el-tab-pane label="CLS" name="3">
+                        <div class="idenser">The CFXs Identification Service</div>
+                        <div class="cls-list">
+                            <ClsCardBox :dataList="dataList" @resolveAddressClick="resolveAddressClick" @setNameClick="setNameClick" />
+                        </div>
+                    </el-tab-pane>
                 </el-tabs>
             </div>
 
-            <div class="select-card">
+            <div class="select-card" v-if="activeName == 1">
                 <div class="select-content">
                     <div class="left">
                         <div class="item-num">{{ highlightedIndices.length }} item</div>
@@ -124,6 +139,24 @@
                     <div class="button-dialog">
                         <span class="text">The merged CFXs will generate a new CFXs ID. The amount of new CFXs according to the total amount of merged CFXs.</span>
                         <el-button type="primary">CONFIRM MERGE</el-button>
+                    </div>
+                </div>
+            </el-dialog>
+
+            <el-dialog
+                title="Merge Items"
+                :visible.sync="cancelListingDialogShow"
+                width="35%"
+                :before-close="cancelListingDialogShow"
+                class="merge-items"
+                top="30vh">
+                <div class="dialog-content">
+                    <div class="you-wall-pay">
+                        <span class="title">You will cancel</span>
+                        <span class="value">{{ buyNowData.youWillPay }} USDT</span>
+                    </div>
+                    <div class="button-dialog">
+                        <el-button type="primary">CONFIRM CANCEL</el-button>
                     </div>
                 </div>
             </el-dialog>
@@ -210,6 +243,50 @@
                     </div>
                 </div>
             </el-dialog>
+
+            <el-dialog
+                title="Resolve address"
+                :visible.sync="resolveAddressDialogShow"
+                width="35%"
+                :before-close="resolveAddressDialogShow"
+                class="resolve-address"
+                top="30vh">
+                <div class="dialog-content">
+                    <div class="address">Address</div>
+                    <div class="input-number">
+                        <el-input v-model="resolveAddressValue" placeholder="Destination address e.g 0x1234...1234"></el-input>
+                        <div class="my-address">
+                            <el-button type="primary" @click="setResolveAddress">My Address<img :src="require('@/assets/svg/arraw-left.svg')" alt="" width="16"></el-button>
+                        </div>
+                    </div>
+                    <div class="button-dialog">
+                        <el-button type="primary" :class="{ 'merge-border': resolveAddressValue }" :disabled="!resolveAddressValue">CONFIRM</el-button>
+                    </div>
+                </div>
+            </el-dialog>
+
+            <el-dialog
+                title="Set the CIS name for your address"
+                :visible.sync="setClsNameDialogShow"
+                width="35%"
+                :before-close="setClsNameDialogShow"
+                class="merge-items"
+                top="30vh">
+                <div class="dialog-content">
+                    <div class="you-wall-pay">
+                        <span class="title">Name</span>
+                        <span class="value">{{ '8614321' }}</span>
+                    </div>
+                    <div class="you-wall-pay">
+                        <span class="title">Address</span>
+                        <span class="value">{{ addressStr(address) }}</span>
+                    </div>
+                    <div class="button-dialog">
+                        <span class="text" style="font-size: 12px;">The CIS name is your reverse record responsible for resolving your wallet address to your CIS name, effectively helping DApps or other supported services display your CIS name based on your wallet address.</span>
+                        <el-button type="primary">CONFIRM CANCEL</el-button>
+                    </div>
+                </div>
+            </el-dialog>
         </div>
     </div>
 </template>
@@ -220,7 +297,9 @@ import { keepDecimalNotRounding } from "@/utils/tools";
 import { approve } from "@/wallet/trade";
 import { getBalance, isApproved } from "@/wallet/serve";
 import Address from '@/wallet/address.json'
-import CardBox from './card.vue';
+import CardBox from './myCard.vue';
+import ClsCardBox from './clsCard.vue';
+import OrdersCardBox from './orderCard.vue';
 export default {
     name: '',
     data() {
@@ -270,10 +349,14 @@ export default {
                 slots: 0,
                 cfxs: 0,
             },
+            cancelListingDialogShow: false,
+            resolveAddressDialogShow: false,
+            setClsNameDialogShow: false,
             transferAddressValue: '',
             samePriceChecked: false,
             duration: new Date(),
             selectAllChecked: false,
+            resolveAddressValue: '',
         }
     },
     mounted() {
@@ -321,6 +404,8 @@ export default {
     },
     components: {
         "Card": CardBox,
+        "ClsCardBox": ClsCardBox,
+        "OrdersCardBox": OrdersCardBox,
     },
     methods: {
         toggleHighlight(index) {
@@ -368,6 +453,18 @@ export default {
         },
         quickListDialogClose() {
             this.quickListDialogShow = false;
+        },
+        cancelListingClick() { //取消名单事件
+            this.cancelListingDialogShow = true;
+        },
+        resolveAddressClick() {
+            this.resolveAddressDialogShow = true;
+        },
+        setResolveAddress() {
+            this.resolveAddressValue = this.address;
+        },
+        setNameClick() {
+            this.setClsNameDialogShow = true;
         },
         async getIsApprove() { //获取余额 查看是否授权
             let balance = await getBalance(Address.BUSDT, 18); //获取余额
@@ -441,6 +538,27 @@ export default {
     padding-right: 16px;
     /deep/ {
         .content {
+            .count-number {
+                display: flex;
+                align-items: center;
+                margin-top: 16px;
+                box-sizing: border-box;
+                border: 0 solid #e5e7eb;
+                height: 48px;
+                .text-secondary {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: #aaa;
+                    gap: 12px;
+                    flex-shrink: 0;
+                    font-size: 16px;
+                }
+                .refresh {
+                    margin-left: 16px;
+                    cursor: pointer;
+                }
+            }
             .tab-nav {
                 padding-top: 24px;
                 .el-tabs__item {
@@ -557,26 +675,13 @@ export default {
                         color: rgb(12, 12, 12);
                     }
                 }
-                .count-number {
-                    display: flex;
-                    align-items: center;
-                    margin-top: 16px;
-                    box-sizing: border-box;
-                    border: 0 solid #e5e7eb;
-                    height: 48px;
-                    .text-secondary {
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        color: #aaa;
-                        gap: 12px;
-                        flex-shrink: 0;
-                        font-size: 16px;
-                    }
-                    .refresh {
-                        margin-left: 16px;
-                        cursor: pointer;
-                    }
+                .idenser {
+                    color: #fff;
+                    font-size: 16px;
+                    margin-top: 24px;
+                }
+                .cls-list {
+
                 }
             }
 
@@ -930,6 +1035,107 @@ export default {
                         color: #aaa;
                         .number {
                             color: #fff;
+                        }
+                    }
+                }
+            }
+
+            .resolve-address {
+                .el-dialog {
+                    background-color: #202020;
+                    .el-dialog__header {
+                        .el-dialog__title {
+                            color: #fff;
+                        }
+                    }
+                    .el-dialog__body {
+                        padding-top: 10px;
+                    }
+                    .dialog-content {
+                        display: flex;
+                        flex-direction: column;
+                        .address {
+                            display: flex;
+                            color: #aaa;
+                        }
+                        .input-number {
+                            display: flex;
+                            width: 100%;
+                            position: relative;
+                            justify-content: space-between;
+                            gap: 10px;
+                            .el-input {
+                                .el-input__inner {
+                                    height: 48px;
+                                    background-color: transparent;
+                                    border-color: #525252;
+                                    color: #fff;
+                                }
+                                .el-input__inner:hover {
+                                    border: 1px solid#ad8d65;
+                                }
+                                .el-input__suffix {
+                                    display: flex;
+                                    align-items: center;
+                                    margin-right: 5px;
+                                    div {
+                                        display: flex;
+                                        align-items: center;
+                                        font-size: 12px;
+                                        gap: 5px;
+                                    }
+                                }
+                            }
+                        }
+                        .my-address {
+                            display: flex;
+                            align-items: center;
+                            .el-input__inner:hover {
+                                border: 1px solid#ad8d65;
+                            }
+                            .el-button {
+                                background-color: transparent;
+                                height: 48px;
+                                border: 1px solid#ad8d65;
+                                span {
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 5px;
+                                }
+                            }
+                            .el-button:hover {
+                                background-color: #ad8d65;
+                                color: #282828;
+                            }
+                        }
+                        .button-dialog {
+                            color: #aaa;
+                            font-size: 14px;
+                            border-top: 1px solid #282828;
+                            border-width: 1px;
+                            margin-top: 32px;
+                            .text {
+                                display: block;
+                                margin-bottom: 24px;
+                            }
+                            .el-button {
+                                height: 48px;
+                                width: 100%;
+                                background-color: #ad8d65;
+                                border: 0;
+                                color: rgb(0, 0, 0/1);
+                            }
+                            .el-button--primary.is-disabled {
+                                background: hsla(0, 0%, 50%, .2);
+                                color: #aaa;
+                            }
+                            .el-button--primary.is-disabled:hover {
+                                background: hsla(0, 0%, 50%, .2);
+                                color: #aaa;
+                            }
+                            .merge-border {
+                                border: 1px solid #ad8d65;
+                            }
                         }
                     }
                 }
