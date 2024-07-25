@@ -17,7 +17,7 @@
                             <div class="progress">
                                 <el-progress :percentage="50" :show-text="false" color="#ad8d65"></el-progress>
                             </div>
-                            <div class="number">Total Supply:12,304,407 (58.59%)</div>
+                            <div class="number">Total Supply:<span style="color: #fff;">12,304,407 (58.59%)</span></div>
                         </div>
                     </div>
                 </el-col>
@@ -36,11 +36,11 @@
                                 <div class="progress">
                                     <el-progress :percentage="50" :show-text="false" color="#ad8d65"></el-progress>
                                 </div>
-                                <div class="number">Total Supply:12,304,407 (58.59%)</div>
+                                <div class="number">Total Supply:<span style="color: #fff;">12,304,407 (58.59%)</span></div>
                             </div>
                         </div>
                     </div>
-                    <div class="desc">CFXs is not just a Rune. It is a new paradigm of decentralized BTC consensus, integrating the advantages of both UTXO and account models.</div>
+                    <div class="desc" style="font-size: 12px;">CFXs is not just a Rune. It is a new paradigm of decentralized BTC consensus, integrating the advantages of both UTXO and account models.</div>
                 </el-col>
               </el-row>
 
@@ -105,43 +105,51 @@
 
               <div class="list">
                 <el-tabs v-model="activeName" @tab-click="handleClickData">
-                    <el-form :inline="true" :model="formSearch">
-                        <el-form-item label="">
-                            <el-select v-model="formSearch.searchName" placeholder="请选择">
-                                <el-option label="Price low to high" value="1">
-                                    <span style="margin-left: 5px;">Price low to high</span>
-                                </el-option>
-                                <el-option label="Price high to low" value="2">
-                                    <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
-                                    <span style="margin-left: 5px;">Price high to low</span>
-                                </el-option>
-                                <el-option label="Recently listed" value="3">
-                                    <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
-                                    <span style="margin-left: 5px;">Recently listed</span>
-                                </el-option>
-                                <el-option label="Ending soon" value="4">
-                                    <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
-                                    <span style="margin-left: 5px;">Ending soon</span>
-                                </el-option>
-                                <el-option label="Only merged" value="5">
-                                    <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
-                                    <span style="margin-left: 5px;">Only merged</span>
-                                </el-option>
-                                <el-option label="Only fragments" value="6">
-                                    <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
-                                    <span style="margin-left: 5px;">Only fragments</span>
-                                </el-option>
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item label="">
-                            <el-input v-model="formSearch.minPrice" type="number" placeholder="Min Price"></el-input>
-                        </el-form-item>
-                        <el-form-item label="">
-                            <el-input v-model="formSearch.maxPrice" type="number" placeholder="Max Price"></el-input>
-                        </el-form-item>
-                        <el-form-item label="">
-                            <el-input v-model="formSearch.address" placeholder="ID or owner address"></el-input>
-                        </el-form-item>
+                    <el-form :inline="true" :model="formSearch" :class="{ 'justify-content-between': screenWidth <= adaptiveSize }">
+                        <span v-if="screenWidth > adaptiveSize">
+                            <el-form-item label="">
+                                <el-select v-model="formSearch.searchName" placeholder="请选择">
+                                    <el-option label="Price low to high" value="1">
+                                        <span style="margin-left: 5px;">Price low to high</span>
+                                    </el-option>
+                                    <el-option label="Price high to low" value="2">
+                                        <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
+                                        <span style="margin-left: 5px;">Price high to low</span>
+                                    </el-option>
+                                    <el-option label="Recently listed" value="3">
+                                        <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
+                                        <span style="margin-left: 5px;">Recently listed</span>
+                                    </el-option>
+                                    <el-option label="Ending soon" value="4">
+                                        <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
+                                        <span style="margin-left: 5px;">Ending soon</span>
+                                    </el-option>
+                                    <el-option label="Only merged" value="5">
+                                        <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
+                                        <span style="margin-left: 5px;">Only merged</span>
+                                    </el-option>
+                                    <el-option label="Only fragments" value="6">
+                                        <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
+                                        <span style="margin-left: 5px;">Only fragments</span>
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="">
+                                <el-input v-model="formSearch.minPrice" type="number" placeholder="Min Price"></el-input>
+                            </el-form-item>
+                            <el-form-item label="">
+                                <el-input v-model="formSearch.maxPrice" type="number" placeholder="Max Price"></el-input>
+                            </el-form-item>
+                            <el-form-item label="">
+                                <el-input v-model="formSearch.address" placeholder="ID or owner address"></el-input>
+                            </el-form-item>
+                        </span>
+                        <span v-else>
+                            <el-form-item label="">
+                                <el-input v-model="formSearch.address" placeholder="ID or owner address"></el-input>
+                            </el-form-item>
+                        </span>
+                        <span v-if="screenWidth <= adaptiveSize" @click="searchDialogClick"><img :src="require('@/assets/svg/search.svg')" alt="" width="42"></span>
                         <el-form-item>
                             <el-button class="search-button" type="primary" @click="onSubmit">Apply</el-button>
                         </el-form-item>
@@ -182,7 +190,7 @@
               </div>
               
               <div class="select-card">
-                <div class="select-content">
+                <div class="select-content" v-if="screenWidth > adaptiveSize">
                     <div class="left">
                         <div class="item-num">{{ highlightedIndices.length }} item</div>
                         <div class="select-all">
@@ -192,6 +200,20 @@
                     </div>
                     <div class="right">
                         <div class="total">Total: <font color="#ad8d65">{{ calcTotalNumber }} USDT</font></div>
+                        <div class="sweep-button">
+                            <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" class="search-button" type="primary" @click="onSubmit" :disabled="highlightedIndices.length <= 0">SWEEP</el-button>
+                        </div>
+                    </div>
+                </div>
+                <div class="select-content mobile" v-else>
+                    <div class="left">
+                        <div class="select-all">
+                            <el-checkbox v-model="checked" @change="selectAllChange">Select All</el-checkbox>
+                            <div class="item-num">{{ highlightedIndices.length }} item</div>
+                        </div>
+                        <div class="total">Total: <font color="#ad8d65">{{ calcTotalNumber }} USDT</font></div>
+                    </div>
+                    <div class="right">
                         <div class="sweep-button">
                             <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" class="search-button" type="primary" @click="onSubmit" :disabled="highlightedIndices.length <= 0">SWEEP</el-button>
                         </div>
@@ -219,6 +241,56 @@
                         <span class="text">You will be asked to approve this purchase from your wallet.</span>
                         <el-button type="primary">APPROVE</el-button>
                     </div>
+                </div>
+            </el-dialog>
+
+            <el-dialog
+                title="Fiter"
+                :visible.sync="searchDialogShow"
+                width="90%"
+                :before-close="searchDialogClose"
+                class="fiter-dialog"
+                top="20vh">
+                <div class="dialog-content">
+                    <el-form :inline="true" :model="formSearch" :class="{ 'justify-content-between': screenWidth <= adaptiveSize }">
+                        <el-form-item label="">
+                            <el-select v-model="formSearch.searchName" placeholder="请选择">
+                                <el-option label="Price low to high" value="1">
+                                    <span style="margin-left: 5px;">Price low to high</span>
+                                </el-option>
+                                <el-option label="Price high to low" value="2">
+                                    <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
+                                    <span style="margin-left: 5px;">Price high to low</span>
+                                </el-option>
+                                <el-option label="Recently listed" value="3">
+                                    <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
+                                    <span style="margin-left: 5px;">Recently listed</span>
+                                </el-option>
+                                <el-option label="Ending soon" value="4">
+                                    <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
+                                    <span style="margin-left: 5px;">Ending soon</span>
+                                </el-option>
+                                <el-option label="Only merged" value="5">
+                                    <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
+                                    <span style="margin-left: 5px;">Only merged</span>
+                                </el-option>
+                                <el-option label="Only fragments" value="6">
+                                    <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
+                                    <span style="margin-left: 5px;">Only fragments</span>
+                                </el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="">
+                            <el-input v-model="formSearch.minPrice" type="number" placeholder="Min Price"></el-input>
+                        </el-form-item>
+                        <el-form-item label="">
+                            <el-input v-model="formSearch.maxPrice" type="number" placeholder="Max Price"></el-input>
+                        </el-form-item>
+                    </el-form>
+                </div>
+                <div class="button-dialog">
+                    <el-button class="cancel-button" type="primary" @click="searchDialogShow = false">Cancel</el-button>
+                    <el-button class="apply-button" type="primary" @click="onApplyFiter">Apply</el-button>
                 </div>
             </el-dialog>
         </div>
@@ -327,6 +399,7 @@ export default {
                 slots: 0,
                 cfxs: 0,
             },
+            searchDialogShow: false,
         }
     },
     mounted() {
@@ -432,6 +505,15 @@ export default {
         refreshData() { //定时刷新数据
             this.timeInterval = setInterval(async () => {
             }, this.refreshTime)
+        },
+        searchDialogClick() {
+            this.searchDialogShow = true;
+        },
+        searchDialogClose() {
+            this.searchDialogShow = false;
+        },
+        onApplyFiter() { //搜索
+
         },
         async getIsApprove() { //获取余额 查看是否授权
             let balance = await getBalance(Address.BUSDT, 18); //获取余额
@@ -572,6 +654,10 @@ export default {
                 }
             }
             .list {
+                .justify-content-between {
+                    display: flex;
+                    justify-content: space-between;
+                }
                 .el-tabs__item {
                     color: #aaa;
                     font-weight: 600;
@@ -631,6 +717,7 @@ export default {
             }
             .select-card {
                 position: fixed;
+                align-items: center;
                 right: 0;
                 left: 0;
                 bottom: 0;
@@ -659,6 +746,7 @@ export default {
                             width: 80px;
                         }
                         .select-all {
+                            display: flex;
                             margin-right: 32px;
                             .el-checkbox__inner {
                                 background-color: transparent;
@@ -713,6 +801,17 @@ export default {
                         }
                     }
                 }
+                .mobile {
+                    font-size: 12px;
+                    .el-checkbox {
+                        color: #aaa;
+                        font-size: 14px;
+                        margin-right: 16px;
+                    }
+                    .left {
+                        display: block;
+                    }
+                }
             }
             .buy-now-dialog {
                 .el-dialog {
@@ -758,6 +857,60 @@ export default {
                                 border: 0;
                                 color: rgb(0, 0, 0/1);
                             }
+                        }
+                    }
+                }
+            }
+            .fiter-dialog {
+                .el-dialog {
+                    background-color: #202020;
+                    .el-dialog__header {
+                        .el-dialog__title {
+                            color: #fff;
+                        }
+                    }
+                    .dialog-content {
+                        display: flex;
+                        padding: 16px;
+                        flex-direction: column;
+                        .el-form-item {
+                            width: 100%;
+                            .el-input__inner {
+                                color: #aaa;
+                                border-color: #525252;
+                                background-color: transparent;
+                            }
+                        }
+                        .el-select {
+                            width: 100%;
+                        }
+                        .el-form-item__content {
+                            width: 100%;
+                        }
+                    }
+                    .button-dialog {
+                        display: flex;
+                        justify-content: center;
+                        gap: 10px;
+                        color: #aaa;
+                        font-size: 14px;
+                        border-top: 1px solid #282828;
+                        border-width: 1px;
+                        .text {
+                            display: block;
+                            margin-bottom: 24px;
+                        }
+                        .el-button {
+                            width: 50%;
+                            height: 48px;
+                            background-color: #ad8d65;
+                            border: 0;
+                            color: rgb(0, 0, 0/1);
+                        }
+                        .cancel-button {
+                            background-color: transparent;
+                            border: 1px solid #ad8d65;
+                            color: #ad8d65;
                         }
                     }
                 }

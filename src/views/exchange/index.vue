@@ -2,51 +2,41 @@
   <div class="container">
     <div class="item">
       <el-card shadow="hover" v-loading="receiveLoading">
-        <div slot="header" class="clearfix">
-          <span>{{ $t('swap:Exchange') }}</span>
-          <p class="tips">{{ $t('swap:TradeInstant') }}</p>
+        <div slot="header" class="header">
+          <div>
+            <span>{{ 'Transform' }}</span>
+            <el-button size="mini">Select</el-button></div>
+          <div class="wormhole"><img :src="require('@/assets/svg/wormhole.svg')" alt="" width="24"></div>
+          <!-- <p class="tips">{{ $t('swap:TradeInstant') }}</p> -->
         </div>
         <div class="info">
           <!-- 中间输入框内容 -->
            <!-- INPUT  -->
           <div class="input">
-            <el-row>
-              <el-col :span="12">
-                <div v-if="assets === 'withdraw'">
-                  <span class="el-dropdown-link">
-                    {{ inputName }}
-                    <i v-show="assets === 'deposit'" class="el-icon-arrow-down el-icon--right"></i>
-                  </span>
-                </div>
-                <el-dropdown trigger="click" tabIndex="1" @command="dropdownMenuClick" v-else>
-                  <span class="el-dropdown-link">
-                    {{ inputName }}
-                    <i class="el-icon-arrow-down el-icon--right"></i>
-                  </span>
-                  <el-dropdown-menu slot="dropdown" :append-to-body="false">
-                    <el-dropdown-item command="HT" v-if="chainName === 'HECO'">HT</el-dropdown-item>
-                    <el-dropdown-item command="HT" v-else>ETH</el-dropdown-item>
-                    <el-dropdown-item command="USDT">USDT</el-dropdown-item>
-                  </el-dropdown-menu>
-                </el-dropdown>
-              </el-col>
-              <el-col :span="12" class="textRight">{{ $t('swap:Balance') }}: {{ inputBalance }}</el-col>
-            </el-row>
-            <el-row class="input-box">
-              <el-col :span="24">
-                <el-input
-                  class="input-input"
-                  v-model="inputValue"
-                  placeholder="0.0"
-                  @input="inputChangeValue"
-                ></el-input>
-                <!-- <el-button 
-                  class="input-max" 
-                  size="small" 
-                  round 
-                  @click="inputChangeValue()">{{ $t('swap:Max') }}</el-button> -->
-              </el-col>
-            </el-row>
+            <div class="input-title">
+              <div>Amount</div>
+              <div>Total: 0</div>
+              <!-- <div class="textRight">{{ $t('swap:Balance') }}: {{ inputBalance }}</div> -->
+            </div>
+            <div class="input-box">
+              <el-input
+                class="input-input"
+                v-model="inputValue"
+                placeholder="0.0"
+                @input="inputChangeValue"
+              ></el-input>
+              <el-dropdown trigger="click" tabIndex="1" @command="dropdownMenuClick">
+                <span class="el-dropdown-link">
+                  {{ inputName }}
+                  <i class="el-icon-arrow-down el-icon--right"></i>
+                </span>
+                <el-dropdown-menu slot="dropdown" :append-to-body="false">
+                  <el-dropdown-item command="HT" v-if="chainName === 'HECO'">HT</el-dropdown-item>
+                  <el-dropdown-item command="HT" v-else>ETH</el-dropdown-item>
+                  <el-dropdown-item command="USDT">USDT</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
           </div>
 
           <div class="arrow">
@@ -57,42 +47,30 @@
 
           <!-- OUTPUT  -->
           <div class="output">
-            <el-row>
-              <el-col :span="12">
-                <!-- <el-dropdown tabIndex="2"> -->
-                  <div class="input-b-box">
-                    <!-- <img size="small" :src="getFilersSwapPoolsArr(exchangeArray.INPUT).logo" width="20" /> -->
-                    <span>{{ outputName }}</span>
-                    <!-- <i class="el-icon-arrow-down el-icon--down"></i> -->
-                  </div>
-                  <!-- <span class="el-dropdown-link">
-                    选择代币<i class="el-icon-arrow-down el-icon--right"></i>
-                  </span> -->
-                  <!-- <el-dropdown-menu slot="dropdown" :append-to-body="false">
-                    <el-dropdown-item>HT</el-dropdown-item>
-                    <el-dropdown-item>USDT</el-dropdown-item>
-                    <el-dropdown-item>LUSD</el-dropdown-item>
-                  </el-dropdown-menu> -->
-                <!-- </el-dropdown> -->
-              </el-col>
-              <el-col :span="12" class="textRight">{{ $t('swap:Balance') }}: {{ outputBalance }}</el-col>
-            </el-row>
-            <el-row class="input-box">
-              <el-col :span="24">
-                <el-input
-                  class="input-input"
-                  v-model="outputValue"
-                  placeholder="0.0"
-                  @input="outputChangeValue"
-                ></el-input>
-                <!-- <el-button 
-                  class="input-max" 
-                  size="small" 
-                  round 
-                  @click="outputChangeValue()"
-                  >{{ $t('swap:Max') }}</el-button> -->
-              </el-col>
-            </el-row>
+            <div class="input-title">
+              <div>Amount</div>
+              <div>Total: 0</div>
+              <!-- <div class="textRight">{{ $t('swap:Balance') }}: {{ inputBalance }}</div> -->
+            </div>
+            <div class="input-box">
+              <el-input
+                class="input-input"
+                v-model="outputValue"
+                placeholder="0.0"
+                @input="outputChangeValue"
+              ></el-input>
+              <el-dropdown trigger="click" tabIndex="1" @command="dropdownMenuClick">
+                <span class="el-dropdown-link">
+                  {{ inputName }}
+                  <i class="el-icon-arrow-down el-icon--right"></i>
+                </span>
+                <el-dropdown-menu slot="dropdown" :append-to-body="false">
+                  <el-dropdown-item command="HT" v-if="chainName === 'HECO'">HT</el-dropdown-item>
+                  <el-dropdown-item command="HT" v-else>ETH</el-dropdown-item>
+                  <el-dropdown-item command="USDT">USDT</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </div>
           </div>
 
           <div
@@ -384,31 +362,45 @@ export default {
     width: 100%;
     margin: 0 auto;
     .item {
-      border-radius: 24px;
+      border-radius: 10px;
       padding-top: 50px;
-      max-width: 436px;
+      max-width: 498px;
       width: 95%;
-      cursor: default;
+      cursor: pointer;
       margin: 0 auto;
-        .el-card {
-          border: 2px solid #454848;
-          border-radius: 24px;
-          background-color: transparent;
-          // @include sideBarSwapBgc($claimCardSwap-dark);
-          // @include claimCardBorder($claimCardBorder-light);
+      .header {
+        display: flex;
+        font-size: 16px;
+        justify-content: space-between;
+        .wormhole {
+          cursor: pointer;
         }
-        .el-card__header {
-          // text-align: center;
-          padding-bottom: 0;
-          // @include claimCardBorder($claimCardBorder-light);
-          color: #fff;
-          border-bottom: 2px solid #454848;
-          // @include mainFont($color-mainFont-light);
+        .el-button {
+          color: #ad8d65;
+          background: transparent;
+          border-color: #ad8d65;
+          font-size: 14px;
         }
-        .tips {
-          // color: #B0B0DD;
-          font-size: 0.875rem;
-        }
+      }
+      .el-card {
+        padding: 32px;
+        border: 0 solid #454848;
+        background-color: #202020;
+        // @include sideBarSwapBgc($claimCardSwap-dark);
+        // @include claimCardBorder($claimCardBorder-light);
+      }
+      .el-card__header {
+        // text-align: center;
+        padding-bottom: 0;
+        // @include claimCardBorder($claimCardBorder-light);
+        color: #fff;
+        border-bottom: 0 solid #454848;
+        // @include mainFont($color-mainFont-light);
+      }
+      .tips {
+        // color: #B0B0DD;
+        font-size: 0.875rem;
+      }
       .info {
         color: #fff;
         // @include mainFont($color-mainFont-light);
@@ -447,63 +439,56 @@ export default {
                   }
               }
           }
-          .input-box {
-            background-color: #21313b;
-            min-height: 60px;
-            line-height: 30px;
-            border-radius: 16px;
-            margin-top: 6px;
-            padding: 0.75rem 0.75rem 0.75rem 1rem;
-            .input-input {
-                .el-input__inner {
-                  // width: 0px;
-                  position: relative;
-                  font-weight: 500;
-                  outline: none;
-                  border: none;
-                  flex: 1 1 auto;
-                  font-size: 16px;
-                  white-space: nowrap;
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  padding: 0px;
-                  text-align: right;
-                  appearance: textfield;
-                  color: #fff;
-                  background-color: #21313b;
-                }
-            }
-            .input-max {
-              @include sideBarSwapInputBgc($claimCardSwapInput-light);
-              border: 1px solid #0096ff;
-              color: #fff;
-              float: right;
-            }
-          }
-          .input-b {
-            -webkit-box-align: center;
-            align-items: center;
-            border: 0px;
-            border-radius: 16px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            -webkit-box-pack: center;
-            justify-content: center;
-            letter-spacing: 0.03em;
-            padding: 0px 16px;
-            background-color: transparent;
-            color: #fff;
-            box-shadow: none;
-            .input-b-box {
+          .input, .output {
+            display: block;
+            padding-top: 16px;
+            padding-bottom: 16px;
+            padding-left: 20px;
+            padding-right: 20px;
+            background-color: #282828;
+            .input-title {
               display: flex;
-              -webkit-box-align: center;
-              align-items: center;
-              -webkit-box-pack: justify;
               justify-content: space-between;
+              align-items: center;
+              font-size: 16px;
+              color: #aaa;
             }
-            span {
-              margin-left: 5px;
+            .input-box {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              background-color: transparent;
+              min-height: 60px;
+              line-height: 30px;
+              border-radius: 16px;
+              margin-top: 6px;
+              // padding: 0.75rem 0.75rem 0.75rem 1rem;
+              .input-input {
+                  .el-input__inner {
+                    // width: 0px;
+                    position: relative;
+                    font-weight: 500;
+                    outline: none;
+                    border: none;
+                    flex: 1 1 auto;
+                    font-size: 16px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    padding-left: 10px;
+                    padding-right: 10px;
+                    //text-align: right;
+                    appearance: textfield;
+                    color: #fff;
+                    background-color: transparent;
+                  }
+              }
+              .input-max {
+                @include sideBarSwapInputBgc($claimCardSwapInput-light);
+                border: 1px solid #0096ff;
+                color: #fff;
+                float: right;
+              }
             }
           }
           .arrow {

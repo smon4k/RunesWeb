@@ -7,7 +7,7 @@
                     <span>Inscribe CFXs</span>
                 </div>
                 <!-- 上传文件 -->
-                <el-tabs v-model="activeName" @tab-click="handleClick">
+                <el-tabs v-model="activeName" @tab-click="tabsFileHandleClick">
                     <el-tab-pane label="File" name="1">
                         <el-upload
                         class="upload-demo"
@@ -27,7 +27,7 @@
                 <!-- 公共样式按钮 -->
                 <div class="publicbutton">
                     <span class="buttoninscrible">Select CFXs to inscribe</span>
-                    <el-button size="mini" @click="handleClick(item)">Select</el-button>
+                    <el-button size="mini" @click="showSelectDialog(item)">Select</el-button>
                 </div>
                 <div class="disbutton">
                     <el-button disabled>CONNECT WALLET</el-button>
@@ -35,16 +35,55 @@
             </div>
             <!-- 底部tab -->
             <div class="bottomtab">
-                <el-tabs v-model="activeName2" @tab-click="handleClick">
+                <el-tabs v-model="activeName2" @tab-click="recordsSubmitClick">
                     <el-tab-pane label="Records" name="1">
                         <div class="tabtext">You need to register after submitting an inscription of your CFXs or the content can not be displayed on the market.</div>
-                        <el-button type="text">Load more</el-button>
+                        <div class="no-data">
+                            <div class="center-nodata">
+                                <div><img :src="require('@/assets/svg/nodata.svg')" alt="" width="121" height="100"></div>
+                                <div class="no-data-text">No Data</div>
+                            </div>
+                        </div>
                     </el-tab-pane>
                     <el-tab-pane label="Submitting" name="2"></el-tab-pane>
                 </el-tabs>
             </div>
 
-            
+            <el-dialog
+                title="Select CFXs"
+                :visible.sync="selectCfxsDialogShow"
+                width="35%"
+                :before-close="closeSelectCfxsDialog"
+                class="select-cfxs"
+                top="20vh">
+                <div class="dialog-content">
+                    <div class="card">
+                        <el-row :gutter="screenWidth > adaptiveSize ? 24 : 10">
+                            <el-col :xs="24" :sm="12" :md="8" v-for="(item, index) in dataList" :key="index">
+                                <div class="card-content" :class="{ 'highlight-border': isSelected(index) }" ref="card" @click.stop="toggleHighlight(index)">
+                                    <div class="ids">#{{ item.id }}</div>
+                                    <div class="count-num">{{ item.number }}</div>
+                                </div>
+                            </el-col>
+                        </el-row>
+                    </div>
+                    <div class="no-more">
+                        <span v-if="isNoMoreData">No More</span>
+                        <div v-else class="load-more">
+                            <div v-if="!isLoading" @click="onLoadMoreData">Load more</div>
+                            <div v-if="isLoading" class="loading-icon">
+                                <div class="loading-container">
+                                    <div class="loading-spinner"></div>
+                                </div>
+                                <span>加载中</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="dialog-button">
+                    <el-button type="primary" :class="{ 'batch-listing': highlightedIndices.length > 0 }" :disabled="highlightedIndices.length <= 0">CONFIRM</el-button>
+                </div>
+            </el-dialog>
         </div>
     </div>
 </template>
@@ -66,6 +105,24 @@ export default {
             approve: false,
             textname: '',
             checked: true,//单选框默认选中
+            selectCfxsDialogShow: false,
+            dataList: [
+                {
+                    id: '123456',
+                    number: 1,
+                },
+                {
+                    id: '1234567',
+                    number: 1,
+                },
+                {
+                    id: '1234568',
+                    number: 1,
+                },
+            ],
+            highlightedIndices: [],
+            isNoMoreData: false,
+            isLoading: false,
         }
     },
     mounted() {
@@ -80,7 +137,7 @@ export default {
             isMobel: state => state.comps.isMobel,
             mainTheme: state => state.comps.mainTheme,
             apiUrl: state => state.base.apiUrl,
-            gamesFillingAddress: state => state.base.gamesFillingAddress,
+            adaptiveSize: state => state.comps.adaptiveSize,
         }),
         changeData() {
             const { address } = this
@@ -116,12 +173,40 @@ export default {
     },
     // 事件
     methods: {
-        handleClick(row) {
-            console.log(row);
+        tabsFileHandleClick(tab, event) {
+            console.log(tab, event);
+        },
+        recordsSubmitClick(tab, event) {
+            console.log(tab, event);
+        },
+        showSelectDialog(item) {
+            this.selectCfxsDialogShow = true;
+        },
+        closeSelectCfxsDialog() {
+            this.selectCfxsDialogShow = false;
         },
         refreshData() { //定时刷新数据
             this.timeInterval = setInterval(async () => {
             }, this.refreshTime)
+        },
+        isSelected(index) {
+            if(this.highlightedIndices) {
+                return this.highlightedIndices.includes(index);
+            }
+        },
+        toggleHighlight(index) {
+            const currentIndex = this.highlightedIndices.indexOf(index);
+            if (currentIndex > -1) {
+                // 如果索引已高亮，移除它
+                this.highlightedIndices.splice(currentIndex, 1);
+            } else {
+                // 否则，添加这个索引到高亮数组
+                this.highlightedIndices.push(index);
+            }
+        },
+        onLoadMoreData() {
+            console.log('Load More');
+            this.isLoading = true;
         },
         async getIsApprove() { //获取余额 查看是否授权
             let balance = await getBalance(Address.BUSDT, 18); //获取余额
@@ -160,15 +245,6 @@ export default {
                 return this.address.substring(0, 4) + "***" + address.substring(address.length - 3)
             }
         },
-        open() {
-        this.$alert('<strong>这是 <i>HTML</i> 片段</strong>', 'HTML ', {
-          dangerouslyUseHTMLString: true,
-
-
-
-          center: true
-        });
-      }
     },
 }
 </script>
@@ -323,6 +399,20 @@ export default {
                     font-size: 16px;
                     color: #aaa;
                 }
+                .no-data {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    margin-top: 16px;
+                    .center-nodata {
+                        display: block;
+                        text-align: center;
+                        .no-data-text {
+                            color: #aaa;
+                            font-size: 16px;
+                        }
+                    }
+                }
                 //加载文字按钮
                 .el-button--text {
                     color: #ad8d65;
@@ -335,6 +425,117 @@ export default {
                     font-weight: 350;
                     height: 60px;
                     line-height: 60px;
+                }
+            }
+            .select-cfxs {
+                .el-dialog {
+                    height: 566px;
+                    background-color: #202020;
+                    .el-dialog__header {
+                        .el-dialog__title {
+                            color: #fff;
+                        }
+                    }
+                    .dialog-content {
+                        display: flex;
+                        // padding: 16px;
+                        flex-direction: column;
+                        height: 400px;
+                        .card {
+                            .card-content {
+                                display: block;
+                                background-color: #181818;
+                                border: 2px solid #202020;
+                                border-radius: 8px;
+                                // height: 276px;
+                                margin-bottom: 24px;
+                                cursor: pointer;
+                                padding: 16px;
+                                .ids {
+                                    color: #ad8d65;
+                                }
+                                .count-num {
+                                    font-size: 16px;
+                                    font-weight: 500;
+                                    color: #fff;
+                                }
+                            }
+                        }
+                        .highlight-border {
+                            border-color: #ad8d65 !important;
+                        }
+                    }
+                    .dialog-button {
+                        color: #aaa;
+                        font-size: 14px;
+                        border-top: 1px solid #282828;
+                        border-width: 1px;
+                        .text {
+                            display: block;
+                            margin-bottom: 24px;
+                        }
+                        .el-button {
+                            width: 100%;
+                            background: hsla(0, 0%, 50%, .2);
+                            color: #aaa;
+                            border: 1px solid transparent;
+                            height: 48px;
+                        }
+                        .el-button--primary.is-disabled:hover {
+                            background: hsla(0, 0%, 50%, .2);
+                            color: #aaa;
+                        }
+                        .batch-listing {
+                            background: #ad8d65;
+                            color: rgb(0, 0, 0/1);
+                        }
+                    }
+                }
+            }
+        }
+
+        .no-more {
+            width: 100%;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            .load-more {
+                color: #ad8d65;
+                cursor: pointer;
+                .loading-icon {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 5px;
+                }
+                /* 定义动画名称为 spinner */
+                @keyframes spinner {
+                    from {
+                        transform: rotate(0deg);
+                    }
+                    to {
+                        transform: rotate(360deg);
+                    }
+                }
+    
+                /* 应用动画到加载圈的类 */
+                .loading-spinner {
+                    border: 3px solid #282828; /* 灰色边框 */
+                    border-top: 3px solid #ad8d65; /* 蓝色顶部边框 */
+                    border-radius: 50%; /* 圆形 */
+                    width: 10px;
+                    height: 10px;
+                    animation: spinner 1s linear infinite; /* 应用动画 */
+                }
+    
+                /* 可选：添加一些样式来隐藏加载圈的溢出 */
+                .loading-container {
+                    display: inline-block;
+                    position: relative;
+                    overflow: hidden;
                 }
             }
         }

@@ -3,7 +3,8 @@ export default {
         mainTheme:localStorage.getItem('theme') ? localStorage.getItem('theme') : 'dark',
         positionFinish:false,
         screenWidth: document.body.clientWidth,
-        isMobel: document.body.clientWidth < 600 ? true : false,
+        isMobel: document.body.clientWidth < 960 ? true : false,
+        adaptiveSize: 960,
     },
     mutations:{
         setMainTheme(state , val){

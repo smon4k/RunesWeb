@@ -60,7 +60,7 @@
                     }
                     position: relative;
                     display: flex;
-                    justify-content: flex-end;
+                    justify-content: space-between;
                     // padding-right: 45px;
                     align-items: center;
                     top: 0px;
@@ -71,6 +71,8 @@
                     height: 80px;
                     // background-color: #21313b;
                     color: #fff;
+                    padding-left: 16px;
+                    // padding: 0 20px 0 20px;
                     // background-color: #fff;
                     // @include topNavBgc($color-bgc-topnav-light);
                     // box-shadow: 0px 0px 8px 0px $color-sidebar-container-bs;

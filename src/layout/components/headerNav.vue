@@ -4,18 +4,18 @@
             <div class="headerNav-container">
                 <div class="sider-inner">
                     <!-- v-if="screenWidth < 1280" -->
-                    <div class="menu" @click="menuDrawerShow = true" v-if="screenWidth <= 600">
-                        <img src="@/assets/menu.png" alt="" />
-                    </div>
-                    <div class="logo" v-show="screenWidth > 600">
+                    <div class="logo" v-if="screenWidth > adaptiveSize">
                         <router-link to="/" class="logo-link">
                             <img src="@/assets/log.png" alt="" v-if="mainTheme === 'light'" />
                             <img src="@/assets/log.png" alt="" v-else />
                         </router-link>
                     </div>
-                    <div class="title" v-show="screenWidth > 600"> CFXS WORLD </div>
+                    <div class="menu" @click="menuDrawerShow = true" v-else>
+                        <img src="@/assets/menu.png" alt="" />
+                    </div>
+                    <div class="title" v-show="screenWidth > adaptiveSize"> CFXS WORLD </div>
                     <!-- PC端导航 -->
-                    <div v-if="screenWidth > 600">
+                    <div v-if="screenWidth > adaptiveSize">
                         <el-menu class="el-menu-demo" v-if="navList.length" :default-active="$route.path"
                             mode="horizontal" @select="handleSelect" :router="true" menu-trigger="click"
                             @open="menuSelectOpen" :collapse-transition="false" :default-openeds="defaultOpenedsArray"
@@ -33,15 +33,8 @@
                         </el-menu>
                     </div>
                 </div>
-                <!-- 安全审计 -->
-                <!-- <div class="security-audit" v-if="$route.path !== '/deposit'" @click="SecurityAudit()">
-                    <img src="@/assets/certik_light.svg" alt="" v-if="mainTheme==='light'">
-                    <img src="@/assets/certik.svg" alt="" v-else>
-                </div> -->
-                <!-- {{ language }} -->
-                <!-- <i class="el-icon-arrow-down el-icon--right"></i> -->
                 
-                <div class="language" v-show="screenWidth > 600" v-if="false">
+                <div class="language" v-show="screenWidth > adaptiveSize" v-if="false">
                     <!-- <el-button v-if="language === 'en'" @click="clickLanguageDropdown('zh')">中文</el-button>
                       <el-button v-else @click="clickLanguageDropdown('en')">英文</el-button> -->
                     <el-dropdown trigger="click" @command="clickLanguageDropdown">
@@ -69,7 +62,7 @@
                         </el-dropdown-menu>
                     </el-dropdown>
                 </div>
-                <div class="exchange-balance" v-show="screenWidth > 600" v-if="false">
+                <div class="exchange-balance" v-show="screenWidth > adaptiveSize" v-if="false">
                     <span class="balance" v-if="versionName == 'chain'">{{ $t('public:Balance') }}: {{ lusdBalance }}{{
                         transactionSpareCurrency }}</span>
                     <span class="balance" v-else>{{ $t('public:Balance') }}: {{ keepDecimalNotRounding(platformBalance,
@@ -118,61 +111,24 @@
                     <!-- <span class="el-dropdown" style="cursor: pointer;" v-if="versionName === 'speed'" @click="depositWithdraw()">充提</span> -->
                 </div>
 
-                <!-- 版本 -->
-                <!-- <div class="exchange-balance" v-show="screenWidth > 600">
-                    <span class="el-dropdown" style="cursor: pointer;" v-if="versionName == 'chain'" @click="switchVersion('speed')">{{ $t('game:quickVersion') }}</span>
-                    <span class="el-dropdown" style="cursor: pointer;" v-if="versionName == 'speed'" @click="switchVersion('chain')">{{ $t('game:chainVersion') }}</span>
-                </div> -->
-                <!-- 切换链 -->
-                <div class="connectWallet" v-if="screenWidth > 600 && isConnected">
-                    <img src="@/assets/log.png" alt="" />
-                    <span>sSpace</span>
+                <div class="mobile-log" v-if="screenWidth <= adaptiveSize">
+                    <div class="logo">
+                        <router-link to="/" class="logo-link">
+                            <img src="@/assets/log.png" alt="" v-if="mainTheme === 'light'" width="25"/>
+                            <img src="@/assets/log.png" alt="" v-else width="25" />
+                        </router-link>
+                    </div>
+                    <div class="title"> CFXS WORLD </div>
                 </div>
-                <div class="exchange-chain" v-show="screenWidth > 600" v-if="versionName === 'chain'">
-                    <el-dropdown trigger="click" @command="dropdownChainMenuClick">
-                        <span class="el-dropdown-link">
-                            <img :src="require(`@/assets/` + chain_name + `.png`)" alt="" width="22">
-                            {{ chain_name }}<i class="el-icon-arrow-down el-icon--right"></i>
-                        </span>
-                        <el-dropdown-menu slot="dropdown" :append-to-body="false" popper-class="popper-select"
-                            class="popper-select">
-                            <el-dropdown-item command="HECO">
-                                <img src="@/assets/HECO.png" alt="" width="18">
-                                <span class="chain-name">{{ 'HECO' }}</span>
-                            </el-dropdown-item>
-                            <el-dropdown-item command="ARB">
-                                <img src="@/assets/ARB.png" alt="" width="18">
-                                <span class="chain-name">{{ 'ARB' }}</span>
-                            </el-dropdown-item>
-                        </el-dropdown-menu>
-                        <!-- 极速版 选择链 -->
-                        <!-- <el-dropdown-menu slot="dropdown" :append-to-body="false" popper-class="popper-select" class="popper-select" v-else>
-                            <el-dropdown-item command="ARB">
-                                <img src="@/assets/ARB.png" alt="" width="18">
-                                <span class="chain-name">{{ 'ARB' }}</span>
-                            </el-dropdown-item>
-                            <el-dropdown-item command="BSC">
-                                <img src="@/assets/BSC.png" alt="" width="18">
-                                <span class="chain-name">{{ 'BSC' }}</span>
-                            </el-dropdown-item>
-                        </el-dropdown-menu> -->
-                    </el-dropdown>
-                </div>
-                <!-- <div class="main-theme" @click="changeTheme">
-                    <img src="@/assets/theme.png" alt="" v-if="activeTheme==='light'">
-                    <img src="@/assets/daily_icon.png" alt="" v-else>
-                </div> -->
-                <!-- <div class="switchLang">
-                    <div @click="changeLang('zh')" :class="{'activeCN':activeLang === 'zh'}">中文</div>
-                    <div @click="changeLang('en')" :class="{'activeEN':activeLang === 'en'}">EN</div>
-                    <span class="bar"></span>
-                </div> -->
-                <div class="connectWallet pending" v-if="isConnected && pendingOrderAmount">
-                    <span>Trading</span>
-                    <img src="@/assets/shuaxin.png" alt="">
-                </div>
-                <div class="connectWallet" @click="connectWalletShowFun" v-else>
-                    {{ isConnected ? addressStr : $t('public:ConnectWallet') }}
+                
+                <div class="connent" v-if="isConnected">
+                    <div class="connectWallet" v-if="screenWidth > adaptiveSize">
+                        <img src="@/assets/log.png" alt="" />
+                        <span>sSpace</span>
+                    </div>
+                    <div class="connectWallet" @click="connectWalletShowFun">
+                        {{ isConnected ? addressStr : $t('public:ConnectWallet') }}
+                    </div>
                 </div>
             </div>
 
@@ -416,6 +372,7 @@ export default {
             transactionSpareCurrency: state => state.base.transactionSpareCurrency,
             platformBalance: state => state.base.platformBalance,
             decimalLen: state => state.base.decimalLen,
+            adaptiveSize: state => state.comps.adaptiveSize,
         }),
         ...mapGetters(['pendingOrderAmount']),
         addressStr() {
@@ -569,18 +526,6 @@ export default {
                 setTimeout(async () => {
                     location.reload(); //网络切换成功 刷新页面
                 }, 300)
-                // if(this.chainName !== 'ARB') {
-                //     let switchRes = await this.dropdownChainMenuClick('ARB', false);
-                //     console.log(switchRes);
-                //     if(switchRes) {
-                //         this.$store.commit('setVersion', val);
-                //         localStorage.setItem('versionName', val)
-                //         this.$router.push({path:'/NumRangeSpeed'});
-                //         setTimeout(async () => {
-                //             location.reload(); //网络切换成功 刷新页面
-                //         }, 300)
-                //     }
-                // }
             }
             this.$forceUpdate();
         },
@@ -900,8 +845,8 @@ export default {
 
     .sider-inner {
         display: flex;
-        position: absolute;
-        left: 30px;
+        position: relative;
+        // left: 30px;
         align-items: center;
 
         // top: 15px;
@@ -955,6 +900,19 @@ export default {
                 }
             }
         }
+    }
+
+    .connent {
+        display: flex;
+    }
+
+    .mobile-log {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: #ad8d65;
+        font-weight: 600;
+        font-size: 16px;
     }
 
     .el-menu {
