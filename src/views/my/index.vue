@@ -4,7 +4,7 @@
             <div class="tab-nav">
                 <el-tabs v-model="activeName">
                     <el-tab-pane label="My CFXs" name="1">
-                        <div class="new-world">
+                        <div class="new-world" v-if="screenWidth > adaptiveSize">
                             <div class="flag"><img :src="require('@/assets/svg/flag.svg')" alt="" width="24"></div>
                             <div class="text">
                                 <div class="world-text">
@@ -20,9 +20,29 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="new-world-mobile" v-else>
+                            <div class="flag">
+                                <img :src="require('@/assets/svg/flag.svg')" alt="" width="24">
+                                <div class="world-text">TO THE NEW WORLD !</div>
+                            </div>
+                            <div>
+                                <div class="text">
+                                    <div class="world-desc">
+                                        Please claim the CFXs from the 
+                                        <a href="http://" target="_blank" rel="noopener noreferrer">test contract</a>to the 
+                                        <a href="http://" target="_blank" rel="noopener noreferrer">new contract</a>
+                                        (only supported eSpace). If your CFXs are in Core Space,
+                                        <a href="http://" target="_blank" rel="noopener noreferrer">click here</a>.
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="check-button">
+                                <el-button>CHECK ON eSPACE</el-button>
+                            </div>
+                        </div>
                         <div class="list">
                             <el-tabs v-model="activeName2">
-                                <el-form :inline="true" :model="formSearch">
+                                <el-form :inline="true" :model="formSearch" :class="{ 'mobile-form': screenWidth <= adaptiveSize }">
                                     <el-form-item label="">
                                         <el-select v-model="formSearch.searchName" placeholder="All">
                                             <el-option label="All" value="0">
@@ -95,8 +115,8 @@
                 </el-tabs>
             </div>
 
-            <div class="select-card" v-if="activeName == 1">
-                <div class="select-content">
+            <div class="select-card" :class="{ 'select-card-mobile': screenWidth <= adaptiveSize }" v-if="activeName == 1" >
+                <div class="select-content" v-if="screenWidth > adaptiveSize">
                     <div class="left">
                         <div class="item-num">{{ highlightedIndices.length }} item</div>
                         <div class="select-all">
@@ -114,6 +134,29 @@
                                 <img :src="require('@/assets/svg/transfer.svg')" alt="" width="20">
                                 TRANSFER
                             </el-button>
+                            <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" type="primary" @click="onBatchListingFun" :disabled="highlightedIndices.length <= 0">BATCH LISTING</el-button>
+                        </div>
+                    </div>
+                </div>
+                <div class="select-content mobile" v-else>
+                    <div class="left">
+                        <div class="select-all">
+                            <el-checkbox v-model="checked" @change="selectAllChange">Select All</el-checkbox>
+                        </div>
+                        <div class="item-num">{{ highlightedIndices.length }} item</div>
+                    </div>
+                    <div class="right">
+                        <div class="sweep-button">
+                            <el-button :class="{ 'merge-border': highlightedIndices.length > 0 }" type="primary" @click="onMessageItems" :disabled="highlightedIndices.length <= 0">
+                                <img :src="require('@/assets/svg/rune-select.svg')" alt="" width="20">
+                                MERGE
+                            </el-button>
+                            <el-button :class="{ 'merge-border': highlightedIndices.length > 0 }" type="primary" @click="onTransferItems" :disabled="highlightedIndices.length <= 0">
+                                <img :src="require('@/assets/svg/transfer.svg')" alt="" width="20">
+                                TRANSFER
+                            </el-button>
+                        </div>
+                        <div class="sweep-button">
                             <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" type="primary" @click="onBatchListingFun" :disabled="highlightedIndices.length <= 0">BATCH LISTING</el-button>
                         </div>
                     </div>
@@ -371,7 +414,7 @@ export default {
             isMobel: state => state.comps.isMobel,
             mainTheme: state => state.comps.mainTheme,
             apiUrl: state => state.base.apiUrl,
-            gamesFillingAddress: state => state.base.gamesFillingAddress,
+            adaptiveSize: state => state.comps.adaptiveSize,        
         }),
         changeData() {
             const { address } = this
@@ -632,6 +675,45 @@ export default {
                         }
                     }
                 }
+                .new-world-mobile {
+                    padding: 12px;
+                    border: 1px solid hsla(33,31%,54%,.3);
+                    border-radius: 8px;
+                    align-items: flex-start;
+                    margin-top: 20px;
+                    margin-bottom: 32px;
+                    .flag {
+                        display: flex;
+                        gap: 20px;
+                        align-items: center;
+                        color: #ad8d65;
+                    }
+                    .world-desc {
+                        padding-top: 10px;
+                        font-size: 16px;
+                        color: #aaa;
+                    }
+                    a {
+                        color: #ad8d65;
+                        padding-left: 5px;
+                        padding-right: 5px;
+                    }
+                    .check-button {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        margin-top: 16px;
+                        .el-button {
+                            width: 100%;
+                            line-height: 0;
+                            height: 30px;
+                            border-color: transparent;
+                            background-color: #ad8d65;
+                            padding: 12px 10px;
+                            color: #000000;
+                        }
+                    }
+                }
                 .list {
                     .el-tabs__nav {
                     }
@@ -673,6 +755,28 @@ export default {
                         background-color: #ad8d65;
                         border: 0;
                         color: rgb(12, 12, 12);
+                    }
+                    .mobile-form {
+                        display: flex;
+                        width: 100%;
+                        gap: 5px;
+                        align-items: center;
+                        justify-content: center;
+                        .el-select {
+                            width: 100px;
+                            // margin-right: 10px;
+                            .el-input__inner {
+                                width: 100px;
+                            }
+                        }
+                        .el-form-item {
+                            margin-right: 0;
+                            margin-bottom: 0;
+                        }
+                        .el-input__inner {
+                            max-width: 150px;
+                            min-width: 100px;
+                        }
                     }
                 }
                 .idenser {
@@ -780,6 +884,35 @@ export default {
                         }
                     }
                 }
+                .mobile {
+                    display: block;
+                    font-size: 12px;
+                    padding-top: 24px;
+                    padding-bottom: 24px;
+                    .el-checkbox {
+                        color: #aaa;
+                        font-size: 14px;
+                        margin-right: 16px;
+                    }
+                    .left {
+                        display: flex;
+                        justify-content: left;
+                    }
+                    .right {
+                        display: block;
+                        .sweep-button {
+                            width: 100%;
+                            margin-top: 16px;
+                        }
+                        .el-button {
+                            width: 100%;
+                            justify-content: center;
+                        }
+                    }
+                }
+            }
+            .select-card-mobile {
+                height: 176px;
             }
 
             .merge-items {

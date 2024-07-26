@@ -5,8 +5,12 @@
         // height: 100vh;
         padding-bottom: 50px;
         .nav-container {
+            display: flex;
+            width: 100%;
             background-color: #181818;
             .container {
+                display: contents;
+                width: 100%;
                 margin: 0 auto;
                 .sidebar-container {
                     width: 270px;

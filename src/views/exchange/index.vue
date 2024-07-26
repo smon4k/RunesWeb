@@ -361,9 +361,12 @@ export default {
     // padding-top: 50px;
     width: 100%;
     margin: 0 auto;
+    display: flex;
+    position: fixed;
     .item {
       border-radius: 10px;
       padding-top: 50px;
+      margin-left: 16px;
       max-width: 498px;
       width: 95%;
       cursor: pointer;
