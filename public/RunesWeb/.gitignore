@@ -1,0 +1,26 @@
+.DS_Store
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+php-errors.log*
+
+# Editor directories and files
+.idea
+#.vscode
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+/application/database.php
+/application/config.php
+database.php
+/application/config.php
+/.env
+/public/upload
+/runtime/
+/runtime/cache
+database_hp*.php
+/log.xml
+/pyapi/db.conf
+
