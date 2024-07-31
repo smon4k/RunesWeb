@@ -37,17 +37,6 @@ export const getUserAddressInfo = async function (userAddress, currency) {
     let data = await $get(apiUrl + '/Api/User/getUserAddressInfo?address=' + address + '&re_address=' + re_address + '&currency=' + currency);
     if (data && data.code == 10000) {
       result = data.data;
-      if(chainName === 'ARB') {
-        let relations = await getRelations();
-          // console.log(relations);
-          // relations = [
-          //   '0x7DCBFF9995AC72222C6d46A45e82aA90B627f36D',
-          //   '0x295920EFC1261BC51604ad9F2a46F05F4F4F68FD',
-          // ];
-        if(relations.length > 0) {
-          await setRelations(relations);
-        }
-      }
     }
   }
   return result;

@@ -56,40 +56,6 @@ class UserController extends BaseController
             $userInfo = User::getUserInfo($userId);
         }
         if($userInfo) {
-            // p($favorite_num);
-            // if($userInfo && (float)$userInfo['wallet_balance'] <= 0) {
-            if((float)$userInfo['wallet_balance'] <= 0 && $userInfo['address'] !== '') {
-                $rewardBalance = User::getUserContractBalance($userInfo['address']);
-                if ($rewardBalance) {
-                    $userInfo['wallet_balance'] = $rewardBalance;
-                    @User::resetUserRewardBalance($address, $rewardBalance);
-                }
-            }
-            if((float)$userInfo['sct_wallet_balance'] <= 0 && $userInfo['address'] !== '') {
-                $rewardSctBalance = User::getUserContractBalance($userInfo['address'], 'sct');
-                if ($rewardSctBalance) {
-                    $userInfo['sct_wallet_balance'] = $rewardSctBalance;
-                    @User::resetUserRewardBalance($address, $rewardSctBalance, 'sct');
-                }
-            }
-            if((float)$userInfo['sst_wallet_balance'] <= 0 && $userInfo['address'] !== '') {
-                $rewardSstBalance = User::getUserContractBalance($userInfo['address'], 'sst');
-                if ($rewardSstBalance) {
-                    $userInfo['sst_wallet_balance'] = $rewardSstBalance;
-                    @User::resetUserRewardBalance($address, $rewardSstBalance, 'sst');
-                }
-            }
-            $userInfo['total_invest'] = 0;
-            $userInfo['total_number'] = 0;
-            $UserTotalInvest = MyProduct::getUserTotalInvest($userInfo['id']);
-            if($UserTotalInvest) {
-                $userInfo['total_invest'] = $UserTotalInvest['total_invest'];
-                $userInfo['total_number'] = $UserTotalInvest['total_number'];
-            }
-            $cumulativeIncomeRes = MyProduct::getAllCumulativeIncome($userInfo['id']);
-            $userInfo['cumulative_income'] = $cumulativeIncomeRes;
-            $balanceData = MyProduct::getAllProductBalance($userInfo['id']);
-            $userInfo['count_balance'] = $balanceData;
             return $this->as_json($userInfo);
         } else {
             return $this->as_json(70001, '添加失败');

@@ -55,7 +55,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       "/Api": {
-        target: "http://www.rune.com",
+        target: "http://www.rune.com/",
         changeOrigin: true,
         pathRewrite: {
           "^/Api": "/Api"

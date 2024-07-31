@@ -149,19 +149,6 @@ class User extends Base
                 $userinfo = self::insertUserData($address);
                 $data = $userinfo;
             }
-            $rewardBalance = self::getUserContractBalance($address, 'usdt'); //重置链上余额
-            @self::resetUserRewardBalance($address, $rewardBalance, 'usdt');
-            $data['wallet_balance'] = $rewardBalance;
-
-            $rewardSCTBalance = self::getUserContractBalance($address, 'sct'); //重置链上余额
-            // if ($rewardH2oBalance !== 0) {
-            @self::resetUserRewardBalance($address, $rewardSCTBalance, 'sct');
-            $data['sct_wallet_balance'] = $rewardSCTBalance;
-            // }
-
-            $rewardSSTBalance = self::getUserContractBalance($userinfo['address'], 'sst'); //重置链上余额
-            @self::resetUserRewardBalance($userinfo['address'], $rewardSSTBalance, 'sst');
-            $data['sst_wallet_balance'] = $rewardSSTBalance;
             if (empty($data['avatar']) || $data['avatar'] == '') {
                 $data['avatar'] = "https://h2o-finance-images.s3.amazonaws.com/h2oMedia/default_avatar.png";
             }
@@ -182,20 +169,6 @@ class User extends Base
             $userinfo = self::where('id', $userId)->find();
             if ($userinfo && count((array)$userinfo) > 0) {
                 $data = $userinfo->toArray();
-                if (isset($userinfo['address']) && $userinfo['address'] !== '') {
-                    $rewardBalance = self::getUserContractBalance($userinfo['address'], 'usdt'); //重置链上余额
-                    @self::resetUserRewardBalance($userinfo['address'], $rewardBalance, 'usdt');
-                    $data['wallet_balance'] = $rewardBalance;
-
-                    $rewardSCTBalance = self::getUserContractBalance($userinfo['address'], 'sct'); //重置链上余额
-                    // if ($rewardH2oBalance !== 0) {
-                    @self::resetUserRewardBalance($userinfo['address'], $rewardSCTBalance, 'sct');
-                    $data['sct_wallet_balance'] = $rewardSCTBalance;
-
-                    $rewardSSTBalance = self::getUserContractBalance($userinfo['address'], 'sst'); //重置链上余额
-                    @self::resetUserRewardBalance($userinfo['address'], $rewardSCTBalance, 'sst');
-                    $data['sst_wallet_balance'] = $rewardSSTBalance;
-                }
                 if (empty($data['avatar']) || $data['avatar'] == '') {
                     $data['avatar'] = "https://h2o-finance-images.s3.amazonaws.com/h2oMedia/default_avatar.png";
                 }
@@ -229,7 +202,6 @@ class User extends Base
         if ($address !== '') {
             self::startTrans();
             try {
-                $local_balance = getEnvs() === 'dev' ? 3000 : 0;
                 $insertData = [
                     'username' => '',
                     'password' => '',
@@ -241,17 +213,12 @@ class User extends Base
                     'birthday' => '',
                     'background_img' => '',
                     'time' => date('Y-m-d H:i:s'),
-                    'local_balance' => $local_balance,
-                    'wallet_balance' => 0,
-                    'sct_local_balance' => 0,
-                    'sct_wallet_balance' => 0,
-                    'sst_local_balance' => 0,
-                    'sst_wallet_balance' => 0,
-                    'btcb_local_balance' => 0,
-                    'btcb_wallet_balance' => 0,
+                    // 'local_balance' => $local_balance,
+                    // 'wallet_balance' => 0,
                     'status' => 1,
                 ];
                 $userId = self::insertGetId($insertData);
+                p($userId);
                 if ($userId > 0) {
                     // if($invite_address && $invite_address !== '') { //如果含有邀请人地址的话 创建推荐关系
                     //     self::createRecommend($userId, $invite_address);
@@ -279,7 +246,6 @@ class User extends Base
     public static function createAccount($username='', $password='', $invite_address='')
     {
         if ($username !== '' && $password !== '') {
-            $local_balance = getEnvs() === 'dev' ? 3000 : 0;
             $insertData = [
                 'username' => $username,
                 'password' => encryptionPassword($password),
@@ -291,14 +257,8 @@ class User extends Base
                 'birthday' => '',
                 'background_img' => '',
                 'time' => date('Y-m-d H:i:s'),
-                'local_balance' => $local_balance,
-                'wallet_balance' => 0,
-                'sct_local_balance' => 0,
-                'sct_wallet_balance' => 0,
-                'sst_local_balance' => 0,
-                'sst_wallet_balance' => 0,
-                'btcb_local_balance' => 0,
-                'btcb_wallet_balance' => 0,
+                // 'local_balance' => $local_balance,
+                // 'wallet_balance' => 0,
                 'status' => 1,
             ];
             $userId = self::insertGetId($insertData);
