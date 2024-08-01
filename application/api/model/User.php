@@ -218,7 +218,6 @@ class User extends Base
                     'status' => 1,
                 ];
                 $userId = self::insertGetId($insertData);
-                p($userId);
                 if ($userId > 0) {
                     // if($invite_address && $invite_address !== '') { //如果含有邀请人地址的话 创建推荐关系
                     //     self::createRecommend($userId, $invite_address);
