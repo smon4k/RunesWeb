@@ -10,12 +10,12 @@
                                 <div class="currency-name">CFXs</div>
                             </div>
                             <div class="quantity">
-                                <div class="count-num">{{ item.number }}</div>
-                                <div class="price-currency"><font color="#ad8d65">$0.065</font> / CFXs</div>
+                                <div class="count-num">{{ item.quantity }}</div>
+                                <div class="price-currency"><font color="#ad8d65">{{ item.unitprice }}</font> / CFXs</div>
                             </div>
                             <div class="time">
                                 <img :src="require('@/assets/svg/time.svg')" alt="" width="12">
-                                {{ item.date }}
+                                {{ formattedTime(item.locktime) }}
                             </div>
                         </div>
                         <div class="bottom">
@@ -23,11 +23,11 @@
                                 <div class="ids">#{{ item.id }}</div>
                                 <div class="num">
                                     <img :src="require('@/assets/svg/usdt.svg')" alt="" width="16">
-                                    <div class="">25.500</div>
+                                    <div class="">{{ item.amount }}</div>
                                 </div>
                             </div>
                             <div class="address-but">
-                                <div class="address">0xd5...A845</div>
+                                <div class="address">{{ addressStr(item.chainto) }}</div>
                                 <div class="buy-now"><el-button @click="handleClick(item)">Buy Now</el-button></div>
                             </div>
                         </div>
@@ -99,7 +99,23 @@ export default {
         onLoadMoreDataClick() { //加载更多数据
             this.isLoading = true;
             this.$emit('onLoadMoreData');
-        }
+            this.isLoading = false;
+        },
+        addressStr(address) {
+            if (address && address !== undefined && address !== '') {
+                return address.substring(0, 4) + "***" + address.substring(address.length - 3)
+            } 
+        },
+        formattedTime(time) {
+            const date = new Date(time);
+            // 获取月、日、小时和分钟，并确保它们是两位数格式
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            // 返回格式化的日期时间字符串
+            return `${month}-${day} ${hours}:${minutes}`;
+        },
     },
     mounted() {
         window.onresize = () => {

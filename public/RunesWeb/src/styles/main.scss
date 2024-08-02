@@ -5,9 +5,11 @@
         // height: 100vh;
         padding-bottom: 50px;
         .nav-container {
+            position: fixed;
             display: flex;
             width: 100%;
             background-color: #181818;
+            z-index: 10;
             .container {
                 display: contents;
                 width: 100%;

@@ -46,6 +46,20 @@ export const getUserAddressInfo = async function (userAddress, currency) {
  * @param {*} type 
  * @returns 
  */
+export const getMarketplaceList = async function (page=1, limit=20) {
+  const apiUrl = __ownInstance__.$store.state.base.apiUrl
+  let result = [];
+  let data = await $get(apiUrl + '/Api/Market/getMarketplaceList?page=' + page + '&limit=' + limit);
+  if (data && data.code == 10000) {
+    result = data.data;
+  }
+  return result;
+}
+
+/* 根据币种获取币种信息
+ * @param {*} type 
+ * @returns 
+ */
 export const getCurrencyToken = async function (currency) {
   const apiUrl = __ownInstance__.$store.state.base.apiUrl
   const chainName = __ownInstance__.$store.state.base.chainName

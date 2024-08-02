@@ -76,7 +76,7 @@ export default {
         async getAddress(state, value) { //设置钱包地址
             state.address = value;
             let userInfo = await getUserAddressInfo(value);
-            console.log(userInfo)
+            // console.log(userInfo)
             if(userInfo) {
                 state.userInfo = userInfo;
                 state.isAdmin = userInfo.is_admin;
@@ -133,45 +133,17 @@ export default {
                 fixed.forEach(async item => {
                     state.hashPowerPoolsList.push({
                         id: item.id,
-                        hashpowerAddress: item.hashpowerAddress,
-                        currencyToken: item.currencyToken,
-                        goblin: item.goblin,
-                        address:item.originToken,
-                        pId:item.pId,
-                        name:item.name,
-                        decimals:18,
-                        balance:'',
-                        reward:'',
-                        total:'',
-                        tokenPrice: 0,
-                        yearPer: 0,
-                        h2oYearPer: 0,
-                        btcbYearPer: 0,
-                        btcb19ProBalance: 0,
-                        cost_revenue: 0,
-                        annualized_income: 0,
-                        daily_income: 0,
-                        harvest_btcb_amount: 0,
-                        yest_income_usdt: 0,
-                        yest_income_btcb: 0,
-                        total_income_usdt: 0,
-                        total_income_btcb: 0,
-                        daily_expenditure_usdt: 0,
-                        daily_expenditure_btc: 0,
-                        daily_income_usdt: 0,
-                        daily_income_btc: 0,
-                        power_consumption_ratio: 0,
-                        currency: 0,
-                        loading:false,
-                        btcbPrice: 0,
-                        h2oPrice: 0,
-                        chain_address: '',
-                        yest_income_h2o: 0,
-                        yest_income_h2ousdt: 0,
-                        yest_total_income: 0,
-                        yest_total_incomerate: 0,
-                        annualized_rate: 0,
-                        claimLoading:false
+                        chainid: item.chainid,
+                        chainto: item.chainto,
+                        amount: item.amount,
+                        unitprice:item.unitprice,
+                        quantity:item.quantity,
+                        addtime:item.addtime,
+                        locktime:item.locktime,
+                        modifytime:item.modifytime,
+                        data:item.data,
+                        regmarket:item.regmarket,
+                        status:item.status,
                     })
                 })
             }
@@ -281,7 +253,7 @@ export default {
             commit('change_TradeStatus' , status)
         },
         // 获取算力币Pools数据
-        async getHashPowerPoolsList({commit , state}, isLoding){
+        async getMarketplaceList({commit , state}, isLoding){
             if(state.hashPowerPoolsList.loading) return 
             if(!isLoding || isLoding == undefined) {
                 commit('setHashPowerPoolsListLoading' , true);

@@ -169,7 +169,7 @@
                         </div>
                     </div>
                     <el-tab-pane label="General" name="general">
-                        <Card :dataList="dataList" @buyNowClick="buyNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight"></Card>
+                        <Card :dataList="dataList" @buyNowClick="buyNowClick" :highlightedIndices="highlightedIndices" :isNoMoreData="isNoMoreData" @toggleHighlight="toggleHighlight" @onLoadMoreData="onLoadMoreData"></Card>
                     </el-tab-pane>
                     <el-tab-pane label="Images" name="image">
                         <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
@@ -201,7 +201,7 @@
                     <div class="right">
                         <div class="total">Total: <font color="#ad8d65">{{ calcTotalNumber }} USDT</font></div>
                         <div class="sweep-button">
-                            <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" class="search-button" type="primary" @click="onSubmit" :disabled="highlightedIndices.length <= 0">SWEEP</el-button>
+                            <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" class="search-button" type="primary" @click="buyNowClick" :disabled="highlightedIndices.length <= 0">SWEEP</el-button>
                         </div>
                     </div>
                 </div>
@@ -215,7 +215,7 @@
                     </div>
                     <div class="right">
                         <div class="sweep-button">
-                            <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" class="search-button" type="primary" @click="onSubmit" :disabled="highlightedIndices.length <= 0">SWEEP</el-button>
+                            <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" class="search-button" type="primary" @click="buyNowClick" :disabled="highlightedIndices.length <= 0">SWEEP</el-button>
                         </div>
                     </div>
                 </div>
@@ -235,7 +235,7 @@
                     </div>
                     <div class="for">
                         <span class="title">For</span>
-                        <span class="value">{{ buyNowData.slots }} <span class="title">Slots</span> {{ buyNowData.cfxs }} <span class="title">CFXs</span></span>
+                        <span class="value">{{ highlightedIndices.length }} <span class="title">Slots</span> {{ buyNowData.cfxs }} <span class="title">CFXs</span></span>
                     </div>
                     <div class="button-dialog">
                         <span class="text">You will be asked to approve this purchase from your wallet.</span>
@@ -318,79 +318,14 @@ export default {
                 maxPrice: '',
                 address: '',
             },
-            dataList: [{
-                id: '123456',
-                date: '2016-05-02',
-                price: '0.001',
-                number: '100',
-                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
-            }, {
-                id: '123456',
-                date: '2016-05-02',
-                price: '0.001',
-                number: '100',
-                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
-            }, {
-                id: '123456',
-                date: '2016-05-02',
-                price: '0.001',
-                number: '100',
-                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
-            }, {
-                id: '123456',
-                date: '2016-05-02',
-                price: '0.001',
-                number: '100',
-                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
-            }, {
-                id: '123456',
-                date: '2016-05-02',
-                price: '0.001',
-                number: '100',
-                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
-            }, {
-                id: '123456',
-                date: '2016-05-02',
-                price: '0.001',
-                number: '100',
-                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
-            }, {
-                id: '123456',
-                date: '2016-05-02',
-                price: '0.001',
-                number: '100',
-                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
-            }, {
-                id: '123456',
-                date: '2016-05-02',
-                price: '0.001',
-                number: '100',
-                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
-            }, {
-                id: '123456',
-                date: '2016-05-02',
-                price: '0.001',
-                number: '100',
-                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
-            }, {
-                id: '123456',
-                date: '2016-05-02',
-                price: '0.001',
-                number: '100',
-                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
-            }, {
-                id: '123456',
-                date: '2016-05-02',
-                price: '0.001',
-                number: '100',
-                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
-            }, {
-                id: '123456',
-                date: '2016-05-02',
-                price: '0.001',
-                number: '100',
-                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
-            }],
+            timeInterval: null,
+            refreshTime: 10000, //数据刷新间隔时间
+            currPage: 1, //当前页
+            pageSize: 18, //每页显示条数
+            total: 100, //总条数
+            isNoMoreData: false,
+            PageSearchWhere: [], //分页搜索数组
+            dataList: [],
             checked: false,
             highlightedIndices: [],
             buyNowDialogShow: false,
@@ -427,7 +362,7 @@ export default {
             if (!this.dataList || !this.dataList.length) return 0;
             const totalUSDT = this.dataList.reduce((total, item, index) => {
                 if (this.highlightedIndices.includes(index)) {
-                    return total + Number(item.price);
+                    return total + Number(item.amount);
                 }
                 return total;
             }, 0); 
@@ -436,6 +371,7 @@ export default {
     },
     created() {
         try {
+            this.getMarketplaceList();
         } catch (err) { }
     },
     watch: {
@@ -458,6 +394,8 @@ export default {
     },
     components: {
         "Card": CardBox,
+    },
+    activated() { //页面进来
     },
     methods: {
         toggleHighlight(index) {
@@ -493,9 +431,9 @@ export default {
         buyNowClick(row) {
             console.log(row);
             this.buyNowData = {
-                youWillPay: row.number,
+                youWillPay: row.amount,
                 slots: row.price,
-                cfxs: row.price,
+                cfxs: row.quantity,
             };
             this.buyNowDialogShow = true;
         },
@@ -514,6 +452,38 @@ export default {
         },
         onApplyFiter() { //搜索
 
+        },
+        onLoadMoreData() {
+            this.currPage += 1;
+            this.getMarketplaceList();
+        },
+        getMarketplaceList(ServerWhere) { //获取产品日收益列表
+            var that = this.$data;
+            if (!ServerWhere || ServerWhere == undefined || ServerWhere.length <= 0) {
+                ServerWhere = {
+                    limit: that.pageSize,
+                    page: that.currPage,
+                };
+            }
+            this.loading = true;
+            get(this.apiUrl + "/Api/Market/getMarketplaceList", ServerWhere, async json => {
+                console.log(json);
+                if (json.code == 10000) {
+                    let list = (json.data && json.data.lists) || [];
+                    // console.log(list);
+                    if (Array.isArray(list) && Array.isArray(this.dataList)) {
+                        this.dataList = this.dataList.concat(list);
+                        if(list.length < this.pageSize) {
+                            this.isNoMoreData = true;
+                        }
+                    }
+                    this.loading = false;
+                    this.total = json.data.count;
+                    this.$forceUpdate();
+                } else {
+                    this.$message.error("加载数据失败");
+                }
+            });
         },
         async getIsApprove() { //获取余额 查看是否授权
             let balance = await getBalance(Address.BUSDT, 18); //获取余额
@@ -543,15 +513,7 @@ export default {
                 loading.close();
                 this.trading = false;
             });
-        },
-        addressStr(address) {
-            // console.log(this.address);
-            if (!address || address == undefined || address == '') {
-                return "Connect Wallet";
-            } else {
-                return this.address.substring(0, 4) + "***" + address.substring(address.length - 3)
-            }
-        },
+        }
     },
 }
 </script>

@@ -24,6 +24,9 @@ import VueI18Next from '@panter/vue-i18next';
 import XHR from 'i18next-xhr-backend';
 import LngDetector from 'i18next-browser-languagedetector';
 import visibility from 'vue-visibility-change';
+import InfiniteScroll from 'vue-infinite-scroll';
+
+Vue.use(InfiniteScroll);
 
 import axios from 'axios'
 Vue.prototype.axios = axios
