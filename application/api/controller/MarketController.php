@@ -2,13 +2,13 @@
 // +----------------------------------------------------------------------
 // | 文件说明：NFT 市场
 // +----------------------------------------------------------------------
-// | Copyright (c) 2017-2021 http://www.thinkcmf.com All rights reserved.
+// | Copyright (c) 2017-2024 http://www.thinkcmf.com All rights reserved.
 // +----------------------------------------------------------------------
-// | Author: wuwu <15035574759·@163.com>
+// | Author: wuwu <15035574759@163.com>
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
-// | Date: 2021-11-26
+// | Date: 2024-08
 // +----------------------------------------------------------------------
 namespace app\api\controller;
 
@@ -31,21 +31,58 @@ class MarketController extends BaseController
     /**
      * 获取市场NFT所有列表数据
      * @author qinlh
-     * @since 2021-11-26
+     * @since 2024-08-05
      */
     public function getMarketplaceList(Request $request)
     {
+        $regmarket = $request->request('regmarket', 0, 'intval');
         $page = $request->request('page', 1, 'intval');
         $limit = $request->request('limit', 20, 'intval');
         $name = $request->request('name', '', 'trim');
         $where = [];
         $where['a.status'] = 1;
+        if ($regmarket && $regmarket > 0) {
+            $where['a.regmarket'] = $regmarket;
+        }
         if ($name && $name !== '') {
             $where['a.name'] = ['like',"%" . $name . "%"];
         }
         $result = Market::getMarketplaceList($where, $page, $limit);
         return $this->as_json($result);
     }
+
+    /**
+     * 获取我的已购买市场数据
+     * @author qinlh
+     * @since 2024-08-05
+     */
+    public function getMyMarketplaceData(Request $request)
+    {
+        $regmarket = $request->request('regmarket', 0, 'intval');
+        $address = $request->request('owner', '', 'trim');
+        $page = $request->request('page', 1, 'intval');
+        $limit = $request->request('limit', 20, 'intval');
+        $name = $request->request('name', '', 'trim');
+        $where = [];
+        // $where['a.status'] = 1;
+        $where['a.useraddr'] = $address;
+        if ($regmarket && $regmarket > 0) {
+            $where['a.regmarket'] = $regmarket;
+        }
+        if ($name && $name !== '') {
+            $where['b.name'] = ['like',"%" . $name . "%"];
+        }
+        $result = MyMarket::getMyMarketplaceData($where, $page, $limit);
+        // p($result);
+        return $this->as_json($result);
+    }
+
+
+
+
+
+
+
 
     /**
      * 获取市场NFT热门列表数据
@@ -77,29 +114,6 @@ class MarketController extends BaseController
         $nftId = $request->request('nftId', 0, 'intval');
         $address = $request->request('owner', 0, 'trim');
         $result = Market::getMarketplaceDetailData($address, $nftId);
-        return $this->as_json($result);
-    }
-
-    /**
-     * 获取我的已购买市场数据
-     * @author qinlh
-     * @since 2021-11-26
-     */
-    public function getMyMarketplaceData(Request $request)
-    {
-        // $type = $request->request('type', 0, 'intval');
-        $address = $request->request('owner', '', 'trim');
-        $page = $request->request('page', 1, 'intval');
-        $limit = $request->request('limit', 20, 'intval');
-        $name = $request->request('name', '', 'trim');
-        $where = [];
-        $where['a.type'] = 1;
-        $where['a.address'] = $address;
-        if ($name && $name !== '') {
-            $where['b.name'] = ['like',"%" . $name . "%"];
-        }
-        $result = MyMarket::getMyMarketplaceData($where, $page, $limit);
-        // p($result);
         return $this->as_json($result);
     }
 

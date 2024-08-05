@@ -38,8 +38,8 @@
         <div class="no-more">
                 <span v-if="isNoMoreData">No More</span>
                 <div v-else class="load-more">
-                    <div v-if="!isLoading" @click="onLoadMoreDataClick">Load more</div>
-                    <div v-if="isLoading" class="loading-icon">
+                    <div v-if="!loading" @click="onLoadMoreDataClick">Load more</div>
+                    <div v-if="loading" class="loading-icon">
                         <div class="loading-container">
                             <div class="loading-spinner"></div>
                         </div>
@@ -52,7 +52,7 @@
 <script>
 import { mapGetters, mapState } from "vuex";
 export default {
-    props: ['dataList', 'buyNowClick', 'highlightedIndices', 'toggleHighlight', 'isNoMoreData', 'onLoadMoreData'],
+    props: ['dataList', 'buyNowClick', 'highlightedIndices', 'toggleHighlight', 'isNoMoreData', 'onLoadMoreData', 'loading'],
     data() {
         return {
             screenWidth: document.body.clientWidth,

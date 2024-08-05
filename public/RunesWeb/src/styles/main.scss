@@ -207,6 +207,7 @@
         }
         .appmain-container {
             margin: 0 auto;
+            top: 80px;
             @media (min-width: 960px) {
                 max-width: 1368px;
             }

@@ -41,7 +41,7 @@
                             </div>
                         </div>
                         <div class="list">
-                            <el-tabs v-model="activeName2">
+                            <el-tabs v-model="regmarket" @tab-click="regmarketClick">
                                 <el-form :inline="true" :model="formSearch" :class="{ 'mobile-form': screenWidth <= adaptiveSize }">
                                     <el-form-item label="">
                                         <el-select v-model="formSearch.searchName" placeholder="All">
@@ -70,27 +70,27 @@
                                         <span>Slots: {{ dataList.length }}</span>
                                         <span>Balance: {{ dataList.length }}</span>
                                     </span>
-                                    <span class="refresh">
+                                    <span class="refresh" @click="refreshDataClick">
                                         <img :src="require('@/assets/svg/refresh.svg')" alt="" width="48">
                                     </span>
                                 </div>
-                                <el-tab-pane label="General" name="general">
-                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData"></Card>
+                                <el-tab-pane label="General" name="0">
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
                                 </el-tab-pane>
-                                <el-tab-pane label="Images" name="image">
-                                    <Card :dataList="dataList" @sellNowClick="sellNowClick"></Card>
+                                <el-tab-pane label="Images" name="1">
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
                                 </el-tab-pane>
-                                <el-tab-pane label="Audio" name="audio">
-                                    <Card :dataList="dataList" @sellNowClick="sellNowClick"></Card>
+                                <el-tab-pane label="Audio" name="2">
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
                                 </el-tab-pane>
-                                <el-tab-pane label="Text" name="text">
-                                    <Card :dataList="dataList" @sellNowClick="sellNowClick"></Card>
+                                <el-tab-pane label="Text" name="3">
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
                                 </el-tab-pane>
-                                <el-tab-pane label="Inscription" name="inscription">
-                                    <Card :dataList="dataList" @sellNowClick="sellNowClick"></Card>
+                                <el-tab-pane label="Inscription" name="4">
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
                                 </el-tab-pane>
-                                <el-tab-pane label="Name" name="name">
-                                    <Card :dataList="dataList" @sellNowClick="sellNowClick"></Card>
+                                <el-tab-pane label="Name" name="5">
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
                                 </el-tab-pane>
                               </el-tabs>
                           </div>
@@ -167,17 +167,19 @@
                 title="Merge Items"
                 :visible.sync="messageItemsDialogShow"
                 width="35%"
-                :before-close="messageItemsDialogShow"
+                :before-close="() => {
+                    messageItemsDialogShow = false
+                }"
                 class="merge-items"
                 top="30vh">
                 <div class="dialog-content">
                     <div class="you-wall-pay">
-                        <span class="title">YYou will merge</span>
-                        <span class="value">{{ buyNowData.youWillPay }} USDT</span>
+                        <span class="title">You will merge</span>
+                        <span class="value">{{ calcTotalNumber.totalSlots }} Slots</span>
                     </div>
                     <div class="for">
                         <span class="title">The amount of new CFXs will be</span>
-                        <span class="value">{{ buyNowData.slots }} CFXs</span>
+                        <span class="value">{{ calcTotalNumber.totalCfxs }} CFXs</span>
                     </div>
                     <div class="button-dialog">
                         <span class="text">The merged CFXs will generate a new CFXs ID. The amount of new CFXs according to the total amount of merged CFXs.</span>
@@ -190,7 +192,9 @@
                 title="Merge Items"
                 :visible.sync="cancelListingDialogShow"
                 width="35%"
-                :before-close="cancelListingDialogShow"
+                :before-close="() => {
+                    cancelListingDialogShow = false
+                }"
                 class="merge-items"
                 top="30vh">
                 <div class="dialog-content">
@@ -208,7 +212,9 @@
                 title="Transfer Items"
                 :visible.sync="transferItemsDialogShow"
                 width="35%"
-                :before-close="transferItemsDialogShow"
+                :before-close="() => {
+                    transferItemsDialogShow = false;
+                }"
                 class="transfer-items"
                 top="30vh">
                 <div class="dialog-content">
@@ -291,7 +297,9 @@
                 title="Resolve address"
                 :visible.sync="resolveAddressDialogShow"
                 width="35%"
-                :before-close="resolveAddressDialogShow"
+                :before-close="() => {
+                    resolveAddressDialogShow = false;
+                }"
                 class="resolve-address"
                 top="30vh">
                 <div class="dialog-content">
@@ -312,7 +320,9 @@
                 title="Set the CIS name for your address"
                 :visible.sync="setClsNameDialogShow"
                 width="35%"
-                :before-close="setClsNameDialogShow"
+                :before-close="() => {
+                    setClsNameDialogShow = false;
+                }"
                 class="merge-items"
                 top="30vh">
                 <div class="dialog-content">
@@ -349,7 +359,7 @@ export default {
         return {
             screenWidth: document.body.clientWidth,
             activeName: '1',
-            activeName2: 'general',
+            regmarket: '0',
             loading: false,
             approve: false,
             formSearch: {
@@ -358,26 +368,14 @@ export default {
                 maxPrice: '',
                 address: '',
             },
-            dataList: [{
-                id: '123456',
-                date: '2016-05-02',
-                price: '0.001',
-                number: '100',
-                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
-            }, {
-                id: '123456',
-                date: '2016-05-02',
-                price: '0.001',
-                number: '100',
-                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
-            }, {
-                id: '123456',
-                date: '2016-05-02',
-                price: '0.001',
-                number: '100',
-                address: 'cfxtest:aanwh44dw05dt1pbac1703fpf0me61nkvas5r6v6hy',
-            }],
+            timeInterval: null,
+            refreshTime: 10000, //数据刷新间隔时间
+            currPage: 1, //当前页
+            pageSize: 18, //每页显示条数
+            total: 100, //总条数
             isNoMoreData: false,
+            PageSearchWhere: [], //分页搜索数组
+            dataList: [],
             highlightedIndices: [],
             messageItemsDialogShow: false,
             transferItemsDialogShow: false,
@@ -422,9 +420,23 @@ export default {
                 address
             };
         },
+        calcTotalNumber() {
+            if (!this.dataList || !this.dataList.length) {
+                return { totalUSDT: 0, totalSlots: 0, totalCfxs };
+            } 
+            let totalSlots = this.highlightedIndices.length;  
+            let totalCfxs = 0;  
+            this.dataList.forEach((item, index) => {
+                if (this.highlightedIndices.includes(index)) {
+                    totalCfxs += Number(item.amount);
+                }
+            });
+            return { totalSlots, totalCfxs };
+        }
     },
     created() {
         try {
+            // this.getMyMarketplaceData();
         } catch (err) { }
     },
     watch: {
@@ -432,7 +444,6 @@ export default {
             immediate: true,
             async handler(val) {
                 if (val) {
-                    // this.refreshData();
                 }
             }
         },
@@ -440,7 +451,7 @@ export default {
             immediate: true,
             async handler(val) {
                 if (val.address) {
-                    await this.getIsApprove();
+                    await this.getMyMarketplaceData();
                 }
             }
         },
@@ -451,6 +462,44 @@ export default {
         "OrdersCardBox": OrdersCardBox,
     },
     methods: {
+        getMyMarketplaceData(ServerWhere) {
+            if (!ServerWhere || ServerWhere == undefined || ServerWhere.length <= 0) {
+                ServerWhere = {
+                    limit: this.pageSize,
+                    page: this.currPage,
+                    owner: this.address,
+                    regmarket: this.regmarket,
+                };
+            }
+            this.loading = true;
+            get(this.apiUrl + "/Api/Market/getMyMarketplaceData", ServerWhere, async json => {
+                console.log(json);
+                if (json.code == 10000) {
+                    let list = (json.data && json.data.lists) || [];
+                    // console.log(list);
+                    if (Array.isArray(list) && Array.isArray(this.dataList)) {
+                        this.dataList = this.dataList.concat(list);
+                        if(list.length < this.pageSize) {
+                            this.isNoMoreData = true;
+                        }
+                    }
+                    this.loading = false;
+                    this.total = json.data.count;
+                    this.$forceUpdate();
+                } else {
+                    this.$message.error("加载数据失败");
+                }
+            });
+        },
+        refreshDataClick() {
+            this.isNoMoreData = false;
+            this.currPage = 1;
+            this.dataList = [];
+            this.loading = true;
+            setTimeout(() => {
+                this.getMyMarketplaceData();
+            }, 1000);
+        },
         toggleHighlight(index) {
             const currentIndex = this.highlightedIndices.indexOf(index);
             if (currentIndex > -1) {
@@ -509,6 +558,12 @@ export default {
         setNameClick() {
             this.setClsNameDialogShow = true;
         },
+        regmarketClick(tab, event) {
+            this.currPage = 1;
+            this.dataList = [];
+            this.getMyMarketplaceData();
+        },
+
         async getIsApprove() { //获取余额 查看是否授权
             let balance = await getBalance(Address.BUSDT, 18); //获取余额
             console.log("DUSD balance", balance);

@@ -27,15 +27,13 @@ class MyMarket extends Base
         if ($limit <= 0) {
             $limit = config('paginate.list_rows');// 获取总条数
         }
-        $count = self::where($where)->alias("a")->join('nft_market b', 'a.nft_id=b.id')->join('nft_grade c', 'b.grade=c.id')->count();//计算总页面
+        $count = self::where($where)->alias("a")->count();//计算总页面
         $allpage = intval(ceil($count / $limit));
         // p($where);
         $lists = self::where($where)
                 ->alias("a")
-                ->join('nft_market b', 'a.nft_id=b.nft_id')
-                ->join('nft_grade c', 'b.grade=c.id')
                 ->page($page, $limit)
-                ->field('a.*,b.name,b.description,b.nft_address,b.wallet_address,b.price,a.sell_price,b.img_id,a.currency,c.name as grade_name,c.power, c.color')
+                ->field('a.*')
                 ->order("id asc")
                 ->select()
                 ->toArray();

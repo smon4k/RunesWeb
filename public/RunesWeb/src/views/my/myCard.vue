@@ -2,7 +2,7 @@
     <div>
         <div class="card">
             <el-row :gutter="screenWidth > adaptiveSize ? 24 : 10">
-                <el-col :xs="12" :sm="6" :md="4" v-for="(item, index) in dataList" :key="index">
+                <el-col :xs="12" :sm="6" :md="5" v-for="(item, index) in dataList" :key="index">
                     <div class="content" :class="{ 'highlight-border': isSelected(index) }" ref="card" @click.stop="toggleHighlightEvent(index)">
                         <div class="top">
                             <div class="currency">
@@ -15,7 +15,7 @@
                                 </div>
                             </div>
                             <div class="quantity">
-                                <div class="count-num">{{ item.number }}</div>
+                                <div class="count-num">{{ item.amount }}</div>
                             </div>
                         </div>
                         <div class="bottom">
@@ -28,8 +28,8 @@
         <div class="no-more">
             <span v-if="isNoMoreData">No More</span>
             <div v-else class="load-more">
-                <div v-if="!isLoading" @click="onLoadMoreDataClick">Load more</div>
-                <div v-if="isLoading" class="loading-icon">
+                <div v-if="!loading" @click="onLoadMoreDataClick">Load more</div>
+                <div v-if="loading" class="loading-icon">
                     <div class="loading-container">
                         <div class="loading-spinner"></div>
                     </div>
@@ -43,11 +43,10 @@
 <script>
 import { mapGetters, mapState } from "vuex";
 export default {
-    props: ['dataList', 'sellNowClick', 'highlightedIndices', 'toggleHighlight', 'isNoMoreData', 'onLoadMoreData'],
+    props: ['dataList', 'sellNowClick', 'highlightedIndices', 'toggleHighlight', 'isNoMoreData', 'onLoadMoreData', 'loading'],
     data() {
         return {
             screenWidth: document.body.clientWidth,
-            isLoading: false,
         }
     },
     computed: {
@@ -90,7 +89,6 @@ export default {
             this.$emit('toggleHighlight', index)
         },
         onLoadMoreDataClick() { //加载更多数据
-            this.isLoading = true;
             this.$emit('onLoadMoreData');
         }
     },

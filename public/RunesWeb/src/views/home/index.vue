@@ -104,7 +104,7 @@
               </div>
 
               <div class="list">
-                <el-tabs v-model="activeName" @tab-click="handleClickData">
+                <el-tabs v-model="regmarket" @tab-click="handleClickData">
                     <el-form :inline="true" :model="formSearch" :class="{ 'justify-content-between': screenWidth <= adaptiveSize }">
                         <span v-if="screenWidth > adaptiveSize">
                             <el-form-item label="">
@@ -163,28 +163,28 @@
                             <span class="text-secondary">
                                 <span>Result: {{ dataList.length }}</span>
                             </span>
-                            <span class="refresh">
+                            <span class="refresh" @click="refreshDataClick">
                                 <img :src="require('@/assets/svg/refresh.svg')" alt="" width="48">
                             </span>
                         </div>
                     </div>
-                    <el-tab-pane label="General" name="general">
-                        <Card :dataList="dataList" @buyNowClick="buyNowClick" :highlightedIndices="highlightedIndices" :isNoMoreData="isNoMoreData" @toggleHighlight="toggleHighlight" @onLoadMoreData="onLoadMoreData"></Card>
+                    <el-tab-pane label="General" name="0">
+                        <Card :dataList="dataList" @buyNowClick="buyNowClick" :highlightedIndices="highlightedIndices" :isNoMoreData="isNoMoreData" @toggleHighlight="toggleHighlight" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
                     </el-tab-pane>
-                    <el-tab-pane label="Images" name="image">
-                        <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                    <el-tab-pane label="Images" name="1">
+                        <Card :dataList="dataList" @buyNowClick="buyNowClick" :highlightedIndices="highlightedIndices" :isNoMoreData="isNoMoreData" @toggleHighlight="toggleHighlight" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
                     </el-tab-pane>
-                    <el-tab-pane label="Audio" name="audio">
-                        <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                    <el-tab-pane label="Audio" name="2">
+                        <Card :dataList="dataList" @buyNowClick="buyNowClick" :highlightedIndices="highlightedIndices" :isNoMoreData="isNoMoreData" @toggleHighlight="toggleHighlight" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
                     </el-tab-pane>
-                    <el-tab-pane label="Text" name="text">
-                        <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                    <el-tab-pane label="Text" name="3">
+                        <Card :dataList="dataList" @buyNowClick="buyNowClick" :highlightedIndices="highlightedIndices" :isNoMoreData="isNoMoreData" @toggleHighlight="toggleHighlight" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
                     </el-tab-pane>
-                    <el-tab-pane label="Inscription" name="inscription">
-                        <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                    <el-tab-pane label="Inscription" name="4">
+                        <Card :dataList="dataList" @buyNowClick="buyNowClick" :highlightedIndices="highlightedIndices" :isNoMoreData="isNoMoreData" @toggleHighlight="toggleHighlight" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
                     </el-tab-pane>
-                    <el-tab-pane label="Name" name="name">
-                        <Card :dataList="dataList" @buyNowClick="buyNowClick"></Card>
+                    <el-tab-pane label="Name" name="5">
+                        <Card :dataList="dataList" @buyNowClick="buyNowClick" :highlightedIndices="highlightedIndices" :isNoMoreData="isNoMoreData" @toggleHighlight="toggleHighlight" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
                     </el-tab-pane>
                   </el-tabs>
               </div>
@@ -199,9 +199,9 @@
                         <div class="clear" @click="clearSelectAll()">Clear</div>
                     </div>
                     <div class="right">
-                        <div class="total">Total: <font color="#ad8d65">{{ calcTotalNumber }} USDT</font></div>
+                        <div class="total">Total: <font color="#ad8d65">{{ calcTotalNumber.totalUSDT }} USDT</font></div>
                         <div class="sweep-button">
-                            <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" class="search-button" type="primary" @click="buyNowClick" :disabled="highlightedIndices.length <= 0">SWEEP</el-button>
+                            <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" class="search-button" type="primary" @click="sweepClick" :disabled="highlightedIndices.length <= 0">SWEEP</el-button>
                         </div>
                     </div>
                 </div>
@@ -209,13 +209,13 @@
                     <div class="left">
                         <div class="select-all">
                             <el-checkbox v-model="checked" @change="selectAllChange">Select All</el-checkbox>
-                            <div class="item-num">{{ highlightedIndices.length }} item</div>
+                            <div class="item-num">{{ calcTotalNumber.totalSlots }} item</div>
                         </div>
-                        <div class="total">Total: <font color="#ad8d65">{{ calcTotalNumber }} USDT</font></div>
+                        <div class="total">Total: <font color="#ad8d65">{{ calcTotalNumber.totalUSDT }} USDT</font></div>
                     </div>
                     <div class="right">
                         <div class="sweep-button">
-                            <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" class="search-button" type="primary" @click="buyNowClick" :disabled="highlightedIndices.length <= 0">SWEEP</el-button>
+                            <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" class="search-button" type="primary" @click="sweepClick" :disabled="highlightedIndices.length <= 0">SWEEP</el-button>
                         </div>
                     </div>
                 </div>
@@ -309,7 +309,7 @@ export default {
     data() {
         return {
             screenWidth: document.body.clientWidth,
-            activeName: 'general',
+            regmarket: '0',
             loading: false,
             approve: false,
             formSearch: {
@@ -359,14 +359,19 @@ export default {
             };
         },
         calcTotalNumber() {
-            if (!this.dataList || !this.dataList.length) return 0;
-            const totalUSDT = this.dataList.reduce((total, item, index) => {
+            if (!this.dataList || !this.dataList.length) {
+                return { totalUSDT: 0, totalSlots: 0, totalCfxs };
+            } 
+            let totalUSDT = 0;  
+            let totalSlots = this.highlightedIndices.length;  
+            let totalCfxs = 0;  
+            this.dataList.forEach((item, index) => {
                 if (this.highlightedIndices.includes(index)) {
-                    return total + Number(item.amount);
+                    totalUSDT += Number(item.amount);
+                    totalCfxs += Number(item.quantity);
                 }
-                return total;
-            }, 0); 
-            return totalUSDT;
+            });
+            return { totalUSDT, totalSlots, totalCfxs };
         }
     },
     created() {
@@ -423,22 +428,41 @@ export default {
             this.checked = false;
         },
         handleClickData(row) {
-            console.log(row);
+            this.currPage = 1;
+            this.dataList = [];
+            this.getMarketplaceList();
         },
         onSubmit() {
             console.log('submit!');
         },
+        sweepClick() {
+            const sweepData = this.calcTotalNumber;
+            this.buyNowData = {
+                youWillPay: sweepData.totalUSDT,
+                slots: sweepData.totalSlots,
+                cfxs: sweepData.totalCfxs,
+            };
+            this.buyNowDialogShow = true;
+        },
         buyNowClick(row) {
-            console.log(row);
             this.buyNowData = {
                 youWillPay: row.amount,
-                slots: row.price,
+                slots: 1,
                 cfxs: row.quantity,
             };
             this.buyNowDialogShow = true;
         },
         buyNowDialogClose() {
             this.buyNowDialogShow = false;
+        },
+        refreshDataClick() {
+            this.isNoMoreData = false;
+            this.currPage = 1;
+            this.dataList = [];
+            this.loading = true;
+            setTimeout(() => {
+                this.getMarketplaceList();
+            }, 1000);
         },
         refreshData() { //定时刷新数据
             this.timeInterval = setInterval(async () => {
@@ -458,11 +482,11 @@ export default {
             this.getMarketplaceList();
         },
         getMarketplaceList(ServerWhere) { //获取产品日收益列表
-            var that = this.$data;
             if (!ServerWhere || ServerWhere == undefined || ServerWhere.length <= 0) {
                 ServerWhere = {
-                    limit: that.pageSize,
-                    page: that.currPage,
+                    limit: this.pageSize,
+                    page: this.currPage,
+                    regmarket: this.regmarket,
                 };
             }
             this.loading = true;
