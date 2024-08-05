@@ -65,7 +65,7 @@ export const fetchAccountData = async () => {
     // console.log("Got accounts", accounts);
     let address = accounts[0];
     if (window.location.host === "localhost:8007") {
-      address = "0x6Bc76D2224E6Fbd45E8E910aecAd1b4b15bdFb70";
+      // address = "0x6Bc76D2224E6Fbd45E8E910aecAd1b4b15bdFb70";
       // address = "0x8936feb1b6834b979E1F6dE5A73ef14D4218F9eC";
       // address = "0x669515B8B042174deF89229c8135435a8207bFc4";
     }

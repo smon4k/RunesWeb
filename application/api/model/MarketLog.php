@@ -21,10 +21,10 @@ class MarketLog extends Base
      * @author qinlh
      * @since 2021-11-28
      */
-    public static function addMarketLogData($nft_id=0, $address='', $data='', $hash='', $status=0)
+    public static function addMarketLogData($chainid=0, $address='', $data='', $hash='', $status=0)
     {
-        if ($address != '' && $nft_id > 0 && $data !== '') {
-            $insertId = self::insert(['nft_id'=>$nft_id, 'address'=>$address, 'data'=>$data, 'time' => date('Y-m-d H:i:s'), 'ip' => getRealIp(), 'hash' => $hash, 'status' => $status]);
+        if ($address != '' && $chainid > 0 && $data !== '') {
+            $insertId = self::insert(['chainid'=>$chainid, 'address'=>$address, 'data'=>$data, 'time' => date('Y-m-d H:i:s'), 'ip' => getRealIp(), 'hash' => $hash, 'status' => $status]);
             if ($insertId >= 0) {
                 return true;
             }

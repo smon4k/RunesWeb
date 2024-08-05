@@ -65,7 +65,7 @@ class MarketController extends BaseController
         $name = $request->request('name', '', 'trim');
         $where = [];
         // $where['a.status'] = 1;
-        $where['a.useraddr'] = $address;
+        $where['a.owner'] = $address;
         if ($regmarket && $regmarket > 0) {
             $where['a.regmarket'] = $regmarket;
         }
@@ -75,6 +75,25 @@ class MarketController extends BaseController
         $result = MyMarket::getMyMarketplaceData($where, $page, $limit);
         // p($result);
         return $this->as_json($result);
+    }
+
+    /**
+     * 购买 支持批量购买
+     * @author qinlh
+     * @since 2024-08-05
+     */
+    public function batchUnlockingScript(Request $request)
+    {
+        $cfxsIds = $request->post('cfxsIds/a', [], '');
+        // $amounts = $request->post('amounts/a', [], '');
+        $sendaddr = $request->post('sendaddr', '', 'trim');
+        $hash = $request->post('hash', '', 'trim');
+        $result = MyMarket::batchUnlockingScript($cfxsIds, $sendaddr, $hash);
+        if ($result && $result['code'] == 1) {
+            return $this->as_json('ok');
+        } else {
+            return $this->as_json('70001', 'Error');
+        }
     }
 
 

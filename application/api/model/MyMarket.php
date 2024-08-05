@@ -43,6 +43,81 @@ class MyMarket extends Base
         return ['count'=>$count,'allpage'=>$allpage,'lists'=>$lists];
     }
 
+
+    /**
+     * 购买操作
+     * @author qinlh
+     * @since 2024-08-05
+     */
+    public static function batchUnlockingScript($cfxsIds=[], $sendaddr='', $hash='')
+    {
+        if (count($cfxsIds) > 0 && $sendaddr !== '') {
+            self::startTrans();
+            try {
+                $insertCount = 0;
+                foreach ($cfxsIds as $key => $cfxId) {
+                    $marget = Market::getMarketplaceDetailData($cfxId);
+                    if($marget) {
+                        $insertData = [
+                            'chainid' => $cfxId,
+                            'amount' => $marget['quantity'], 
+                            'owner' => $sendaddr, 
+                            'regaddr' => $marget['chainto'], 
+                            'useraddr' => '', 
+                            'regmarket' => $marget['regmarket'], 
+                            'data' => $marget['data'], 
+                            'addtime' => date('Y-m-d H:i:s'), 
+                            'modifytime' => date('Y-m-d H:i:s'), 
+                            'status' => 1
+                        ];
+                        $insertId = self::insert($insertData);
+                        if ($insertId >= 0) {
+                            $delRes = Market::delMarketData($cfxId);
+                            if($delRes !== false) {
+                                MarketLog::addMarketLogData($cfxId, $sendaddr, json_encode($insertData), $hash, 1); //记录购买记录
+                                $insertCount += 1;
+                            }
+                        }
+                    }
+                }
+                if ($insertCount == count($cfxsIds)) {
+                    self::commit();
+                    return ['code' => 1, 'message' => 'ok'];
+                } else {
+                    self::rollback();
+                    return ['code' => 0, 'message' => 'error'];
+                }
+            } catch (\Exception $e) {
+                p($e);
+                // 回滚事务
+                self::rollback();
+                $error_msg = json_encode([
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'code' => $e->getCode(),
+                ], JSON_UNESCAPED_UNICODE);
+                return ['code' => 0, 'message' => $error_msg];
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     /**
      * 获取用户对应nft数据
      * @author qinlh
@@ -58,6 +133,8 @@ class MyMarket extends Base
         }
         return false;
     }
+
+
 
     /**
      * 获取用户我的市场状态
