@@ -44,24 +44,19 @@ class Market extends Base
         return ['count'=>$count,'allpage'=>$allpage,'lists'=>$lists];
     }
 
-    /**
-     * 获取市场热门列表数据
+     /**
+     * 插入数据
      * @author qinlh
-     * @since 2024-08-05
+     * @since 2024-08-06
      */
-    public static function getMarketplaceHotList($where)
-    {
-        $lists = self::alias('a')
-                    ->join('nft_grade b', 'a.grade=b.id', 'LEFT')
-                    ->where($where)
-                    ->order("id asc")
-                    ->field("a.*,b.name as grade_name,b.power,b.color")
-                    ->select()
-                    ->toArray();
-        if (!$lists) {
-            return false;
+    public static function insertData($insertData=[]) {
+        if(count($insertData) > 0) {
+            $insertId = self::insert($insertData);
+            if($insertId) {
+                return true;
+            }
         }
-        return $lists;
+        return false;
     }
 
     /**
@@ -72,14 +67,13 @@ class Market extends Base
     public static function getMarketplaceDetailData($chainid=0)
     {
         $lists = [];
-        if ($chainid > 0) {
+        if ($chainid !== '') {
             $lists = self::where('chainid', $chainid)->find();
-            if (!$lists) {
-                return false;
+            if ($lists) {
+                return $lists->toArray();
             }
         }
-        // p($lists);
-        return $lists;
+        return false;
     }
 
     /**
