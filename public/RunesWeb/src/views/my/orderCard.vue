@@ -2,8 +2,8 @@
     <div>
         <div class="card">
             <el-row :gutter="screenWidth > adaptiveSize ? 24 : 10">
-                <el-col :xs="12" :sm="6" :md="4" v-for="(item, index) in dataList" :key="index">
-                    <div class="content" :class="{ 'highlight-border': isSelected(index) }" ref="card" @click.stop="toggleHighlightEvent(index)">
+                <el-col :xs="12" :sm="6" :md="5" v-for="(item, index) in dataList" :key="index">
+                    <div class="content" ref="card">
                         <div class="top">
                             <div class="currency">
                                 <div class="left">
@@ -15,23 +15,23 @@
                                 </div>
                             </div>
                             <div class="quantity">
-                                <div class="count-num">{{ item.number }}</div>
+                                <div class="count-num">{{ item.quantity }}</div>
                                 <div class="price-name">
-                                   <span class="price">$1.0000</span> / CFXs
+                                   <span class="price">${{ item.unitprice }}</span> / CFXs
                                 </div>
                             </div>
                             <div class="time">
                                 <img :src="require('@/assets/svg/time.svg')" alt="" width="12">
-                                {{ item.date }}
+                                Expired: {{ formattedTime(item.locktime) }}
                             </div>
                         </div>
                         <div class="bottom">
                             <div class="ids-num">
-                                <div class="ids">#{{ item.id }}</div>
                                 <div class="num">
                                     <img :src="require('@/assets/svg/usdt.svg')" alt="" width="16">
-                                    <div class="">25.500</div>
+                                    <div class="">USDT</div>
                                 </div>
+                                <div class="num">${{ item.amount }}</div>
                             </div>
                             <div class="address-but">
                                 <div class="buy-now"><el-button @click="handleClick(item)">Cancel Listing</el-button></div>
@@ -44,8 +44,8 @@
         <div class="no-more">
             <span v-if="isNoMoreData">No More</span>
             <div v-else class="load-more">
-                <div v-if="!isLoading" @click="onLoadMoreDataClick">Load more</div>
-                <div v-if="isLoading" class="loading-icon">
+                <div v-if="!loading" @click="onLoadMoreDataClick">Load more</div>
+                <div v-if="loading" class="loading-icon">
                     <div class="loading-container">
                         <div class="loading-spinner"></div>
                     </div>
@@ -59,11 +59,10 @@
 <script>
 import { mapGetters, mapState } from "vuex";
 export default {
-    props: ['dataList', 'cancelListingClick', 'highlightedIndices', 'toggleHighlight', 'isNoMoreData', 'onLoadMoreData'],
+    props: ['dataList', 'cancelListingClick', 'highlightedIndices', 'toggleHighlight', 'isNoMoreData', 'onLoadMoreOrderData', 'loading'],
     data() {
         return {
             screenWidth: document.body.clientWidth,
-            isLoading: false,
         }
     },
     computed: {
@@ -85,7 +84,6 @@ export default {
             immediate: true,
             async handler(val) {
                 if(val) {
-                    this.isLoading = false;
                 }
             }
         },
@@ -97,18 +95,20 @@ export default {
         handleClick(row) {
             this.$emit('cancelListingClick', row);
         },
-        isSelected(index) {
-            if(this.highlightedIndices) {
-                return this.highlightedIndices.includes(index);
-            }
-        },
-        toggleHighlightEvent(index) {
-            this.$emit('toggleHighlight', index)
-        },
         onLoadMoreDataClick() { //加载更多数据
             this.isLoading = true;
-            this.$emit('onLoadMoreData');
-        }
+            this.$emit('onLoadMoreOrderData');
+        },
+        formattedTime(time) {
+            const date = new Date(time);
+            // 获取月、日、小时和分钟，并确保它们是两位数格式
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            // 返回格式化的日期时间字符串
+            return `${month}-${day} ${hours}:${minutes}`;
+        },
     },
     mounted() {
         window.onresize = () => {

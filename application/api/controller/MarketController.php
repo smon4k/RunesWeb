@@ -78,6 +78,24 @@ class MarketController extends BaseController
     }
 
     /**
+     * 获取我的正在出售的数据
+     * @author qinlh
+     * @since 2024-08-07
+     */
+    public function getSellOrdersData(Request $request)
+    {
+        $address = $request->request('owner', '', 'trim');
+        $page = $request->request('page', 1, 'intval');
+        $limit = $request->request('limit', 20, 'intval');
+        $where = [];
+        // $where['a.status'] = 1;
+        $where['a.chainto'] = $address;
+        $result = Market::getSellOrdersData($where, $page, $limit);
+        // p($result);
+        return $this->as_json($result);
+    }
+
+    /**
      * 购买 支持批量购买
      * @author qinlh
      * @since 2024-08-05

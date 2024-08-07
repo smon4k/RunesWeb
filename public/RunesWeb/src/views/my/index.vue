@@ -2,7 +2,7 @@
     <div class="container">
         <div class="content">
             <div class="tab-nav">
-                <el-tabs v-model="activeName">
+                <el-tabs v-model="activeName" @tab-click="tabOrderClick">
                     <el-tab-pane label="My CFXs" name="1">
                         <div class="new-world" v-if="screenWidth > adaptiveSize">
                             <div class="flag"><img :src="require('@/assets/svg/flag.svg')" alt="" width="24"></div>
@@ -98,13 +98,13 @@
                     <el-tab-pane label="Orders" name="2">
                         <div class="count-number">
                             <span class="text-secondary">
-                                <span>Listing: 0</span>
+                                <span>Listing: {{ dataListOrder.length }}</span>
                             </span>
-                            <span class="refresh">
+                            <span class="refresh" @click="refreshOrderDataClick">
                                 <img :src="require('@/assets/svg/refresh.svg')" alt="" width="48">
                             </span>
                         </div>
-                        <OrdersCardBox :dataList="dataList" @cancelListingClick="cancelListingClick" />
+                        <OrdersCardBox :dataList="dataListOrder" @cancelListingClick="cancelListingClick" :isNoMoreData="isNoMoreDataOrder" @onLoadMoreOrderData="onLoadMoreOrderData" :loading="loadingOrder"/>
                     </el-tab-pane>
                     <el-tab-pane label="CLS" name="3">
                         <div class="idenser">The CFXs Identification Service</div>
@@ -200,7 +200,7 @@
                 <div class="dialog-content">
                     <div class="you-wall-pay">
                         <span class="title">You will cancel</span>
-                        <span class="value">{{ buyNowData.youWillPay }} USDT</span>
+                        <span class="value">1 listings</span>
                     </div>
                     <div class="button-dialog">
                         <el-button type="primary">CONFIRM CANCEL</el-button>
@@ -360,7 +360,6 @@ export default {
             screenWidth: document.body.clientWidth,
             activeName: '1',
             regmarket: '0',
-            loading: false,
             approve: false,
             formSearch: {
                 searchName: '',
@@ -368,6 +367,8 @@ export default {
                 maxPrice: '',
                 address: '',
             },
+            dataList: [],
+            loading: false,
             timeInterval: null,
             refreshTime: 10000, //数据刷新间隔时间
             currPage: 1, //当前页
@@ -375,7 +376,15 @@ export default {
             total: 100, //总条数
             isNoMoreData: false,
             PageSearchWhere: [], //分页搜索数组
-            dataList: [],
+            
+            dataListOrder: [],
+            loadingOrder: false,
+            currPageOrder: 1, //当前页
+            pageSizeOrder: 18, //每页显示条数
+            totalOrder: 100, //总条数
+            isNoMoreDataOrder: false,
+            PageSearchWhereOrder: [], //分页搜索数组
+
             highlightedIndices: [],
             messageItemsDialogShow: false,
             transferItemsDialogShow: false,
@@ -473,7 +482,6 @@ export default {
             }
             this.loading = true;
             get(this.apiUrl + "/Api/Market/getMyMarketplaceData", ServerWhere, async json => {
-                console.log(json);
                 if (json.code == 10000) {
                     let list = (json.data && json.data.lists) || [];
                     // console.log(list);
@@ -491,6 +499,38 @@ export default {
                 }
             });
         },
+        getSellOrdersData(ServerWhere) {
+            if (!ServerWhere || ServerWhere == undefined || ServerWhere.length <= 0) {
+                ServerWhere = {
+                    limit: this.pageSizeOrder,
+                    page: this.currPageOrder,
+                    owner: this.address,
+                };
+            }
+            this.loadingOrder = true;
+            get(this.apiUrl + "/Api/Market/getSellOrdersData", ServerWhere, async json => {
+                if (json.code == 10000) {
+                    let list = (json.data && json.data.lists) || [];
+                    // console.log(list);
+                    if (Array.isArray(list) && Array.isArray(this.dataListOrder)) {
+                        this.dataListOrder = this.dataListOrder.concat(list);
+                        if(list.length < this.pageSizeOrder) {
+                            this.isNoMoreDataOrder = true;
+                        }
+                    }
+                    this.loadingOrder = false;
+                    this.totalOrder = json.data.count;
+                    this.$forceUpdate();
+                } else {
+                    this.$message.error("加载数据失败");
+                }
+            });
+        },
+        tabOrderClick() {
+            this.currPageOrder = 1;
+            this.dataListOrder = [];
+            this.getSellOrdersData();
+        },
         refreshDataClick() {
             this.isNoMoreData = false;
             this.currPage = 1;
@@ -498,6 +538,15 @@ export default {
             this.loading = true;
             setTimeout(() => {
                 this.getMyMarketplaceData();
+            }, 1000);
+        },
+        refreshOrderDataClick() {
+            this.isNoMoreDataOrder = false;
+            this.currPageOrder = 1;
+            this.dataListOrder = [];
+            this.loadingOrder = true;
+            setTimeout(() => {
+                this.getSellOrdersData();
             }, 1000);
         },
         toggleHighlight(index) {
@@ -538,7 +587,12 @@ export default {
             this.quickListDialogShow = true;
         },
         onLoadMoreData() {
-            console.log('Load More');
+            this.currPage += 1;
+            this.getMyMarketplaceData();
+        },
+        onLoadMoreOrderData() {
+            this.currPageOrder += 1;
+            this.getSellOrdersData();
         },
         onBatchListingFun() {
             this.quickListDialogShow = true;
@@ -980,7 +1034,6 @@ export default {
                     }
                     .dialog-content {
                         display: flex;
-                        padding: 16px;
                         flex-direction: column;
                         .you-wall-pay, .for {
                             color: #fff;

@@ -235,11 +235,12 @@
                     </div>
                     <div class="for">
                         <span class="title">For</span>
-                        <span class="value">{{ highlightedIndices.length }} <span class="title">Slots</span> {{ buyNowData.cfxs }} <span class="title">CFXs</span></span>
+                        <span class="value">{{ buyNowData.CFXsIds.length }} <span class="title">Slots</span> {{ buyNowData.cfxs }} <span class="title">CFXs</span></span>
                     </div>
                     <div class="button-dialog">
                         <span class="text">You will be asked to approve this purchase from your wallet.</span>
-                        <el-button type="primary">APPROVE</el-button>
+                        <el-button type="primary" @click="startApprove" v-if="!approve" :loading="trading">APPROVE</el-button>
+                        <el-button type="primary" v-else :loading="trading">Buy</el-button>
                     </div>
                 </div>
             </el-dialog>
@@ -300,7 +301,7 @@
 import { get, post } from "@/common/axios.js";
 import { mapGetters, mapState } from "vuex";
 import { keepDecimalNotRounding } from "@/utils/tools";
-import { approve } from "@/wallet/trade";
+import { approve, unlockingScriptbatch } from "@/wallet/trade";
 import { getBalance, isApproved } from "@/wallet/serve";
 import Address from '@/wallet/address.json'
 import CardBox from './card.vue';
@@ -310,6 +311,7 @@ export default {
         return {
             screenWidth: document.body.clientWidth,
             regmarket: '0',
+            trading: false,
             loading: false,
             approve: false,
             formSearch: {
@@ -435,21 +437,29 @@ export default {
         onSubmit() {
             console.log('submit!');
         },
-        sweepClick() {
+        sweepClick() { //批量购买
             const sweepData = this.calcTotalNumber;
             this.buyNowData = {
                 youWillPay: sweepData.totalUSDT,
                 slots: sweepData.totalSlots,
                 cfxs: sweepData.totalCfxs,
             };
+            this.approve = false;
             this.buyNowDialogShow = true;
         },
-        buyNowClick(row) {
+        buyNowClick(row) { //单个购买
             this.buyNowData = {
                 youWillPay: row.amount,
                 slots: 1,
                 cfxs: row.quantity,
+                CFXsIds: [
+                    row.chainid
+                ],
+                amounts: [
+                    row.quantity
+                ],
             };
+            this.approve = false;
             this.buyNowDialogShow = true;
         },
         buyNowDialogClose() {
@@ -518,23 +528,37 @@ export default {
                 this.approve = bool ? true : false;
             });
         },
-        startApprove() { //批准LUSD
-            const loading = this.$loading({
-                lock: true,
-                text: 'transaction in progress',
-                spinner: 'el-icon-loading',
-                background: 'rgba(0, 0, 0, 0.7)'
-            });
+        startApprove() {
+            // const loading = this.$loading({
+            //     lock: true,
+            //     text: 'transaction in progress',
+            //     spinner: 'el-icon-loading',
+            //     background: 'rgba(0, 0, 0, 0.7)'
+            // });
             this.trading = true;
-            approve(Address.BTCB, this.gamesFillingAddress).then((hash) => {
+            approve(Address.USDT, Address.CFXsContractAddress, this.buyNowData.youWillPay, 18).then((hash) => {
                 // console.log(result);
-                loading.close();
+                // loading.close();
                 if (hash) {
                     this.approve = true;
                     this.trading = false;
                 }
             }).finally(() => {
-                loading.close();
+                // loading.close();
+                this.trading = false;
+            });
+        },
+        buyNow() {
+            this.trading = true;
+            const CFXsIds = [
+
+            ];
+            unlockingScriptbatch().then((hash) => {
+                if (hash) {
+                    this.approve = true;
+                    this.trading = false;
+                }
+            }).finally(() => {
                 this.trading = false;
             });
         }
@@ -842,6 +866,9 @@ export default {
                                 background-color: #ad8d65;
                                 border: 0;
                                 color: rgb(0, 0, 0/1);
+                            }
+                            .el-button.is-loading {
+                                background-color: hsla(0, 0%, 50%, .2);
                             }
                         }
                     }

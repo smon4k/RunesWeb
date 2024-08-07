@@ -44,6 +44,31 @@ class Market extends Base
         return ['count'=>$count,'allpage'=>$allpage,'lists'=>$lists];
     }
 
+    /**
+     * 获取我的正在出售的数据
+     * @author qinlh
+     * @since 2024-08-07
+     */
+    public static function getSellOrdersData($where, $page, $limit)
+    {
+        if ($limit <= 0) {
+            $limit = config('paginate.list_rows');// 获取总条数
+        }
+        $count = self::alias('a')->where($where)->count();//计算总页面
+        $allpage = intval(ceil($count / $limit));
+        $lists = self::alias('a')
+                    ->where($where)
+                    ->page($page, $limit)
+                    ->order("id desc")
+                    ->field("a.*")
+                    ->select()
+                    ->toArray();
+        if (!$lists) {
+            return false;
+        }
+        return ['count'=>$count,'allpage'=>$allpage,'lists'=>$lists];
+    }
+
      /**
      * 插入数据
      * @author qinlh

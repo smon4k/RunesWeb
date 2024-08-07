@@ -2,7 +2,7 @@
 import {  fromWei , toWei, keepDecimalNotRounding } from '@/utils/tools'
 import { toolNumber, numMulti } from '@/utils/tools'
 import  tokenABI from './abis/token.json'
-import gameFillingABI from './abis/gameFillingABI.json'
+import CFXsContractMainABI from './abis/CFXsContractMainABI.json'
 import gameFillingABIV2 from './abis/gameFillingABIV2.json'
 import LuClsSysABI from './abis/LuClsSysABI.json'
 import hashpowerABI from './abis/hashpowerABI.json'
@@ -25,12 +25,11 @@ const mintBankErr = [
 ]
 
 // 授权
-
-export const approve =  function (tokenAddress  , otherAddress ,  amount , decimals) {
+export const approve =  function (tokenAddress, otherAddress, amount, decimals) {
   const account = __ownInstance__.$store.state.base.address;
   const approveAmount = (amount &&  decimals)? web3.utils.toHex(toWei(amount , decimals))  : web3.utils.toHex(toolNumber(1.157920892373163*Math.pow(10 , 59)))
   const tokenContract = new web3.eth.Contract(tokenABI, tokenAddress);
-  const contract = otherAddress || __ownInstance__.$store.state.base.bankAddress
+  const contract = otherAddress;
   const approveEncodedABI = tokenContract.methods
     .approve(contract, approveAmount)
     .encodeABI();
@@ -80,6 +79,87 @@ export const approve =  function (tokenAddress  , otherAddress ,  amount , decim
     });
   })
 }
+
+// 购买
+export const unlockingScriptbatch = async function (CFXsIds=[], amounts=[]) {
+  const address = window.newVue.$store.state.base.address;
+  const contractAddress = Address.CFXsContractAddress;
+  const contract = new web3.eth.Contract(CFXsContractMainABI, contractAddress);
+  let amount = web3.utils.toHex(toWei(recomAmount, 18));
+  if(!recomAddress) {
+    recomAddress = Address.AllAddress;
+  }
+  let encodedABI = contract.methods.UnlockingScriptbatch(0, recomAddress, amount).encodeABI();
+  let timestamp = new Date().getTime().toString();
+  window.newVue.$store.dispatch('createOrderForm', { val: 0, id: timestamp })
+  return new Promise((resolve, reject) => {
+    let hashInfo
+    web3.eth.getTransactionCount(address).then(async transactionNonce => {
+      let gasPrice = await web3.eth.getGasPrice();
+      let estimateGas = await web3.eth.estimateGas({
+        from: address,
+        to: contractAddress,
+        data: encodedABI,
+      })
+      console.log('estimateGas', estimateGas)
+      const params = [{
+        from: address,
+        to: contractAddress,
+        data: encodedABI,
+        gasPrice: web3.utils.toHex(gasPrice),
+        gas: web3.utils.toHex(estimateGas),
+        // gas: web3.utils.toHex(50000),
+      }];
+      web3.eth.sendTransaction(params[0])
+        .on('transactionHash', function (hash) {
+          console.log('hash', hash);
+          if (hash) {
+            hashInfo = hash
+            // window.newVue.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
+          }
+        })
+        .on('receipt', function (receipt) {
+          window.newVue.$store.dispatch('changeTradeStatus', { id: timestamp, val: 1, hash: hashInfo })
+          resolve()
+        })
+        .on('error', function (err) {
+          let isUserDeny = err.code === 4001
+          window.newVue.$store.dispatch('changeTradeStatus', { id: timestamp, val: 2, hash: hashInfo, isUserDeny: isUserDeny, isFailed: true })
+          console.log('err', err)
+          reject(err)
+        })
+    })
+      .catch(err => {
+        console.log('getTransactionCount', err)
+        window.newVue.$store.dispatch('changeTradeStatus', { id: timestamp, val: 2, hash: hashInfo, isUserDeny: false, isFailed: true })
+        reject(err)
+      })
+  })
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * 极速版-充值-支持多币种
