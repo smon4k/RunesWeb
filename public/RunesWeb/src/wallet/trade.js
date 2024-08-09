@@ -9,7 +9,7 @@ import hashpowerABI from './abis/hashpowerABI.json'
 import goblinPoolsABI from './abis/goblinPools.json'
 import DicePoolsABI from './abis/DicePoolsABI.json'
 import {saveNotifyStatus, setDepositWithdraw, setDealerRecord} from "@/wallet/serve";
-import TOKEN from '@/wallet/token.js'
+import Address from '@/wallet/address.json'
 
 // 领取空投奖励
 
@@ -81,17 +81,15 @@ export const approve =  function (tokenAddress, otherAddress, amount, decimals) 
 }
 
 // 购买
-export const unlockingScriptbatch = async function (CFXsIds=[], amounts=[]) {
-  const address = window.newVue.$store.state.base.address;
+export const unlockingScriptbatch = async function (cfxsIds=[], amounts=[], usdIds=[]) {
+  console.log(cfxsIds, amounts);
+  const address = __ownInstance__.$store.state.base.address;
   const contractAddress = Address.CFXsContractAddress;
   const contract = new web3.eth.Contract(CFXsContractMainABI, contractAddress);
-  let amount = web3.utils.toHex(toWei(recomAmount, 18));
-  if(!recomAddress) {
-    recomAddress = Address.AllAddress;
-  }
-  let encodedABI = contract.methods.UnlockingScriptbatch(0, recomAddress, amount).encodeABI();
+  // let amount = web3.utils.toHex(toWei(recomAmount, 18));
+  let encodedABI = contract.methods.UnlockingScriptbatch(cfxsIds, amounts, usdIds).encodeABI();
   let timestamp = new Date().getTime().toString();
-  window.newVue.$store.dispatch('createOrderForm', { val: 0, id: timestamp })
+  __ownInstance__.$store.dispatch('createOrderForm', { val: 0, id: timestamp })
   return new Promise((resolve, reject) => {
     let hashInfo
     web3.eth.getTransactionCount(address).then(async transactionNonce => {
@@ -115,23 +113,23 @@ export const unlockingScriptbatch = async function (CFXsIds=[], amounts=[]) {
           console.log('hash', hash);
           if (hash) {
             hashInfo = hash
-            // window.newVue.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
+            // __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
           }
         })
         .on('receipt', function (receipt) {
-          window.newVue.$store.dispatch('changeTradeStatus', { id: timestamp, val: 1, hash: hashInfo })
+          __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 1, hash: hashInfo })
           resolve()
         })
         .on('error', function (err) {
           let isUserDeny = err.code === 4001
-          window.newVue.$store.dispatch('changeTradeStatus', { id: timestamp, val: 2, hash: hashInfo, isUserDeny: isUserDeny, isFailed: true })
+          __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 2, hash: hashInfo, isUserDeny: isUserDeny, isFailed: true })
           console.log('err', err)
           reject(err)
         })
     })
       .catch(err => {
         console.log('getTransactionCount', err)
-        window.newVue.$store.dispatch('changeTradeStatus', { id: timestamp, val: 2, hash: hashInfo, isUserDeny: false, isFailed: true })
+        __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 2, hash: hashInfo, isUserDeny: false, isFailed: true })
         reject(err)
       })
   })

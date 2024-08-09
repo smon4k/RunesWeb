@@ -245,20 +245,20 @@
                     <div class="set-unit-price">
                         <div class="title">Set unit price</div>
 
-                        <div v-for="(item, index) in highlightedIndices" :key="index">
+                        <div v-for="(item, index) in selectDataList" :key="index">
                             <div class="input-price">
                                 <div class="top-text">
-                                    <span>#123456</span>
-                                    <span>1</span>
+                                    <span>#{{ item.chainid }}</span>
+                                    <span>{{ item.amount }}</span>
                                 </div>
                                 <div class="input-number">
-                                    <el-input v-model="input" placeholder="0.00">
+                                    <el-input v-model="sellPriceValue[item.chainid]" placeholder="0.00">
                                         <div slot="suffix"> <img :src="require('@/assets/usdt.png')" alt="" width="18"> USDT</div>
                                     </el-input>
                                 </div>
                                 <div class="total-price">
                                     <span>Total Price</span>
-                                    <span>10000</span>
+                                    <span>{{ new Intl.NumberFormat('en-US').format(sellPriceValue[item.chainid]) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -267,17 +267,20 @@
                         <div class="title">Duration</div>
                         <el-date-picker
                             v-model="duration"
+                            :clearable="false"
                             type="date"
-                            placeholder="选择日期">
+                            placeholder="选择日期"
+                            :picker-options="pickerOptions"
+                            @change="pickerChange">
                         </el-date-picker>
                     </div>
                     <div class="locked">
                         <span>Locked</span>
-                        <span>0 h</span>
+                        <span>{{ hoursDifference }} h</span>
                     </div>
                     <div class="sale-price">
                         <span>Sale price</span>
-                        <span class="number">0.0000 USDT</span>
+                        <span class="number">{{ totalSellPrice }} USDT</span>
                     </div>
                     <div class="market-fee">
                         <span>Market fee</span>
@@ -285,10 +288,10 @@
                     </div>
                     <div class="total-potear">
                         <span>Total potentail earnings</span>
-                        <span class="number">0.000 USDT</span>
+                        <span class="number">{{ totalSellPrice }} USDT</span>
                     </div>
                     <div class="button-dialog">
-                        <el-button type="primary">COMPLETE LISTING</el-button>
+                        <el-button type="primary" @click="lockingSellContract">COMPLETE LISTING</el-button>
                     </div>
                 </div>
             </el-dialog>
@@ -346,7 +349,7 @@
 <script>
 import { get, post } from "@/common/axios.js";
 import { mapGetters, mapState } from "vuex";
-import { keepDecimalNotRounding } from "@/utils/tools";
+import { toWei, keepDecimalNotRounding } from "@/utils/tools";
 import { approve } from "@/wallet/trade";
 import { getBalance, isApproved } from "@/wallet/serve";
 import Address from '@/wallet/address.json'
@@ -361,6 +364,9 @@ export default {
             activeName: '1',
             regmarket: '0',
             approve: false,
+            highlightedIndices: [],
+            selectDataList: [],
+            sellPriceValue: this.highlightedIndices && this.highlightedIndices.length ? new Array(this.highlightedIndices.length).fill('') : [],
             formSearch: {
                 searchName: '',
                 minPrice: '',
@@ -385,7 +391,6 @@ export default {
             isNoMoreDataOrder: false,
             PageSearchWhereOrder: [], //分页搜索数组
 
-            highlightedIndices: [],
             messageItemsDialogShow: false,
             transferItemsDialogShow: false,
             buyNowData: {
@@ -404,9 +409,15 @@ export default {
             setClsNameDialogShow: false,
             transferAddressValue: '',
             samePriceChecked: false,
-            duration: new Date(),
+            duration: new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
+            hoursDifference: '24',
             selectAllChecked: false,
             resolveAddressValue: '',
+            pickerOptions: {
+                disabledDate(time) {
+                    return time < new Date();
+                },
+            }
         }
     },
     mounted() {
@@ -430,6 +441,7 @@ export default {
             };
         },
         calcTotalNumber() {
+            console.log(111);
             if (!this.dataList || !this.dataList.length) {
                 return { totalUSDT: 0, totalSlots: 0, totalCfxs };
             } 
@@ -441,6 +453,14 @@ export default {
                 }
             });
             return { totalSlots, totalCfxs };
+        },
+        totalSellPrice() {
+            let total = this.sellPriceValue.reduce((sum, price) => {
+                return sum + Number(price);
+            }, 0);
+
+            // 然后使用 Intl.NumberFormat 格式化最终的累加结果
+            return new Intl.NumberFormat('en-US').format(total);
         }
     },
     created() {
@@ -471,6 +491,15 @@ export default {
         "OrdersCardBox": OrdersCardBox,
     },
     methods: {
+        pickerChange(date) {
+            const givenDate = new Date(date);
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+            givenDate.setHours(0, 0, 0, 0);
+            const timeDifference = givenDate - now;
+            const hoursDifference = timeDifference / (1000 * 60 * 60);
+            this.hoursDifference = hoursDifference;
+        },
         getMyMarketplaceData(ServerWhere) {
             if (!ServerWhere || ServerWhere == undefined || ServerWhere.length <= 0) {
                 ServerWhere = {
@@ -582,8 +611,23 @@ export default {
         onTransferItems() {
             this.transferItemsDialogShow = true;
         },
-        sellNowClick(row) {
+        sellNowClick(row) { //单个出售
             console.log(row);
+            this.selectDataList = [];
+            this.sellPriceValue = [];
+            this.selectDataList.push(row);
+            this.quickListDialogShow = true;
+        },
+        onBatchListingFun() {//批量出售
+            this.selectDataList = [];
+            this.sellPriceValue = [];
+            if(this.highlightedIndices.length) {
+                this.dataList.forEach((item, index) => {
+                    if (this.highlightedIndices.includes(index)) {
+                        this.selectDataList.push(item);
+                    }
+                });
+            }
             this.quickListDialogShow = true;
         },
         onLoadMoreData() {
@@ -593,9 +637,6 @@ export default {
         onLoadMoreOrderData() {
             this.currPageOrder += 1;
             this.getSellOrdersData();
-        },
-        onBatchListingFun() {
-            this.quickListDialogShow = true;
         },
         quickListDialogClose() {
             this.quickListDialogShow = false;
@@ -617,7 +658,28 @@ export default {
             this.dataList = [];
             this.getMyMarketplaceData();
         },
+        async lockingSellContract() {
+            this.trading = true;
+            // let usdIds = new Array(filteredArrayWithIndices.length).fill("0");
+            const indexArray = this.sellPriceValue.map((value, index) => index);
+            const valueArray = this.sellPriceValue.map((value, index) => toWei(value, 18));
+            
+            const cfxsIds = indexArray.filter((value, index) => {
+                return value !== null && value !== "" && value !== undefined;
+            });
 
+            const prices = valueArray.filter((value, index) => {
+                return value !== null && value !== "" && value !== undefined;
+            });
+            // unlockingScriptbatch(this.buyNowData.cfxsIds, this.buyNowData.amounts, usdIds).then((hash) => {
+            //     if (hash) {
+            //         this.approve = true;
+            //         this.trading = false;
+            //     }
+            // }).finally(() => {
+            //     this.trading = false;
+            // });
+        },
         async getIsApprove() { //获取余额 查看是否授权
             let balance = await getBalance(Address.BUSDT, 18); //获取余额
             console.log("DUSD balance", balance);
@@ -1228,6 +1290,7 @@ export default {
                                     .el-input__inner {
                                         background-color: transparent;
                                         border-color: #525252;
+                                        color: #fff;
                                     }
                                     .el-input__inner:hover {
                                         border: 1px solid#ad8d65;

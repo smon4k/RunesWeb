@@ -235,12 +235,12 @@
                     </div>
                     <div class="for">
                         <span class="title">For</span>
-                        <span class="value">{{ buyNowData.CFXsIds.length }} <span class="title">Slots</span> {{ buyNowData.cfxs }} <span class="title">CFXs</span></span>
+                        <span class="value">{{ buyNowData.slots }} <span class="title">Slots</span> {{ buyNowData.cfxs }} <span class="title">CFXs</span></span>
                     </div>
                     <div class="button-dialog">
                         <span class="text">You will be asked to approve this purchase from your wallet.</span>
-                        <el-button type="primary" @click="startApprove" v-if="!approve" :loading="trading">APPROVE</el-button>
-                        <el-button type="primary" v-else :loading="trading">Buy</el-button>
+                        <el-button type="primary" @click="startApprove" v-if="approve" :loading="trading">APPROVE</el-button>
+                        <el-button type="primary" v-else :loading="trading" @click="buyNowContract">Buy</el-button>
                     </div>
                 </div>
             </el-dialog>
@@ -300,7 +300,7 @@
 <script>
 import { get, post } from "@/common/axios.js";
 import { mapGetters, mapState } from "vuex";
-import { keepDecimalNotRounding } from "@/utils/tools";
+import { toWei, keepDecimalNotRounding } from '@/utils/tools'
 import { approve, unlockingScriptbatch } from "@/wallet/trade";
 import { getBalance, isApproved } from "@/wallet/serve";
 import Address from '@/wallet/address.json'
@@ -367,13 +367,17 @@ export default {
             let totalUSDT = 0;  
             let totalSlots = this.highlightedIndices.length;  
             let totalCfxs = 0;  
+            let cfxsIds = [];
+            let amounts = [];
             this.dataList.forEach((item, index) => {
                 if (this.highlightedIndices.includes(index)) {
                     totalUSDT += Number(item.amount);
                     totalCfxs += Number(item.quantity);
+                    cfxsIds.push(item.chainid);
+                    amounts.push(toWei(item.quantity, 18));
                 }
             });
-            return { totalUSDT, totalSlots, totalCfxs };
+            return { totalUSDT, totalSlots, totalCfxs, cfxsIds, amounts };
         }
     },
     created() {
@@ -443,6 +447,8 @@ export default {
                 youWillPay: sweepData.totalUSDT,
                 slots: sweepData.totalSlots,
                 cfxs: sweepData.totalCfxs,
+                cfxsIds: sweepData.cfxsIds,
+                amounts: sweepData.amounts,
             };
             this.approve = false;
             this.buyNowDialogShow = true;
@@ -452,11 +458,11 @@ export default {
                 youWillPay: row.amount,
                 slots: 1,
                 cfxs: row.quantity,
-                CFXsIds: [
+                cfxsIds: [
                     row.chainid
                 ],
                 amounts: [
-                    row.quantity
+                    toWei(row.quantity, 18)
                 ],
             };
             this.approve = false;
@@ -548,12 +554,10 @@ export default {
                 this.trading = false;
             });
         },
-        buyNow() {
+        buyNowContract() {
             this.trading = true;
-            const CFXsIds = [
-
-            ];
-            unlockingScriptbatch().then((hash) => {
+            let usdIds = new Array(this.buyNowData.cfxsIds).fill("0");
+            unlockingScriptbatch(this.buyNowData.cfxsIds, this.buyNowData.amounts, usdIds).then((hash) => {
                 if (hash) {
                     this.approve = true;
                     this.trading = false;
