@@ -166,7 +166,7 @@
               <el-dialog
                 title="Merge Items"
                 :visible.sync="messageItemsDialogShow"
-                width="35%"
+                :width="screenWidth > adaptiveSize ? '35%' : '90%'"
                 :before-close="() => {
                     messageItemsDialogShow = false
                 }"
@@ -183,7 +183,7 @@
                     </div>
                     <div class="button-dialog">
                         <span class="text">The merged CFXs will generate a new CFXs ID. The amount of new CFXs according to the total amount of merged CFXs.</span>
-                        <el-button type="primary">CONFIRM MERGE</el-button>
+                        <el-button type="primary" :disabled="trading" :loading="trading" @click="processTransactionContract">CONFIRM MERGE</el-button>
                     </div>
                 </div>
             </el-dialog>
@@ -191,7 +191,7 @@
             <el-dialog
                 title="Merge Items"
                 :visible.sync="cancelListingDialogShow"
-                width="35%"
+                :width="screenWidth > adaptiveSize ? '35%' : '90%'"
                 :before-close="() => {
                     cancelListingDialogShow = false
                 }"
@@ -203,7 +203,7 @@
                         <span class="value">1 listings</span>
                     </div>
                     <div class="button-dialog">
-                        <el-button type="primary">CONFIRM CANCEL</el-button>
+                        <el-button type="primary" :disabled="trading" :loading="trading" @click="ownerUnlockingScriptContract">CONFIRM CANCEL</el-button>
                     </div>
                 </div>
             </el-dialog>
@@ -211,7 +211,7 @@
             <el-dialog
                 title="Transfer Items"
                 :visible.sync="transferItemsDialogShow"
-                width="35%"
+                :width="screenWidth > adaptiveSize ? '35%' : '90%'"
                 :before-close="() => {
                     transferItemsDialogShow = false;
                 }"
@@ -225,7 +225,7 @@
                         <el-input v-model="transferAddressValue" placeholder="Destination address e.g 0x1234...1234"></el-input>
                     </div>
                     <div class="button-dialog">
-                        <el-button :class="{ 'merge-border': transferAddressValue }" type="primary" :disabled="!transferAddressValue">TRANSFER {{ highlightedIndices.length }} CFXs</el-button>
+                        <el-button :class="{ 'merge-border': transferAddressValue }" type="primary" :disabled="!transferAddressValue || trading" :loading="trading" @click="transferContract">TRANSFER {{ highlightedIndices.length }} CFXs</el-button>
                     </div>
                 </div>
             </el-dialog>
@@ -233,13 +233,13 @@
             <el-dialog
                 title="Quick List"
                 :visible.sync="quickListDialogShow"
-                width="30%"
+                :width="screenWidth > adaptiveSize ? '30%' : '90%'"
                 :before-close="quickListDialogClose"
                 class="buy-now-dialog"
                 top="10vh">
                 <div class="dialog-content">
                     <div class="items-count">
-                        <span>List 2 Items</span>
+                        <span>List {{ selectDataList.length }} Items</span>
                         <span><el-checkbox v-model="samePriceChecked">Same price</el-checkbox></span>
                     </div>
                     <div class="set-unit-price">
@@ -291,7 +291,7 @@
                         <span class="number">{{ totalSellPrice }} USDT</span>
                     </div>
                     <div class="button-dialog">
-                        <el-button type="primary" @click="lockingSellContract">COMPLETE LISTING</el-button>
+                        <el-button type="primary" :disabled="trading" :loading="trading" @click="lockingSellContract" >COMPLETE LISTING</el-button>
                     </div>
                 </div>
             </el-dialog>
@@ -299,7 +299,7 @@
             <el-dialog
                 title="Resolve address"
                 :visible.sync="resolveAddressDialogShow"
-                width="35%"
+                :width="screenWidth > adaptiveSize ? '35%' : '90%'"
                 :before-close="() => {
                     resolveAddressDialogShow = false;
                 }"
@@ -322,7 +322,7 @@
             <el-dialog
                 title="Set the CIS name for your address"
                 :visible.sync="setClsNameDialogShow"
-                width="35%"
+                :width="screenWidth > adaptiveSize ? '35%' : '90%'"
                 :before-close="() => {
                     setClsNameDialogShow = false;
                 }"
@@ -350,8 +350,8 @@
 import { get, post } from "@/common/axios.js";
 import { mapGetters, mapState } from "vuex";
 import { toWei, keepDecimalNotRounding } from "@/utils/tools";
-import { approve } from "@/wallet/trade";
 import { getBalance, isApproved } from "@/wallet/serve";
+import { approve, lockingScriptbatch, ownerUnlockingScript, processTransaction, transfer } from "@/wallet/trade";
 import Address from '@/wallet/address.json'
 import CardBox from './myCard.vue';
 import ClsCardBox from './clsCard.vue';
@@ -374,6 +374,7 @@ export default {
                 address: '',
             },
             dataList: [],
+            trading: false,
             loading: false,
             timeInterval: null,
             refreshTime: 10000, //数据刷新间隔时间
@@ -417,7 +418,8 @@ export default {
                 disabledDate(time) {
                     return time < new Date();
                 },
-            }
+            },
+            checked: false,
         }
     },
     mounted() {
@@ -441,18 +443,19 @@ export default {
             };
         },
         calcTotalNumber() {
-            console.log(111);
             if (!this.dataList || !this.dataList.length) {
                 return { totalUSDT: 0, totalSlots: 0, totalCfxs };
             } 
             let totalSlots = this.highlightedIndices.length;  
             let totalCfxs = 0;  
+            let cfxsIds = [];
             this.dataList.forEach((item, index) => {
                 if (this.highlightedIndices.includes(index)) {
                     totalCfxs += Number(item.amount);
+                    cfxsIds.push(item.chainid);
                 }
             });
-            return { totalSlots, totalCfxs };
+            return { totalSlots, totalCfxs, cfxsIds };
         },
         totalSellPrice() {
             let total = this.sellPriceValue.reduce((sum, price) => {
@@ -609,6 +612,7 @@ export default {
             this.messageItemsDialogShow = true;
         },
         onTransferItems() {
+            this.transferAddressValue = "";
             this.transferItemsDialogShow = true;
         },
         sellNowClick(row) { //单个出售
@@ -641,7 +645,8 @@ export default {
         quickListDialogClose() {
             this.quickListDialogShow = false;
         },
-        cancelListingClick() { //取消名单事件
+        cancelListingClick(item) { //取消名单事件
+            this.cancelSaleId = item.chainid;
             this.cancelListingDialogShow = true;
         },
         resolveAddressClick() {
@@ -658,27 +663,82 @@ export default {
             this.dataList = [];
             this.getMyMarketplaceData();
         },
-        async lockingSellContract() {
+        async lockingSellContract() { //出售
             this.trading = true;
-            // let usdIds = new Array(filteredArrayWithIndices.length).fill("0");
             const indexArray = this.sellPriceValue.map((value, index) => index);
             const valueArray = this.sellPriceValue.map((value, index) => toWei(value, 18));
             
             const cfxsIds = indexArray.filter((value, index) => {
                 return value !== null && value !== "" && value !== undefined;
             });
+            const usdIds = new Array(cfxsIds.length).fill("0");
 
             const prices = valueArray.filter((value, index) => {
                 return value !== null && value !== "" && value !== undefined;
             });
-            // unlockingScriptbatch(this.buyNowData.cfxsIds, this.buyNowData.amounts, usdIds).then((hash) => {
-            //     if (hash) {
-            //         this.approve = true;
-            //         this.trading = false;
-            //     }
-            // }).finally(() => {
-            //     this.trading = false;
-            // });
+            lockingScriptbatch(cfxsIds, prices, usdIds, this.hoursDifference).then((hash) => {
+                if (hash) {
+                    this.trading = false;
+                }
+            }).finally(() => {
+                this.trading = false;
+            });
+        },
+        async ownerUnlockingScriptContract() { //取消出售
+            this.trading = true;
+            ownerUnlockingScript(this.cancelSaleId).then((hash) => {
+                if (hash) {
+                    this.trading = false;
+                }
+            }).finally(() => {
+                this.trading = false;
+            });
+        },
+        async processTransactionContract() { //合并交易
+            const data = this.calcTotalNumber;
+            const cfxsIds = data.cfxsIds;
+            const outputs = [[
+                this.address,
+                data.totalCfxs,
+                ""
+            ]];
+            this.trading = true;
+            processTransaction(cfxsIds, outputs).then((hash) => {
+                if (hash) {
+                    this.trading = false;
+                }
+            }).finally(() => {
+                this.trading = false;
+            });
+        },
+        async splitProcessTransactionContract() { //拆分交易
+            const data = this.calcTotalNumber;
+            const cfxsIds = data.cfxsIds;
+            const outputs = [[
+                this.address,
+                data.totalCfxs,
+                ""
+            ]];
+            this.trading = true;
+            processTransaction(cfxsIds, outputs).then((hash) => {
+                if (hash) {
+                    this.trading = false;
+                }
+            }).finally(() => {
+                this.trading = false;
+            });
+        },
+        async transferContract() { //转增交易
+            const data = this.calcTotalNumber;
+            const cfxsIds = data.cfxsIds;
+            this.trading = true;
+            transfer(cfxsIds, this.transferAddressValue).then((hash) => {
+                if (hash) {
+                    this.trading = false;
+                }
+            }).finally(() => {
+                this.trading = false;
+            });
         },
         async getIsApprove() { //获取余额 查看是否授权
             let balance = await getBalance(Address.BUSDT, 18); //获取余额
@@ -687,26 +747,6 @@ export default {
             isApproved(Address.BUSDT, 18, balance, this.gamesFillingAddress).then((bool) => {
                 console.log("isApprove", bool);
                 this.approve = bool ? true : false;
-            });
-        },
-        startApprove() { //批准LUSD
-            const loading = this.$loading({
-                lock: true,
-                text: 'transaction in progress',
-                spinner: 'el-icon-loading',
-                background: 'rgba(0, 0, 0, 0.7)'
-            });
-            this.trading = true;
-            approve(Address.BTCB, this.gamesFillingAddress).then((hash) => {
-                // console.log(result);
-                loading.close();
-                if (hash) {
-                    this.approve = true;
-                    this.trading = false;
-                }
-            }).finally(() => {
-                loading.close();
-                this.trading = false;
             });
         },
         addressStr(address) {
@@ -1160,6 +1200,7 @@ export default {
                             }
                             .el-input__inner {
                                 background-color: transparent;
+                                color: #fff;
                             }
                         }
                         .button-dialog {

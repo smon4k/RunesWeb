@@ -135,6 +135,225 @@ export const unlockingScriptbatch = async function (cfxsIds=[], amounts=[], usdI
   })
 }
 
+// 出售
+export const lockingScriptbatch = async function (cfxsIds=[], amounts=[], usdIds=[], lockhours=24) {
+  console.log(cfxsIds, amounts);
+  const address = __ownInstance__.$store.state.base.address;
+  const contractAddress = Address.CFXsContractAddress;
+  const contract = new web3.eth.Contract(CFXsContractMainABI, contractAddress);
+  // let amount = web3.utils.toHex(toWei(recomAmount, 18));
+  let encodedABI = contract.methods.LockingScriptbatch(cfxsIds, usdIds, amounts, lockhours).encodeABI();
+  let timestamp = new Date().getTime().toString();
+  __ownInstance__.$store.dispatch('createOrderForm', { val: 0, id: timestamp })
+  return new Promise((resolve, reject) => {
+    let hashInfo
+    web3.eth.getTransactionCount(address).then(async transactionNonce => {
+      let gasPrice = await web3.eth.getGasPrice();
+      let estimateGas = await web3.eth.estimateGas({
+        from: address,
+        to: contractAddress,
+        data: encodedABI,
+      })
+      console.log('estimateGas', estimateGas)
+      const params = [{
+        from: address,
+        to: contractAddress,
+        data: encodedABI,
+        gasPrice: web3.utils.toHex(gasPrice),
+        gas: web3.utils.toHex(estimateGas),
+        // gas: web3.utils.toHex(50000),
+      }];
+      web3.eth.sendTransaction(params[0])
+        .on('transactionHash', function (hash) {
+          console.log('hash', hash);
+          if (hash) {
+            hashInfo = hash
+            // __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
+          }
+        })
+        .on('receipt', function (receipt) {
+          __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 1, hash: hashInfo })
+          resolve()
+        })
+        .on('error', function (err) {
+          let isUserDeny = err.code === 4001
+          __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 2, hash: hashInfo, isUserDeny: isUserDeny, isFailed: true })
+          console.log('err', err)
+          reject(err)
+        })
+    })
+      .catch(err => {
+        console.log('getTransactionCount', err)
+        __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 2, hash: hashInfo, isUserDeny: false, isFailed: true })
+        reject(err)
+      })
+  })
+}
+
+//取消出售
+export const ownerUnlockingScript = async function (cfxsId='') {
+  console.log(cfxsId);
+  const address = __ownInstance__.$store.state.base.address;
+  const contractAddress = Address.CFXsContractAddress;
+  const contract = new web3.eth.Contract(CFXsContractMainABI, contractAddress);
+  // let amount = web3.utils.toHex(toWei(recomAmount, 18));
+  let encodedABI = contract.methods.OwnerUnlockingScript(cfxsId).encodeABI();
+  let timestamp = new Date().getTime().toString();
+  __ownInstance__.$store.dispatch('createOrderForm', { val: 0, id: timestamp })
+  return new Promise((resolve, reject) => {
+    let hashInfo
+    web3.eth.getTransactionCount(address).then(async transactionNonce => {
+      let gasPrice = await web3.eth.getGasPrice();
+      let estimateGas = await web3.eth.estimateGas({
+        from: address,
+        to: contractAddress,
+        data: encodedABI,
+      })
+      console.log('estimateGas', estimateGas)
+      const params = [{
+        from: address,
+        to: contractAddress,
+        data: encodedABI,
+        gasPrice: web3.utils.toHex(gasPrice),
+        gas: web3.utils.toHex(estimateGas),
+        // gas: web3.utils.toHex(50000),
+      }];
+      web3.eth.sendTransaction(params[0])
+        .on('transactionHash', function (hash) {
+          console.log('hash', hash);
+          if (hash) {
+            hashInfo = hash
+            // __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
+          }
+        })
+        .on('receipt', function (receipt) {
+          __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 1, hash: hashInfo })
+          resolve()
+        })
+        .on('error', function (err) {
+          let isUserDeny = err.code === 4001
+          __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 2, hash: hashInfo, isUserDeny: isUserDeny, isFailed: true })
+          console.log('err', err)
+          reject(err)
+        })
+    })
+      .catch(err => {
+        console.log('getTransactionCount', err)
+        __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 2, hash: hashInfo, isUserDeny: false, isFailed: true })
+        reject(err)
+      })
+  })
+}
+
+//合并、拆分交易
+export const processTransaction = async function (cfxsIds=[], outputs=[]) {
+  console.log(cfxsIds, outputs);
+  const address = __ownInstance__.$store.state.base.address;
+  const contractAddress = Address.CFXsContractAddress;
+  const contract = new web3.eth.Contract(CFXsContractMainABI, contractAddress);
+  // let amount = web3.utils.toHex(toWei(recomAmount, 18));
+  let encodedABI = contract.methods.processTransaction(cfxsIds, outputs).encodeABI();
+  let timestamp = new Date().getTime().toString();
+  __ownInstance__.$store.dispatch('createOrderForm', { val: 0, id: timestamp })
+  return new Promise((resolve, reject) => {
+    let hashInfo
+    web3.eth.getTransactionCount(address).then(async transactionNonce => {
+      let gasPrice = await web3.eth.getGasPrice();
+      let estimateGas = await web3.eth.estimateGas({
+        from: address,
+        to: contractAddress,
+        data: encodedABI,
+      })
+      console.log('estimateGas', estimateGas)
+      const params = [{
+        from: address,
+        to: contractAddress,
+        data: encodedABI,
+        gasPrice: web3.utils.toHex(gasPrice),
+        gas: web3.utils.toHex(estimateGas),
+        // gas: web3.utils.toHex(50000),
+      }];
+      web3.eth.sendTransaction(params[0])
+        .on('transactionHash', function (hash) {
+          console.log('hash', hash);
+          if (hash) {
+            hashInfo = hash
+            // __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
+          }
+        })
+        .on('receipt', function (receipt) {
+          __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 1, hash: hashInfo })
+          resolve()
+        })
+        .on('error', function (err) {
+          let isUserDeny = err.code === 4001
+          __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 2, hash: hashInfo, isUserDeny: isUserDeny, isFailed: true })
+          console.log('err', err)
+          reject(err)
+        })
+    })
+      .catch(err => {
+        console.log('getTransactionCount', err)
+        __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 2, hash: hashInfo, isUserDeny: false, isFailed: true })
+        reject(err)
+      })
+  })
+}
+
+//转增交易
+export const transfer = async function (cfxsIds=[], toaddress="") {
+  console.log(cfxsIds, toaddress);
+  const address = __ownInstance__.$store.state.base.address;
+  const contractAddress = Address.CFXsContractAddress;
+  const contract = new web3.eth.Contract(CFXsContractMainABI, contractAddress);
+  // let amount = web3.utils.toHex(toWei(recomAmount, 18));
+  let encodedABI = contract.methods.transfer(cfxsIds, toaddress).encodeABI();
+  let timestamp = new Date().getTime().toString();
+  __ownInstance__.$store.dispatch('createOrderForm', { val: 0, id: timestamp })
+  return new Promise((resolve, reject) => {
+    let hashInfo
+    web3.eth.getTransactionCount(address).then(async transactionNonce => {
+      let gasPrice = await web3.eth.getGasPrice();
+      let estimateGas = await web3.eth.estimateGas({
+        from: address,
+        to: contractAddress,
+        data: encodedABI,
+      })
+      console.log('estimateGas', estimateGas)
+      const params = [{
+        from: address,
+        to: contractAddress,
+        data: encodedABI,
+        gasPrice: web3.utils.toHex(gasPrice),
+        gas: web3.utils.toHex(estimateGas),
+        // gas: web3.utils.toHex(50000),
+      }];
+      web3.eth.sendTransaction(params[0])
+        .on('transactionHash', function (hash) {
+          console.log('hash', hash);
+          if (hash) {
+            hashInfo = hash
+            // __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
+          }
+        })
+        .on('receipt', function (receipt) {
+          __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 1, hash: hashInfo })
+          resolve()
+        })
+        .on('error', function (err) {
+          let isUserDeny = err.code === 4001
+          __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 2, hash: hashInfo, isUserDeny: isUserDeny, isFailed: true })
+          console.log('err', err)
+          reject(err)
+        })
+    })
+      .catch(err => {
+        console.log('getTransactionCount', err)
+        __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 2, hash: hashInfo, isUserDeny: false, isFailed: true })
+        reject(err)
+      })
+  })
+}
 
 
 
