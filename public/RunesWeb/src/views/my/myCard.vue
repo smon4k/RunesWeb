@@ -18,7 +18,11 @@
                                 <div class="count-num">{{ item.amount }}</div>
                             </div>
                         </div>
-                        <div class="bottom">
+                        <div class="bottom" v-if="item.amount <= 1">
+                            <el-button @click.stop="handleClick(item)">List for sale</el-button>
+                        </div>
+                        <div class="bottom-split" v-else>
+                            <div class="split-box" @click.stop="handleSplitClick(item)"><img :src="require('@/assets/svg/split.svg')" alt="" width="20"></div>
                             <el-button @click.stop="handleClick(item)">List for sale</el-button>
                         </div>
                     </div>
@@ -43,7 +47,7 @@
 <script>
 import { mapGetters, mapState } from "vuex";
 export default {
-    props: ['dataList', 'sellNowClick', 'highlightedIndices', 'toggleHighlight', 'isNoMoreData', 'onLoadMoreData', 'loading'],
+    props: ['dataList', 'sellNowClick', 'onSplitItem', 'highlightedIndices', 'toggleHighlight', 'isNoMoreData', 'onLoadMoreData', 'loading'],
     data() {
         return {
             screenWidth: document.body.clientWidth,
@@ -79,6 +83,9 @@ export default {
     methods: {
         handleClick(row) {
             this.$emit('sellNowClick', row);
+        },
+        handleSplitClick(row) {
+            this.$emit('onSplitItem', row);
         },
         isSelected(index) {
             if(this.highlightedIndices) {
@@ -159,8 +166,36 @@ export default {
                     justify-content: center;
                     border-color: #ad8d65;
                     background-color: transparent;
-                    height: 30px;
+                    height: 32px;
                     width: 100%;
+                    color: #ad8d65;
+                }
+            }
+            .bottom-split {
+                display: flex;
+                padding-bottom: 16px;
+                gap: 12px;
+                justify-content: space-between;
+                border-bottom-left-radius: 8px; 
+                border-bottom-right-radius: 8px; 
+                font-size: 12px;
+                .split-box {
+                    display: flex;
+                    width: 36px;
+                    // height: 36px;
+                    border: 1px solid #ad8d65;
+                    border-radius: 4px;
+                    justify-content: center;
+                    align-items: center;
+                }
+                .el-button {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-color: #ad8d65;
+                    background-color: transparent;
+                    height: 36px;
+                    width: 80%;
                     color: #ad8d65;
                 }
             }

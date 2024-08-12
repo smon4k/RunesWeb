@@ -64,7 +64,7 @@ class MarketController extends BaseController
         $limit = $request->request('limit', 20, 'intval');
         $name = $request->request('name', '', 'trim');
         $where = [];
-        // $where['a.status'] = 1;
+        $where['a.status'] = 1;
         $where['a.owner'] = $address;
         if ($regmarket && $regmarket > 0) {
             $where['a.regmarket'] = $regmarket;

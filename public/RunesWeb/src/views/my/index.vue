@@ -75,22 +75,22 @@
                                     </span>
                                 </div>
                                 <el-tab-pane label="General" name="0">
-                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" @onSplitItem="onSplitItem" :loading="loading"></Card>
                                 </el-tab-pane>
                                 <el-tab-pane label="Images" name="1">
-                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" @onSplitItem="onSplitItem" :loading="loading"></Card>
                                 </el-tab-pane>
                                 <el-tab-pane label="Audio" name="2">
-                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" @onSplitItem="onSplitItem" :loading="loading"></Card>
                                 </el-tab-pane>
                                 <el-tab-pane label="Text" name="3">
-                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" @onSplitItem="onSplitItem" :loading="loading"></Card>
                                 </el-tab-pane>
                                 <el-tab-pane label="Inscription" name="4">
-                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" @onSplitItem="onSplitItem" :loading="loading"></Card>
                                 </el-tab-pane>
                                 <el-tab-pane label="Name" name="5">
-                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" :loading="loading"></Card>
+                                    <Card :dataList="dataList" @sellNowClick="sellNowClick" :highlightedIndices="highlightedIndices" @toggleHighlight="toggleHighlight" :isNoMoreData="isNoMoreData" @onLoadMoreData="onLoadMoreData" @onSplitItem="onSplitItem" :loading="loading"></Card>
                                 </el-tab-pane>
                               </el-tabs>
                           </div>
@@ -201,6 +201,40 @@
                     <div class="you-wall-pay">
                         <span class="title">You will cancel</span>
                         <span class="value">1 listings</span>
+                    </div>
+                    <div class="button-dialog">
+                        <el-button type="primary" :disabled="trading" :loading="trading" @click="ownerUnlockingScriptContract">CONFIRM CANCEL</el-button>
+                    </div>
+                </div>
+            </el-dialog>
+
+            <el-dialog
+                title="Split"
+                :visible.sync="splitDialogShow"
+                :width="screenWidth > adaptiveSize ? '45%' : '90%'"
+                :before-close="() => {
+                    splitDialogShow = false
+                }"
+                class="split-items"
+                top="30vh">
+                <div class="dialog-content">
+                    <div class="cfxid-number">
+                        <span class="title"># 123456789</span>
+                        <span class="value">1 CFXs</span>
+                    </div>
+                    <div class="split-number">
+                        <el-input placeholder="Must be an integer > 1 or < 1000" v-model="input1">
+                            <template slot="prepend"><img :src="require('@/assets/svg/minus.svg')" alt="" width="24"></template>
+                            <template slot="append"><img :src="require('@/assets/svg/plus.svg')" alt="" width="24"></template>
+                        </el-input>
+                        <el-input placeholder="Must be an integer > 1 or < 1000" v-model="input1">
+                            <template slot="prepend"><img :src="require('@/assets/svg/minus.svg')" alt="" width="24"></template>
+                            <template slot="append"><img :src="require('@/assets/svg/plus.svg')" alt="" width="24"></template>
+                        </el-input>
+                        <el-input placeholder="Must be an integer > 1 or < 1000" v-model="input1">
+                            <template slot="prepend"><img :src="require('@/assets/svg/minus.svg')" alt="" width="24"></template>
+                            <template slot="append"><img :src="require('@/assets/svg/plus.svg')" alt="" width="24"></template>
+                        </el-input>
                     </div>
                     <div class="button-dialog">
                         <el-button type="primary" :disabled="trading" :loading="trading" @click="ownerUnlockingScriptContract">CONFIRM CANCEL</el-button>
@@ -410,6 +444,7 @@ export default {
             setClsNameDialogShow: false,
             transferAddressValue: '',
             samePriceChecked: false,
+            splitDialogShow: false,
             duration: new Date(new Date().getTime() + 24 * 60 * 60 * 1000),
             hoursDifference: '24',
             selectAllChecked: false,
@@ -610,6 +645,9 @@ export default {
         },
         onMessageItems() {
             this.messageItemsDialogShow = true;
+        },
+        onSplitItem() {
+            this.splitDialogShow = true;
         },
         onTransferItems() {
             this.transferAddressValue = "";
@@ -1149,6 +1187,72 @@ export default {
                             }
                             .value {
                                 color: #fff;
+                            }
+                        }
+                        .button-dialog {
+                            color: #aaa;
+                            font-size: 14px;
+                            padding-top: 12px;
+                            border-top: 1px solid #282828;
+                            border-width: 1px;
+                            margin-top: 32px;
+                            .text {
+                                display: block;
+                                margin-bottom: 24px;
+                            }
+                            .el-button {
+                                height: 48px;
+                                width: 100%;
+                                background-color: #ad8d65;
+                                border: 0;
+                                color: rgb(0, 0, 0/1);
+                            }
+                        }
+                    }
+                }
+            }
+            .split-items {
+                .el-dialog {
+                    background-color: #202020;
+                    .el-dialog__header {
+                        .el-dialog__title {
+                            color: #fff;
+                        }
+                    }
+                    .dialog-content {
+                        display: flex;
+                        flex-direction: column;
+                        .cfxid-number {
+                            display: flex;
+                            justify-content: space-between;
+                            color: rgb(255, 255, 255/1)
+                        }
+                        .split-number {
+                            display: flex;
+                            margin-top: 5px;
+                            background-color: #282828;
+                            overflow-y: auto;
+                            border-radius: 8px;
+                            padding: 20px;
+                            margin-bottom: 24px;
+                            max-height: 300px;
+                            flex-direction: column;
+                            gap: 16px;
+                            .el-input__inner {
+                                background-color: transparent;
+                                color: #fff;
+                                border-color: #525252;
+                                height: 48px;
+                            }
+                            .el-input-group__prepend {
+                                background-color: transparent;
+                                border-color: #525252;
+                                cursor: pointer;
+                            }
+                            .el-input-group__append {
+                                background-color: transparent;
+                                border-color: #525252;
+                                cursor: pointer;
                             }
                         }
                         .button-dialog {
