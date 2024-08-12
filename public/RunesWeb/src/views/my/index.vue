@@ -223,18 +223,19 @@
                         <span class="value">1 CFXs</span>
                     </div>
                     <div class="split-number">
-                        <el-input placeholder="Must be an integer > 1 or < 1000" v-model="input1">
-                            <template slot="prepend"><img :src="require('@/assets/svg/minus.svg')" alt="" width="24"></template>
-                            <template slot="append"><img :src="require('@/assets/svg/plus.svg')" alt="" width="24"></template>
+                        <el-input placeholder="Must be an integer > 1 or < 1000" v-model="splitNumbers[index]" v-for="(item, index) in splitNumbers" :key="index">
+                            <template slot="prepend"><img :src="require('@/assets/svg/minus.svg')" alt="" width="24" @click="minusNumbers"></template>
+                            <template slot="append"><img :src="require('@/assets/svg/plus.svg')" alt="" width="24" @click="plusNumbers"></template>
                         </el-input>
-                        <el-input placeholder="Must be an integer > 1 or < 1000" v-model="input1">
-                            <template slot="prepend"><img :src="require('@/assets/svg/minus.svg')" alt="" width="24"></template>
-                            <template slot="append"><img :src="require('@/assets/svg/plus.svg')" alt="" width="24"></template>
-                        </el-input>
-                        <el-input placeholder="Must be an integer > 1 or < 1000" v-model="input1">
-                            <template slot="prepend"><img :src="require('@/assets/svg/minus.svg')" alt="" width="24"></template>
-                            <template slot="append"><img :src="require('@/assets/svg/plus.svg')" alt="" width="24"></template>
-                        </el-input>
+                    </div>
+                    <div class="cfxid-number">
+                        <span class="title">Count</span>
+                        <span class="value">1</span>
+                    </div>
+                    <div class="desc">Up to 24 customized items. The amount of new CFXs shards is the the customized amount.</div>
+                    <div class="total-message">
+                        <img :src="require('@/assets/svg/total.svg')" alt="" width="20" @click="minusNumbers">
+                        Total cannot exceed the amount of the CFXs.
                     </div>
                     <div class="button-dialog">
                         <el-button type="primary" :disabled="trading" :loading="trading" @click="ownerUnlockingScriptContract">CONFIRM CANCEL</el-button>
@@ -455,6 +456,7 @@ export default {
                 },
             },
             checked: false,
+            splitNumbers: ['', ''],
         }
     },
     mounted() {
@@ -700,6 +702,14 @@ export default {
             this.currPage = 1;
             this.dataList = [];
             this.getMyMarketplaceData();
+        },
+        minusNumbers() {
+            if (this.splitNumbers.length > 2) {
+                this.splitNumbers.pop();
+            }
+        },
+        plusNumbers() {
+            this.splitNumbers.push('');
         },
         async lockingSellContract() { //出售
             this.trading = true;
@@ -1227,6 +1237,21 @@ export default {
                             justify-content: space-between;
                             color: rgb(255, 255, 255/1)
                         }
+                        .desc {
+                            color: #aaa;
+                            font-size: 14px;
+                            margin-top: 10px;
+                        }
+                        .total-message {
+                            display: flex;
+                            margin-top: 12px;
+                            align-items: center;
+                            border-radius: 4px;
+                            padding: 12px;
+                            background-color: hwb(33 40% 32% / 0.3);
+                            color: #ad8d65;
+                            gap: 10px;
+                        }
                         .split-number {
                             display: flex;
                             margin-top: 5px;
@@ -1258,7 +1283,7 @@ export default {
                         .button-dialog {
                             color: #aaa;
                             font-size: 14px;
-                            padding-top: 12px;
+                            // padding-top: 12px;
                             border-top: 1px solid #282828;
                             border-width: 1px;
                             margin-top: 32px;
