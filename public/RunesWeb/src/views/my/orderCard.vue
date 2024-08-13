@@ -11,7 +11,7 @@
                                     <div class="currency-name">CFXs</div>
                                 </div>
                                 <div class="right">
-                                    <div class="ids">#{{ item.id }}</div>
+                                    <div class="ids">#{{ item.chainid }}</div>
                                 </div>
                             </div>
                             <div class="quantity">

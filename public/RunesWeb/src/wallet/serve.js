@@ -42,6 +42,51 @@ export const getUserAddressInfo = async function (userAddress, currency) {
   return result;
 }
 
+// 写入交易记录
+export const saveTransactionTask = async (params = {}) => {
+  const apiUrl = __ownInstance__.$store.state.base.apiUrl;
+  if (params && params.hash !== '') {
+    await axios.post(apiUrl + '/Api/Transactiontask/saveTransactionTask', params).then((json) => {
+      if (json && json.code == 10000) {
+        return true;
+      }
+    }).catch((error) => {
+      console.log(error);
+      return false;
+    });
+  }
+  return false;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* 根据币种获取币种信息
  * @param {*} type 
  * @returns 

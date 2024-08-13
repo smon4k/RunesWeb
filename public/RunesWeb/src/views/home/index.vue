@@ -110,6 +110,7 @@
                             <el-form-item label="">
                                 <el-select v-model="formSearch.searchName" placeholder="请选择">
                                     <el-option label="Price low to high" value="1">
+                                        <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
                                         <span style="margin-left: 5px;">Price low to high</span>
                                     </el-option>
                                     <el-option label="Price high to low" value="2">
@@ -141,17 +142,17 @@
                                 <el-input v-model="formSearch.maxPrice" type="number" placeholder="Max Price"></el-input>
                             </el-form-item>
                             <el-form-item label="">
-                                <el-input v-model="formSearch.address" placeholder="ID or owner address"></el-input>
+                                <el-input v-model="formSearch.idAddress" placeholder="ID or owner address"></el-input>
                             </el-form-item>
                         </span>
                         <span v-else>
                             <el-form-item label="">
-                                <el-input v-model="formSearch.address" placeholder="ID or owner address"></el-input>
+                                <el-input v-model="formSearch.idAddress" placeholder="ID or owner address"></el-input>
                             </el-form-item>
                         </span>
                         <span v-if="screenWidth <= adaptiveSize" @click="searchDialogClick"><img :src="require('@/assets/svg/search.svg')" alt="" width="42"></span>
                         <el-form-item>
-                            <el-button class="search-button" type="primary" @click="onSubmit">Apply</el-button>
+                            <el-button class="search-button" type="primary" @click="onApplySearch">Apply</el-button>
                         </el-form-item>
                     </el-form>
                     <div class="count-number">
@@ -239,7 +240,7 @@
                     </div>
                     <div class="button-dialog">
                         <span class="text">You will be asked to approve this purchase from your wallet.</span>
-                        <el-button type="primary" @click="startApprove" v-if="approve" :loading="trading">APPROVE</el-button>
+                        <el-button type="primary" @click="startApprove" v-if="!approve" :loading="trading">APPROVE</el-button>
                         <el-button type="primary" v-else :loading="trading" @click="buyNowContract">Buy</el-button>
                     </div>
                 </div>
@@ -318,7 +319,7 @@ export default {
                 searchName: '',
                 minPrice: '',
                 maxPrice: '',
-                address: '',
+                idAddress: '',
             },
             timeInterval: null,
             refreshTime: 10000, //数据刷新间隔时间
@@ -438,8 +439,41 @@ export default {
             this.dataList = [];
             this.getMarketplaceList();
         },
-        onSubmit() {
-            console.log('submit!');
+        onApplySearch() {
+            let SearchWhere = {
+                limit: this.pageSize,
+                page: this.currPage,
+                regmarket: this.regmarket,
+            };
+            this.dataList = [];
+            if(this.formSearch.searchName == 1) {
+                SearchWhere.price_sort = "asc";
+            }
+            if(this.formSearch.searchName == 2) {
+                SearchWhere.price_sort = "desc";
+            }
+            if(this.formSearch.searchName == 3) {
+                SearchWhere.time_sort = "desc";
+            }
+            if(this.formSearch.searchName == 4) {
+                SearchWhere.locktime_sort = "desc";
+            }
+            if(this.formSearch.searchName == 5) {
+                SearchWhere.merged = "1";
+            }
+            if(this.formSearch.searchName == 6) {
+                SearchWhere.merged = "2";
+            }
+            if(this.formSearch.minPrice && this.formSearch.minPrice !== '') {
+                SearchWhere.unit_price_start = this.formSearch.minPrice;
+            }
+            if(this.formSearch.maxPrice && this.formSearch.maxPrice !== '') {
+                SearchWhere.unit_price_end = this.formSearch.maxPrice;
+            }
+            if(this.formSearch.idAddress && this.formSearch.idAddress !== '') {
+                SearchWhere.id_address = this.formSearch.idAddress;
+            }
+            this.getMarketplaceList(SearchWhere);
         },
         sweepClick() { //批量购买
             const sweepData = this.calcTotalNumber;
@@ -557,7 +591,7 @@ export default {
         buyNowContract() {
             this.trading = true;
             let usdIds = new Array(this.buyNowData.cfxsIds).fill("0");
-            unlockingScriptbatch(this.buyNowData.cfxsIds, this.buyNowData.amounts, usdIds).then((hash) => {
+            unlockingScriptbatch(this.buyNowData.cfxsIds, this.buyNowData.amounts, usdIds).then(async (hash) => {
                 if (hash) {
                     this.approve = true;
                     this.trading = false;

@@ -4,7 +4,7 @@
 // +----------------------------------------------------------------------
 // | Copyright (c) 2017-2021 http://www.thinkcmf.com All rights reserved.
 // +----------------------------------------------------------------------
-// | Author: wuwu <15035574759@163.com>
+// | Author: wuwu <xxx@163.com>
 // +----------------------------------------------------------------------
 // | Licensed ( http://www.apache.org/licenses/LICENSE-2.0 )
 // +----------------------------------------------------------------------
@@ -22,20 +22,17 @@ class Market extends Base
      * @author qinlh
      * @since 2024-08-05
      */
-    public static function getMarketplaceList($where, $page, $limit)
+    public static function getMarketplaceList($where, $page, $limit, $order='')
     {
         if ($limit <= 0) {
             $limit = config('paginate.list_rows');// 获取总条数
         }
-        $count = self::alias('a')
-                    ->where($where)
-                    ->count();//计算总页面
+        $count = self::where($where)->count();//计算总页面
         $allpage = intval(ceil($count / $limit));
-        $lists = self::alias('a')
-                    ->where($where)
+        $lists = self::where($where)
                     ->page($page, $limit)
-                    ->order("id asc")
-                    ->field("a.*")
+                    ->order($order)
+                    ->field("*")
                     ->select()
                     ->toArray();
         if (!$lists) {

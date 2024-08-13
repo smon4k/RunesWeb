@@ -59,10 +59,10 @@
                                         </el-select>
                                     </el-form-item>
                                     <el-form-item label="">
-                                        <el-input v-model="formSearch.address" placeholder="Select By ID"></el-input>
+                                        <el-input v-model="formSearch.idAddress" placeholder="Select By ID"></el-input>
                                     </el-form-item>
                                     <el-form-item>
-                                        <el-button class="search-button" type="primary" @click="onSubmit">Apply</el-button>
+                                        <el-button class="search-button" type="primary" @click="onApplySearch">Apply</el-button>
                                     </el-form-item>
                                 </el-form>
                                 <div class="count-number">
@@ -211,7 +211,7 @@
             <el-dialog
                 title="Split"
                 :visible.sync="splitDialogShow"
-                :width="screenWidth > adaptiveSize ? '45%' : '90%'"
+                :width="screenWidth > adaptiveSize ? '35%' : '90%'"
                 :before-close="() => {
                     splitDialogShow = false
                 }"
@@ -219,26 +219,38 @@
                 top="30vh">
                 <div class="dialog-content">
                     <div class="cfxid-number">
-                        <span class="title"># 123456789</span>
-                        <span class="value">1 CFXs</span>
+                        <span class="title"># {{ splitRowData.chainid }}</span>
+                        <span class="value">{{ splitRowData.amount }} CFXs</span>
                     </div>
-                    <div class="split-number">
-                        <el-input placeholder="Must be an integer > 1 or < 1000" v-model="splitNumbers[index]" v-for="(item, index) in splitNumbers" :key="index">
+                    <div class="tab-switch">
+                        <el-radio v-model="splitType" label="1" @input="radioInputChange">Custom</el-radio>
+                        <el-radio v-model="splitType" label="2" @input="radioInputChange">Share</el-radio>
+                    </div>
+                    <div class="split-number" v-if="splitType == 1">
+                        <el-input placeholder="Must be an integer > 1 or < 1000" v-model="splitNumbers[index]" v-for="(item, index) in splitNumbers" :key="index" @input="splitNumbersInput">
                             <template slot="prepend"><img :src="require('@/assets/svg/minus.svg')" alt="" width="24" @click="minusNumbers"></template>
                             <template slot="append"><img :src="require('@/assets/svg/plus.svg')" alt="" width="24" @click="plusNumbers"></template>
                         </el-input>
                     </div>
+                    <div v-else class="share-input">
+                        <el-input placeholder="Can be divided into 1-24 parts" v-model="splitNumber" @input="splitNumberInput"></el-input>
+                    </div>
                     <div class="cfxid-number">
                         <span class="title">Count</span>
-                        <span class="value">1</span>
+                        <span class="value">{{ splitType == 1 ? splitNumbers.length : splitNumber }}</span>
                     </div>
-                    <div class="desc">Up to 24 customized items. The amount of new CFXs shards is the the customized amount.</div>
-                    <div class="total-message">
+                    <div class="desc" v-if="splitType == 1">Up to 24 customized items. The amount of new CFXs shards is the the customized amount.</div>
+                    <div class="desc" v-else>The amount of new CFXs shards is the selected CFXs amount evenly divided by the set number of share.</div>
+                    <div class="total-message" v-if="splitErrMesageShow">
                         <img :src="require('@/assets/svg/total.svg')" alt="" width="20" @click="minusNumbers">
                         Total cannot exceed the amount of the CFXs.
                     </div>
+                    <div class="total-message" v-if="splitErrMesageDivShow">
+                        <img :src="require('@/assets/svg/total.svg')" alt="" width="20" @click="minusNumbers">
+                        The number entered is not dividable by the amount of the CFXs.
+                    </div>
                     <div class="button-dialog">
-                        <el-button type="primary" :disabled="trading" :loading="trading" @click="ownerUnlockingScriptContract">CONFIRM CANCEL</el-button>
+                        <el-button type="primary" :disabled="trading || splitErrMesageShow || splitErrMesageDivShow" :loading="trading" @click="splitProcessTransactionContract">CONFIRM CANCEL</el-button>
                     </div>
                 </div>
             </el-dialog>
@@ -275,7 +287,7 @@
                 <div class="dialog-content">
                     <div class="items-count">
                         <span>List {{ selectDataList.length }} Items</span>
-                        <span><el-checkbox v-model="samePriceChecked">Same price</el-checkbox></span>
+                        <span><el-checkbox v-model="samePriceChecked" v-if="this.selectDataList.length > 1">Same price</el-checkbox></span>
                     </div>
                     <div class="set-unit-price">
                         <div class="title">Set unit price</div>
@@ -287,13 +299,13 @@
                                     <span>{{ item.amount }}</span>
                                 </div>
                                 <div class="input-number">
-                                    <el-input v-model="sellPriceValue[item.chainid]" placeholder="0.00">
+                                    <el-input v-model="sellPriceValues[item.chainid]" placeholder="0.00" @input="sellPriceInput">
                                         <div slot="suffix"> <img :src="require('@/assets/usdt.png')" alt="" width="18"> USDT</div>
                                     </el-input>
                                 </div>
                                 <div class="total-price">
                                     <span>Total Price</span>
-                                    <span>{{ new Intl.NumberFormat('en-US').format(sellPriceValue[item.chainid]) }}</span>
+                                    <span>{{ new Intl.NumberFormat('en-US').format(sellPriceValues[item.chainid]) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -386,7 +398,7 @@ import { get, post } from "@/common/axios.js";
 import { mapGetters, mapState } from "vuex";
 import { toWei, keepDecimalNotRounding } from "@/utils/tools";
 import { getBalance, isApproved } from "@/wallet/serve";
-import { approve, lockingScriptbatch, ownerUnlockingScript, processTransaction, transfer } from "@/wallet/trade";
+import { approve, lockingScriptbatch, ownerUnlockingScript, processTransaction, transfer, saveTransactionTask } from "@/wallet/trade";
 import Address from '@/wallet/address.json'
 import CardBox from './myCard.vue';
 import ClsCardBox from './clsCard.vue';
@@ -401,12 +413,12 @@ export default {
             approve: false,
             highlightedIndices: [],
             selectDataList: [],
-            sellPriceValue: this.highlightedIndices && this.highlightedIndices.length ? new Array(this.highlightedIndices.length).fill('') : [],
+            sellPriceValues: this.highlightedIndices && this.highlightedIndices.length ? new Array(this.highlightedIndices.length).fill('') : [],
             formSearch: {
                 searchName: '',
                 minPrice: '',
                 maxPrice: '',
-                address: '',
+                idAddress: '',
             },
             dataList: [],
             trading: false,
@@ -457,6 +469,11 @@ export default {
             },
             checked: false,
             splitNumbers: ['', ''],
+            splitNumber: '',
+            splitRowData: {},
+            splitErrMesageShow: true,
+            splitErrMesageDivShow: false,
+            splitType: "1",
         }
     },
     mounted() {
@@ -494,13 +511,37 @@ export default {
             });
             return { totalSlots, totalCfxs, cfxsIds };
         },
+        calcCfxTotalAmount() {
+            let totalNum = 0;
+            let isNull = true;
+            this.splitNumbers.forEach((item, index) => {
+                if (!isNull) return;
+                if(!item || item == "" || item == 0) {
+                    isNull = false;
+                }
+                totalNum += Number(item);
+            });
+            if(this.splitNumbers.length > this.splitRowData.amount || !isNull || totalNum > this.splitRowData.amount || totalNum < this.splitRowData.amount) {
+                this.splitErrMesageShow = true;
+            } else {
+                this.splitErrMesageShow = false;
+            }
+        },
         totalSellPrice() {
-            let total = this.sellPriceValue.reduce((sum, price) => {
+            let total = this.sellPriceValues.reduce((sum, price) => {
                 return sum + Number(price);
             }, 0);
 
             // 然后使用 Intl.NumberFormat 格式化最终的累加结果
             return new Intl.NumberFormat('en-US').format(total);
+        },
+        calculatedSplit() {
+            const base = Math.floor(Number(this.splitRowData.amount) / Number(this.splitNumber)); // 每份的基础数值
+            const remainder = Number(this.splitRowData.amount) % Number(this.splitNumber); // 剩余的数值
+            const result = Array(Number(this.splitNumber)).fill(base).map((value, index) => 
+                index < remainder ? value + 1 : value
+            );
+            return result;
         }
     },
     created() {
@@ -642,14 +683,34 @@ export default {
             this.highlightedIndices = [];
             this.checked = false;
         },
-        onSubmit() {
-            console.log('submit!');
+        onApplySearch() {
+            let SearchWhere = {
+                limit: this.pageSize,
+                page: this.currPage,
+                owner: this.address,
+                regmarket: this.regmarket,
+            };
+            this.dataList = [];
+            if(this.formSearch.searchName == 1) {
+                SearchWhere.merged = "1";
+            }
+            if(this.formSearch.searchName == 2) {
+                SearchWhere.merged = "2";
+            }
+            if(this.formSearch.idAddress && this.formSearch.idAddress !== '') {
+                SearchWhere.id_address = this.formSearch.idAddress;
+            }
+            this.getMyMarketplaceData(SearchWhere);
         },
         onMessageItems() {
             this.messageItemsDialogShow = true;
         },
-        onSplitItem() {
+        onSplitItem(row) {
+            this.splitRowData = row;
             this.splitDialogShow = true;
+            this.splitType = "1";
+            this.splitErrMesageDivShow = false;
+            this.splitErrMesageShow = true;
         },
         onTransferItems() {
             this.transferAddressValue = "";
@@ -658,13 +719,13 @@ export default {
         sellNowClick(row) { //单个出售
             console.log(row);
             this.selectDataList = [];
-            this.sellPriceValue = [];
+            this.sellPriceValues = [];
             this.selectDataList.push(row);
             this.quickListDialogShow = true;
         },
         onBatchListingFun() {//批量出售
             this.selectDataList = [];
-            this.sellPriceValue = [];
+            this.sellPriceValues = [];
             if(this.highlightedIndices.length) {
                 this.dataList.forEach((item, index) => {
                     if (this.highlightedIndices.includes(index)) {
@@ -673,6 +734,13 @@ export default {
                 });
             }
             this.quickListDialogShow = true;
+        },
+        sellPriceInput(value) { //出售价格输入框事件
+            if(this.samePriceChecked) {
+                this.sellPriceValues.forEach((item, index) => {
+                    this.sellPriceValues[index] = value;
+                })
+            }
         },
         onLoadMoreData() {
             this.currPage += 1;
@@ -706,15 +774,44 @@ export default {
         minusNumbers() {
             if (this.splitNumbers.length > 2) {
                 this.splitNumbers.pop();
+                this.calcCfxTotalAmount;
             }
         },
         plusNumbers() {
             this.splitNumbers.push('');
+            this.calcCfxTotalAmount;
+        },
+        splitNumbersInput(value) {
+            this.calcCfxTotalAmount;
+        },
+        splitNumberInput(value) {
+            if(value > 24 || value > this.splitRowData.amount || value <= 0) {
+                this.splitErrMesageDivShow = true;
+            } else {
+                this.splitErrMesageDivShow = false;
+            }
+            // let num = this.splitRowData.amount / Number(value);
+            // if(Number.isInteger(Number(value)) && Number.isInteger(num)) {
+            //     this.splitErrMesageDivShow = false;
+            // } else {
+            //     this.splitErrMesageDivShow = true;
+            // }
+        },
+        radioInputChange(label) {
+            this.splitNumbers = ['', ''];
+            this.splitNumber = '';
+            if(label == 1) {
+                this.splitErrMesageDivShow = false;
+                this.splitErrMesageShow = true;
+            } else {
+                this.splitErrMesageDivShow = true;
+                this.splitErrMesageShow = false;
+            }
         },
         async lockingSellContract() { //出售
             this.trading = true;
-            const indexArray = this.sellPriceValue.map((value, index) => index);
-            const valueArray = this.sellPriceValue.map((value, index) => toWei(value, 18));
+            const indexArray = this.sellPriceValues.map((value, index) => index);
+            const valueArray = this.sellPriceValues.map((value, index) => toWei(value, 18));
             
             const cfxsIds = indexArray.filter((value, index) => {
                 return value !== null && value !== "" && value !== undefined;
@@ -724,7 +821,7 @@ export default {
             const prices = valueArray.filter((value, index) => {
                 return value !== null && value !== "" && value !== undefined;
             });
-            lockingScriptbatch(cfxsIds, prices, usdIds, this.hoursDifference).then((hash) => {
+            lockingScriptbatch(cfxsIds, prices, usdIds, this.hoursDifference).then(async (hash) => {
                 if (hash) {
                     this.trading = false;
                 }
@@ -734,7 +831,7 @@ export default {
         },
         async ownerUnlockingScriptContract() { //取消出售
             this.trading = true;
-            ownerUnlockingScript(this.cancelSaleId).then((hash) => {
+            ownerUnlockingScript(this.cancelSaleId).then(async (hash) => {
                 if (hash) {
                     this.trading = false;
                 }
@@ -760,14 +857,25 @@ export default {
             });
         },
         async splitProcessTransactionContract() { //拆分交易
-            const data = this.calcTotalNumber;
-            const cfxsIds = data.cfxsIds;
-            const outputs = [[
-                this.address,
-                data.totalCfxs,
-                ""
-            ]];
             this.trading = true;
+            let cfxsIds = [];
+            let outputs = [];
+            if(this.splitType == 1) {
+                cfxsIds = [this.splitRowData.chainid];
+                this.splitNumbers.forEach((item, index) => {
+                    outputs.push([this.address, item, ""]);
+                })
+            }
+            if(this.splitType == 2) {
+                const splitLists = this.calculatedSplit;
+                splitLists.forEach((item, index) => {
+                    outputs.push([
+                        this.address,
+                        item.toString(),
+                        ""
+                    ]);
+                })
+            }
             processTransaction(cfxsIds, outputs).then((hash) => {
                 if (hash) {
                     this.trading = false;
@@ -1252,6 +1360,27 @@ export default {
                             color: #ad8d65;
                             gap: 10px;
                         }
+                        .tab-switch {
+                            margin-top: 24px;
+                            margin-bottom: 16px;
+                            .el-radio {
+                                color: #aaa;
+                            }
+                            .el-radio__input.is-checked+.el-radio__label {
+                                color: #aaa;
+                            }
+                            .el-radio__input.is-checked .el-radio__inner {
+                                border-color: #ad8d65;
+                                background: #ad8d65;
+                                color: #aaa;
+                            }
+                            .el-radio__inner {
+                                width: 16px;
+                                height: 16px;
+                                background-color: transparent;
+                                border-color: #6b7280;
+                            }
+                        }
                         .split-number {
                             display: flex;
                             margin-top: 5px;
@@ -1263,6 +1392,25 @@ export default {
                             max-height: 300px;
                             flex-direction: column;
                             gap: 16px;
+                            .el-input__inner {
+                                background-color: transparent;
+                                color: #fff;
+                                border-color: #525252;
+                                height: 48px;
+                            }
+                            .el-input-group__prepend {
+                                background-color: transparent;
+                                border-color: #525252;
+                                cursor: pointer;
+                            }
+                            .el-input-group__append {
+                                background-color: transparent;
+                                border-color: #525252;
+                                cursor: pointer;
+                            }
+                        }
+                        .share-input {
+                            margin-bottom: 8px;
                             .el-input__inner {
                                 background-color: transparent;
                                 color: #fff;
@@ -1297,6 +1445,14 @@ export default {
                                 background-color: #ad8d65;
                                 border: 0;
                                 color: rgb(0, 0, 0/1);
+                            }
+                            .el-button--primary.is-disabled {
+                                background: hsla(0, 0%, 50%, .2);
+                                color: #aaa;
+                            }
+                            .el-button--primary.is-disabled:hover {
+                                background: hsla(0, 0%, 50%, .2);
+                                color: #aaa;
                             }
                         }
                     }

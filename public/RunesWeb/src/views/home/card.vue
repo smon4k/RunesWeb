@@ -20,7 +20,7 @@
                         </div>
                         <div class="bottom">
                             <div class="ids-num">
-                                <div class="ids">#{{ item.id }}</div>
+                                <div class="ids">#{{ item.chainid }}</div>
                                 <div class="num">
                                     <img :src="require('@/assets/svg/usdt.svg')" alt="" width="16">
                                     <div class="">{{ item.amount }}</div>

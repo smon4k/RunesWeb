@@ -8,7 +8,7 @@ import LuClsSysABI from './abis/LuClsSysABI.json'
 import hashpowerABI from './abis/hashpowerABI.json'
 import goblinPoolsABI from './abis/goblinPools.json'
 import DicePoolsABI from './abis/DicePoolsABI.json'
-import {saveNotifyStatus, setDepositWithdraw, setDealerRecord} from "@/wallet/serve";
+import {saveNotifyStatus, setDepositWithdraw, saveTransactionTask} from "@/wallet/serve";
 import Address from '@/wallet/address.json'
 
 // 领取空投奖励
@@ -109,10 +109,21 @@ export const unlockingScriptbatch = async function (cfxsIds=[], amounts=[], usdI
         // gas: web3.utils.toHex(50000),
       }];
       web3.eth.sendTransaction(params[0])
-        .on('transactionHash', function (hash) {
+        .on('transactionHash', async (hash) => {
           console.log('hash', hash);
           if (hash) {
             hashInfo = hash
+            const params = {
+              "address": address,
+              "hash": hash,
+              "type": 1,
+              "data": {
+                  "cfxsIds": cfxsIds,
+                  "sendaddr": address,
+                  "hash": hash,
+              }
+            };
+            await saveTransactionTask(params);
             // __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
           }
         })
@@ -164,10 +175,23 @@ export const lockingScriptbatch = async function (cfxsIds=[], amounts=[], usdIds
         // gas: web3.utils.toHex(50000),
       }];
       web3.eth.sendTransaction(params[0])
-        .on('transactionHash', function (hash) {
+        .on('transactionHash', async (hash) => {
           console.log('hash', hash);
           if (hash) {
             hashInfo = hash
+            const params = {
+              "address": address,
+              "hash": hash,
+              "type": 2,
+              "data": {
+                  "cfxsIds": cfxsIds,
+                  "amounts": amounts,
+                  "sendaddr": address,
+                  "hash": hash,
+                  "lockhours": lockhours,
+              }
+          };
+          await saveTransactionTask(params);
             // __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
           }
         })
@@ -219,10 +243,21 @@ export const ownerUnlockingScript = async function (cfxsId='') {
         // gas: web3.utils.toHex(50000),
       }];
       web3.eth.sendTransaction(params[0])
-        .on('transactionHash', function (hash) {
+        .on('transactionHash', async (hash) => {
           console.log('hash', hash);
           if (hash) {
             hashInfo = hash
+            const params = {
+              "address": address,
+              "hash": hash,
+              "type": 3,
+              "data": {
+                  "cfxsId": cfxsId,
+                  "sendaddr": address,
+                  "hash": hash,
+              }
+            };
+            await saveTransactionTask(params);
             // __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
           }
         })
@@ -246,7 +281,7 @@ export const ownerUnlockingScript = async function (cfxsId='') {
 }
 
 //合并、拆分交易
-export const processTransaction = async function (cfxsIds=[], outputs=[]) {
+export const processTransaction = async function (cfxsIds=[], outputs=[], type=0) {
   console.log(cfxsIds, outputs);
   const address = __ownInstance__.$store.state.base.address;
   const contractAddress = Address.CFXsContractAddress;
@@ -274,10 +309,39 @@ export const processTransaction = async function (cfxsIds=[], outputs=[]) {
         // gas: web3.utils.toHex(50000),
       }];
       web3.eth.sendTransaction(params[0])
-        .on('transactionHash', function (hash) {
+        .on('transactionHash', async (hash) => {
           console.log('hash', hash);
           if (hash) {
             hashInfo = hash
+            let params = {};
+            if(type == 1) {
+              params = {
+                "address": address,
+                "hash": hash,
+                "type": 4,
+                "data": {
+                    "cfxsIds": cfxsIds,
+                    "amount": outputs[0],
+                    "sendaddr": address,
+                    "newCfxId": "",
+                    "hash": hash,
+                }
+              };
+            } else {
+              params = {
+                "address": address,
+                "hash": hash,
+                "type": 5,
+                "data": {
+                    "cfxsId": cfxsIds[0],
+                    "amounts": outputs,
+                    "sendaddr": address,
+                    "newCfxIds": [],
+                    "hash": hash,
+                }
+              };
+            }
+            await saveTransactionTask(params);
             // __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
           }
         })
@@ -329,10 +393,22 @@ export const transfer = async function (cfxsIds=[], toaddress="") {
         // gas: web3.utils.toHex(50000),
       }];
       web3.eth.sendTransaction(params[0])
-        .on('transactionHash', function (hash) {
+        .on('transactionHash', async (hash) => {
           console.log('hash', hash);
           if (hash) {
             hashInfo = hash
+            const params = {
+              "address": address,
+              "hash": hash,
+              "type": 6,
+              "data": {
+                  "cfxsIds": cfxsIds,
+                  "sendaddr": address,
+                  "toaddr": toaddress,
+                  "hash": hash,
+              }
+            };
+            await saveTransactionTask(params);
             // __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
           }
         })

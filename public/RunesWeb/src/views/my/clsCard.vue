@@ -9,7 +9,7 @@
                                 <img :src="require('@/assets/svg/cfxs.svg')" alt="" width="60">
                             </div>
                             <div class="quantity">
-                                <div class="count-num">CLS:{{ item.id }}</div>
+                                <div class="count-num">CLS:{{ item.chainid }}</div>
                             </div>
                         </div>
                         <div class="bottom">

@@ -16,7 +16,7 @@ class HexJsonEncoder(json.JSONEncoder):
 class JDSpider(object):
     def __init__(self):
         # print(sys.argv[1])
-        rpcUrls = 'https://bsc-dataseed.binance.org'
+        rpcUrls = 'https://evm.confluxrpc.com'
         self.web3Client = Web3(HTTPProvider(rpcUrls))
     
 
