@@ -360,8 +360,11 @@
                             <el-button type="primary" @click="setResolveAddress">My Address<img :src="require('@/assets/svg/arraw-left.svg')" alt="" width="16"></el-button>
                         </div>
                     </div>
+                    <div class="destion">
+                        <span class="text">The merged CFXs will generate a new CFXs ID. The amount of new CFXs according to the total amount of merged CFXs.</span>
+                    </div>
                     <div class="button-dialog">
-                        <el-button type="primary" :class="{ 'merge-border': resolveAddressValue }" :disabled="!resolveAddressValue">CONFIRM</el-button>
+                        <el-button type="primary" :class="{ 'merge-border': resolveAddressValue }" :disabled="trading || !resolveAddressValue" :loading="trading" @click="resolveAddressContract">CONFIRM</el-button>
                     </div>
                 </div>
             </el-dialog>
@@ -378,7 +381,7 @@
                 <div class="dialog-content">
                     <div class="you-wall-pay">
                         <span class="title">Name</span>
-                        <span class="value">{{ '8614321' }}</span>
+                        <span class="value">{{ clsCfxId }}</span>
                     </div>
                     <div class="you-wall-pay">
                         <span class="title">Address</span>
@@ -386,7 +389,7 @@
                     </div>
                     <div class="button-dialog">
                         <span class="text" style="font-size: 12px;">The CIS name is your reverse record responsible for resolving your wallet address to your CIS name, effectively helping DApps or other supported services display your CIS name based on your wallet address.</span>
-                        <el-button type="primary">CONFIRM CANCEL</el-button>
+                        <el-button type="primary" :disabled="trading" :loading="trading" @click="setNameGlsContract">CONFIRM CANCEL</el-button>
                     </div>
                 </div>
             </el-dialog>
@@ -398,7 +401,7 @@ import { get, post } from "@/common/axios.js";
 import { mapGetters, mapState } from "vuex";
 import { toWei, keepDecimalNotRounding } from "@/utils/tools";
 import { getBalance, isApproved } from "@/wallet/serve";
-import { approve, lockingScriptbatch, ownerUnlockingScript, processTransaction, transfer, saveTransactionTask } from "@/wallet/trade";
+import { approve, lockingScriptbatch, ownerUnlockingScript, processTransaction, transfer, idRegist, addrRegist } from "@/wallet/trade";
 import Address from '@/wallet/address.json'
 import CardBox from './myCard.vue';
 import ClsCardBox from './clsCard.vue';
@@ -474,6 +477,7 @@ export default {
             splitErrMesageShow: true,
             splitErrMesageDivShow: false,
             splitType: "1",
+            clsCfxId: "",
         }
     },
     mounted() {
@@ -753,17 +757,19 @@ export default {
         quickListDialogClose() {
             this.quickListDialogShow = false;
         },
-        cancelListingClick(item) { //取消名单事件
+        cancelListingClick(item) { //取消出售事件
             this.cancelSaleId = item.chainid;
             this.cancelListingDialogShow = true;
         },
-        resolveAddressClick() {
+        resolveAddressClick(row) { //Resolve Address
+            this.clsCfxId = row.chainid
             this.resolveAddressDialogShow = true;
         },
-        setResolveAddress() {
+        setResolveAddress() { //My Address
             this.resolveAddressValue = this.address;
         },
-        setNameClick() {
+        setNameClick(row) { //Set Name
+            this.clsCfxId = row.chainid
             this.setClsNameDialogShow = true;
         },
         regmarketClick(tab, event) {
@@ -824,6 +830,7 @@ export default {
             lockingScriptbatch(cfxsIds, prices, usdIds, this.hoursDifference).then(async (hash) => {
                 if (hash) {
                     this.trading = false;
+                    this.quickListDialogShow = false;
                 }
             }).finally(() => {
                 this.trading = false;
@@ -834,6 +841,7 @@ export default {
             ownerUnlockingScript(this.cancelSaleId).then(async (hash) => {
                 if (hash) {
                     this.trading = false;
+                    this.cancelListingDialogShow = false;
                 }
             }).finally(() => {
                 this.trading = false;
@@ -851,6 +859,7 @@ export default {
             processTransaction(cfxsIds, outputs).then((hash) => {
                 if (hash) {
                     this.trading = false;
+                    this.messageItemsDialogShow = false;
                 }
             }).finally(() => {
                 this.trading = false;
@@ -879,6 +888,7 @@ export default {
             processTransaction(cfxsIds, outputs).then((hash) => {
                 if (hash) {
                     this.trading = false;
+                    this.splitDialogShow = false;
                 }
             }).finally(() => {
                 this.trading = false;
@@ -891,6 +901,29 @@ export default {
             transfer(cfxsIds, this.transferAddressValue).then((hash) => {
                 if (hash) {
                     this.trading = false;
+                    this.transferItemsDialogShow = false;
+                }
+            }).finally(() => {
+                this.trading = false;
+            });
+        },
+        async resolveAddressContract() { //GLS Resolve address
+            this.trading = true;
+            idRegist(this.clsCfxId, this.resolveAddressValue).then((hash) => {
+                if (hash) {
+                    this.trading = false;
+                    this.resolveAddressDialogShow = false;
+                }
+            }).finally(() => {
+                this.trading = false;
+            });
+        },
+        async setNameGlsContract() { //GLS Set Name
+            this.trading = true;
+            addrRegist(this.clsCfxId).then((hash) => {
+                if (hash) {
+                    this.trading = false;
+                    this.setClsNameDialogShow = false;
                 }
             }).finally(() => {
                 this.trading = false;
@@ -1684,6 +1717,7 @@ export default {
                     .dialog-content {
                         display: flex;
                         flex-direction: column;
+                        gap: 8px;
                         .address {
                             display: flex;
                             color: #aaa;
@@ -1737,6 +1771,10 @@ export default {
                                 background-color: #ad8d65;
                                 color: #282828;
                             }
+                        }
+                        .destion {
+                            font-size: 12px;
+                            color: #aaa;
                         }
                         .button-dialog {
                             color: #aaa;

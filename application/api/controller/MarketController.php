@@ -148,7 +148,7 @@ class MarketController extends BaseController
         if ($result && $result['code'] == 1) {
             return $this->as_json('ok');
         } else {
-            return $this->as_json('70001', 'Error');
+            return $this->as_json('70001', $result['message']);
         }
     }
 
@@ -169,7 +169,7 @@ class MarketController extends BaseController
         if ($result && $result['code'] == 1) {
             return $this->as_json('ok');
         } else {
-            return $this->as_json('70001', 'Error');
+            return $this->as_json('70001', $result['message']);
         }
     }
 
@@ -188,7 +188,7 @@ class MarketController extends BaseController
         if ($result && $result['code'] == 1) {
             return $this->as_json('ok');
         } else {
-            return $this->as_json('70001', 'Error');
+            return $this->as_json('70001', $result['message']);
         }
     }
 
@@ -210,7 +210,7 @@ class MarketController extends BaseController
         if ($result && $result['code'] == 1) {
             return $this->as_json('ok');
         } else {
-            return $this->as_json('70001', 'Error');
+            return $this->as_json('70001', $result['message']);
         }
     }
 
@@ -231,7 +231,7 @@ class MarketController extends BaseController
         if ($result && $result['code'] == 1) {
             return $this->as_json('ok');
         } else {
-            return $this->as_json('70001', 'Error');
+            return $this->as_json('70001', $result['message']);
         }
     }
 
@@ -251,7 +251,36 @@ class MarketController extends BaseController
         if ($result && $result['code'] == 1) {
             return $this->as_json('ok');
         } else {
-            return $this->as_json('70001', 'Error');
+            return $this->as_json('70001', $result['message']);
+        }
+    }
+
+    /**
+     * inscribe 发布
+     * @author qinlh
+     * @since 2024-08-14
+     * https://evm.confluxscan.io/tx/0xe490e140caa324a7c17fac1e3be3f2f06219c9f17a0c92ac153ca42c2ac16af8
+     */
+    public function inscribe(Request $request)
+    {
+        $cfxsId = $request->post('cfxsId', '', 'trim');
+        $sendaddr = $request->post('sendaddr', '', 'trim');
+        $data = $request->post('data', '', 'trim');
+        $hash = $request->post('hash', '', 'trim');
+        $result = MyMarket::inscribe($cfxsId, $sendaddr, $data, $hash);
+        if ($result && $result['code'] == 1) {
+            return $this->as_json('ok');
+        } else {
+            return $this->as_json('70001', $result['message']);
         }
     }
 }
+
+
+// https://evm.confluxscan.io/tx/0x93a18c9c914956a05c570ed524a1beac3aab647fe03fdf6af1407894e4d355f9 //CLS Resolve address
+
+// https://evm.confluxscan.io/tx/0x545f85a9913c3b4b13cb52314561a761cd1a1a1f30319c47cf577c75c653b770 //CLS Set Name
+
+// inscribe
+// https://evm.confluxscan.io/tx/0x1c2fd0122decec511368f759c79edd5d626cb91ed61678ca7adff10aece8ac21 inscribe
+// https://evm.confluxscan.io/tx/0xeadae3e769fc478d98bf955c5a7c495e2a5ed09a116b81dfd03dd847a57a06ed userDataRegist

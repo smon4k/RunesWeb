@@ -8,7 +8,7 @@
                 </div>
                 <!-- 上传文件 -->
                 <el-tabs v-model="activeName" @tab-click="tabsFileHandleClick">
-                    <el-tab-pane label="File" name="1">
+                    <!-- <el-tab-pane label="File" name="1">
                         <el-upload
                         class="upload-demo"
                         drag
@@ -17,20 +17,23 @@
                         <div class="el-upload__text">Drag and drop your file here, or click to select file</div>
                         <div class="el-upload__tip" >.jpg, .png, .gif, .mp4, .mp3 + more!. Limit 10MB</div>
                         </el-upload>
-                       <!-- 单选框 -->
                         <el-checkbox v-model="checked">Publish On IPFs</el-checkbox>
-                    </el-tab-pane>
+                    </el-tab-pane> -->
                     <el-tab-pane label="Text" name="2">
-                        <el-input type="textarea" placeholder="Enter text here" v-model="textname"></el-input>
+                        <el-input type="textarea" placeholder="Enter text here" v-model="data"></el-input>
                     </el-tab-pane>
                 </el-tabs>
                 <!-- 公共样式按钮 -->
                 <div class="publicbutton">
                     <span class="buttoninscrible">Select CFXs to inscribe</span>
-                    <el-button size="mini" @click="showSelectDialog(item)">Select</el-button>
+                    <div v-if="highlightedIndices.length > 0" class="select-id">
+                        <span class="id">#{{ selectedData.chainid }}</span>
+                        <img :src="require('@/assets/svg/close.svg')" alt="" width="16" @click="clearSelectedData">
+                    </div>
+                    <el-button size="mini" @click="showSelectDialog(item)" v-else>Select</el-button>
                 </div>
                 <div class="disbutton">
-                    <el-button disabled>CONNECT WALLET</el-button>
+                    <el-button type="primary" :disabled="data == '' || !selectedData.chainid" @click="submitInscribeContract">SUBMIT</el-button>
                 </div>
             </div>
             <!-- 底部tab -->
@@ -61,8 +64,8 @@
                         <el-row :gutter="screenWidth > adaptiveSize ? 24 : 10">
                             <el-col :xs="24" :sm="12" :md="8" v-for="(item, index) in dataList" :key="index">
                                 <div class="card-content" :class="{ 'highlight-border': isSelected(index) }" ref="card" @click.stop="toggleHighlight(index)">
-                                    <div class="ids">#{{ item.id }}</div>
-                                    <div class="count-num">{{ item.number }}</div>
+                                    <div class="ids">#{{ item.chainid }}</div>
+                                    <div class="count-num">{{ item.amount }}</div>
                                 </div>
                             </el-col>
                         </el-row>
@@ -70,8 +73,8 @@
                     <div class="no-more">
                         <span v-if="isNoMoreData">No More</span>
                         <div v-else class="load-more">
-                            <div v-if="!isLoading" @click="onLoadMoreData">Load more</div>
-                            <div v-if="isLoading" class="loading-icon">
+                            <div v-if="!loading" @click="onLoadMoreData">Load more</div>
+                            <div v-if="loading" class="loading-icon">
                                 <div class="loading-container">
                                     <div class="loading-spinner"></div>
                                 </div>
@@ -81,7 +84,7 @@
                     </div>
                 </div>
                 <div class="dialog-button">
-                    <el-button type="primary" :class="{ 'batch-listing': highlightedIndices.length > 0 }" :disabled="highlightedIndices.length <= 0">CONFIRM</el-button>
+                    <el-button type="primary" :class="{ 'batch-listing': highlightedIndices.length > 0 }" :disabled="highlightedIndices.length <= 0" @click="selectCfxConfirm">CONFIRM</el-button>
                 </div>
             </el-dialog>
         </div>
@@ -91,7 +94,7 @@
 import { get, post } from "@/common/axios.js";
 import { mapGetters, mapState } from "vuex";
 import { keepDecimalNotRounding } from "@/utils/tools";
-import { approve } from "@/wallet/trade";
+import { approve, inscribe, userDataRegist } from "@/wallet/trade";
 import { getBalance, isApproved } from "@/wallet/serve";
 import Address from '@/wallet/address.json'
 export default {
@@ -99,30 +102,23 @@ export default {
     data() {
         return {
             screenWidth: document.body.clientWidth,
-            activeName: '1',//tab默认初始加载选中
+            activeName: '2',//tab默认初始加载选中
             activeName2: '1',//tab默认初始加载选中
             loading: false,
             approve: false,
-            textname: '',
+            data: '',
             checked: true,//单选框默认选中
             selectCfxsDialogShow: false,
-            dataList: [
-                {
-                    id: '123456',
-                    number: 1,
-                },
-                {
-                    id: '1234567',
-                    number: 1,
-                },
-                {
-                    id: '1234568',
-                    number: 1,
-                },
-            ],
+            urrPage: 1, //当前页
+            pageSize: 30, //每页显示条数
+            total: 100, //总条数
+            isNoMoreData: false,
+            PageSearchWhere: [], //分页搜索数组
+            dataList: [],
             highlightedIndices: [],
             isNoMoreData: false,
             isLoading: false,
+            selectedData: {},
         }
     },
     mounted() {
@@ -163,7 +159,7 @@ export default {
             immediate: true,
             async handler(val) {
                 if (val.address) {
-                    await this.getIsApprove();
+                    await this.getMyMarketplaceData();
                 }
             }
         },
@@ -195,18 +191,67 @@ export default {
             }
         },
         toggleHighlight(index) {
-            const currentIndex = this.highlightedIndices.indexOf(index);
-            if (currentIndex > -1) {
-                // 如果索引已高亮，移除它
-                this.highlightedIndices.splice(currentIndex, 1);
-            } else {
-                // 否则，添加这个索引到高亮数组
-                this.highlightedIndices.push(index);
-            }
+            this.highlightedIndices = [];
+            this.highlightedIndices.push(index);
         },
         onLoadMoreData() {
-            console.log('Load More');
-            this.isLoading = true;
+            this.currPage += 1;
+            this.getMyMarketplaceData();
+        },
+        clearSelectedData() {
+            this.selectedData = {};
+            this.highlightedIndices = [];
+        },
+        selectCfxConfirm() {
+            this.selectedData = this.dataList[this.highlightedIndices[0]];
+            this.selectCfxsDialogShow = false;
+        },
+        getMyMarketplaceData(ServerWhere) {
+            if (!ServerWhere || ServerWhere == undefined || ServerWhere.length <= 0) {
+                ServerWhere = {
+                    limit: this.pageSize,
+                    page: this.currPage,
+                    owner: this.address,
+                };
+            }
+            this.loading = true;
+            get(this.apiUrl + "/Api/Market/getMyMarketplaceData", ServerWhere, async json => {
+                if (json.code == 10000) {
+                    let list = (json.data && json.data.lists) || [];
+                    // console.log(list);
+                    if (Array.isArray(list) && Array.isArray(this.dataList)) {
+                        this.dataList = this.dataList.concat(list);
+                        if(list.length < this.pageSize) {
+                            this.isNoMoreData = true;
+                        }
+                    }
+                    this.loading = false;
+                    this.total = json.data.count;
+                    this.$forceUpdate();
+                } else {
+                    this.$message.error("加载数据失败");
+                }
+            });
+        },
+        async submitInscribeContract() {
+            this.trading = true;
+            const cfxsIds = [this.selectedData.chainid];
+            const dataTypes = ["3"];
+            const names = [""];
+            const series = "";
+            inscribe(this.selectedData.chainid, this.data).then((hash) => {
+                if (hash) {
+                    userDataRegist(cfxsIds, dataTypes, names, series).then((hash2) => {
+                        if(hash2) {
+                            this.trading = false;
+                        }
+                    }).finally(() => {
+                        this.trading = false;
+                    });
+                }
+            }).finally(() => {
+                this.trading = false;
+            });
         },
         async getIsApprove() { //获取余额 查看是否授权
             let balance = await getBalance(Address.BUSDT, 18); //获取余额
@@ -299,10 +344,11 @@ export default {
                     border: 0.5px dashed #ad8d65;
                     border-radius: 8px;
                     height: 100px;
+                    padding: 16px;
+                    color: #fff;
                 }
                 .el-textarea__inner::placeholder {
                     color: #6b7280;
-                    padding: 10px;
                 }
                 .upload-demo {
                     align-items: center;
@@ -320,7 +366,7 @@ export default {
                         height: 100px;
                         border: 0.5px dashed #d9d9d9;
                         .el-upload__text {
-                            margin-top:10px ;
+                            //margin-top:10px ;
                             text-align: left;
                             color: #aaa;
                             font-size: 14px;
@@ -335,15 +381,29 @@ export default {
                 }
                 // 公共按钮样式
                 .publicbutton {
+                    display: flex;
+                    align-items: center;
                     margin-top: 10px;
-                    height: 30px;
-                    line-height: 30px;
+                    height: 40px;
+                    line-height: 40px;
                     // 左右浮动
                     justify-content: space-between;
                     display: flex;
                     .buttoninscrible {
                         font-size: 16px;
                         color: #aaa;
+                    }
+                    .select-id {
+                        display: flex;
+                        align-items: center;
+                        gap: 20px;
+                        .id {
+                            color: #ad8d65;
+                            font-size: 16px;
+                        }
+                        img {
+                            cursor: pointer;
+                        }
                     }
                     .el-button {
                         color: #ad8d65;
@@ -362,10 +422,19 @@ export default {
                     width: 100%;
                     height: 48px;
                     .el-button {
-                        width: 100%;          background: hsla(0,0%,50%,.2);
+                        height: 48px;
+                        width: 100%;
+                        background-color: #ad8d65;
+                        border: 0;
+                        color: rgb(0, 0, 0/1);
+                    }
+                    .el-button--primary.is-disabled {
+                        background: hsla(0, 0%, 50%, .2);
                         color: #aaa;
-                        border-color: transparent;
-                        line-height: 20px;
+                    }
+                    .el-button--primary.is-disabled:hover {
+                        background: hsla(0, 0%, 50%, .2);
+                        color: #aaa;
                     }
                 }
 

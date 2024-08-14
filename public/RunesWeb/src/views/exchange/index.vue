@@ -5,7 +5,8 @@
         <div slot="header" class="header">
           <div>
             <span>{{ 'Transform' }}</span>
-            <el-button size="mini">Select</el-button></div>
+            <!-- <el-button size="mini">Select</el-button>-->
+          </div> 
           <div class="wormhole"><img :src="require('@/assets/svg/wormhole.svg')" alt="" width="24"></div>
           <!-- <p class="tips">{{ $t('swap:TradeInstant') }}</p> -->
         </div>
@@ -14,7 +15,10 @@
            <!-- INPUT  -->
           <div class="input">
             <div class="input-title">
-              <div>Amount</div>
+              <div class="amount">
+                <span>Amount</span> 
+                <el-button size="mini">Select</el-button>
+              </div>
               <div>Total: 0</div>
               <!-- <div class="textRight">{{ $t('swap:Balance') }}: {{ inputBalance }}</div> -->
             </div>
@@ -27,13 +31,16 @@
               ></el-input>
               <el-dropdown trigger="click" tabIndex="1" @command="dropdownMenuClick">
                 <span class="el-dropdown-link">
-                  {{ inputName }}
+                  <img :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="20" v-if="inputName === 'CFXs'">
+                  <img :src="require('@/assets/svg/nft.svg')" alt="" width="20" v-if="inputName === 'NFT'">
+                  <img :src="require('@/assets/svg/coin.svg')" alt="" width="20" v-if="inputName === 'Coin'">
+                  {{ inputName ? inputName : "Select" }}
                   <i class="el-icon-arrow-down el-icon--right"></i>
                 </span>
-                <el-dropdown-menu slot="dropdown" :append-to-body="false">
-                  <el-dropdown-item command="HT" v-if="chainName === 'HECO'">HT</el-dropdown-item>
-                  <el-dropdown-item command="HT" v-else>ETH</el-dropdown-item>
-                  <el-dropdown-item command="USDT">USDT</el-dropdown-item>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item command="CFXs"><img :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="20">CFXs</el-dropdown-item>
+                  <el-dropdown-item command="NFT"><img :src="require('@/assets/svg/nft.svg')" alt="" width="20">NFT</el-dropdown-item>
+                  <el-dropdown-item command="Coin"><img :src="require('@/assets/svg/coin.svg')" alt="" width="20">Coin</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </div>
@@ -61,13 +68,16 @@
               ></el-input>
               <el-dropdown trigger="click" tabIndex="1" @command="dropdownMenuClick">
                 <span class="el-dropdown-link">
-                  {{ inputName }}
+                  <img :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="20" v-if="outputName === 'CFXs'">
+                  <img :src="require('@/assets/svg/nft.svg')" alt="" width="20" v-if="outputName === 'NFT'">
+                  <img :src="require('@/assets/svg/coin.svg')" alt="" width="20" v-if="outputName === 'Coin'">
+                  {{ outputName ? outputName : "Select" }}
                   <i class="el-icon-arrow-down el-icon--right"></i>
                 </span>
-                <el-dropdown-menu slot="dropdown" :append-to-body="false">
-                  <el-dropdown-item command="HT" v-if="chainName === 'HECO'">HT</el-dropdown-item>
-                  <el-dropdown-item command="HT" v-else>ETH</el-dropdown-item>
-                  <el-dropdown-item command="USDT">USDT</el-dropdown-item>
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item command="CFXs"><img :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="20">CFXs</el-dropdown-item>
+                  <el-dropdown-item command="NFT"><img :src="require('@/assets/svg/nft.svg')" alt="" width="20">NFT</el-dropdown-item>
+                  <el-dropdown-item command="Coin"><img :src="require('@/assets/svg/coin.svg')" alt="" width="20">Coin</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </div>
@@ -154,21 +164,6 @@ export default {
   },
    created(){
     try {
-      let assets = this.$route.params.assets;
-      console.log(assets);
-      if(assets && assets !== '') {
-        if(assets === 'deposit') { //入金
-          this.inputName = 'USDT';
-          this.outputName = 'LUSD';
-        } else { //出金
-          this.inputName = 'LUSD';
-          this.outputName = 'USDT';
-        }
-        setTimeout(async() => {
-          await this.getLusdBalance();
-        }, 300);
-        this.assets = assets;
-      }
     } catch (err) {}
   },
   components: {
@@ -353,6 +348,48 @@ export default {
   },
 };
 </script>
+<style lang="scss">
+.el-dropdown {
+  width: 100px;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  .el-dropdown-menu {
+    //width: 100%;
+    border: 0;
+    //top: 15px !important;
+  }
+}
+.el-dropdown-menu__item {
+    padding: 0 15px;
+    color: #aaa;
+    font-size: 16px;
+    font-weight: 400;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    img {
+        margin-right: 5px;
+    }
+}
+.el-dropdown-menu__item:focus,.el-dropdown-menu__item:hover {
+  background-color: #ad8d65 !important;
+  color: rgb(0, 0, 0/1) !important;
+}
+.el-popper[x-placement^=bottom] {
+    margin-top: 0;
+    margin-left: -15px;
+    width: 110px;
+    background-color: #202020 !important;
+    .popper__arrow::after {
+        border-bottom-color: #1b1c23;
+    }
+    .popper__arrow {
+      display: none !important;
+    }
+}
+
+</style>
 <style lang="scss" scoped>
 .container {
   /deep/ {
@@ -378,12 +415,6 @@ export default {
         .wormhole {
           cursor: pointer;
         }
-        .el-button {
-          color: #ad8d65;
-          background: transparent;
-          border-color: #ad8d65;
-          font-size: 14px;
-        }
       }
       .el-card {
         padding: 32px;
@@ -407,41 +438,6 @@ export default {
       .info {
         color: #fff;
         // @include mainFont($color-mainFont-light);
-          .el-dropdown {
-            width: 70px;
-            color: #fff;
-            font-size: 16px;
-            cursor: pointer;
-            .el-dropdown-menu {
-              background-color: #1b1c23;
-              width: 100%;
-              border: 0;
-              left: 0 !important;
-              top: 15px !important;
-            }
-            .el-dropdown-menu__item {
-                  padding: 0 15px;
-                  color: #fff;
-                  font-weight: bold;
-                  display: flex;
-                  justify-content: space-around;
-                  align-items: center;
-                  img {
-                      margin-right: 5px;
-                  }
-              }
-              .el-dropdown-menu__item:hover {
-                  background-color: #606266;
-              }
-              .el-popper[x-placement^=bottom] {
-                  .popper__arrow::after {
-                      border-bottom-color: #1b1c23;
-                  }
-                  .popper__arrow {
-                      border-bottom-color: transparent;
-                  }
-              }
-          }
           .input, .output {
             display: block;
             padding-top: 16px;
@@ -455,6 +451,17 @@ export default {
               align-items: center;
               font-size: 16px;
               color: #aaa;
+              .amount {
+                display: flex;
+                gap: 10px;
+                align-items: center;
+                .el-button {
+                  color: #ad8d65;
+                  background: transparent;
+                  border-color: #ad8d65;
+                  font-size: 14px;
+                }
+              }
             }
             .input-box {
               display: flex;

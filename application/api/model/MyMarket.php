@@ -377,6 +377,48 @@ class MyMarket extends Base
     }
 
     /**
+     * 发布
+     * @author qinlh
+     * @since 2024-08-14
+     */
+    public static function inscribe($cfxsId='', $sendaddr='', $data='', $hash='')
+    {
+        if ($cfxsId !== '' && $sendaddr !== '' && $data !== '') {
+            self::startTrans();
+            try {
+                $marget = self::getMyMarketFind($cfxId);
+                if($marget) {
+                    $isSetData = self::setMyMarketData($cfxId, $data);
+                    if($isSetData) {
+                        $inscribeData = [
+                            "cfxsId" => $cfxsId,
+                            "data" => $data
+                        ];
+                        MarketLog::addMarketLogData($cfxId, $sendaddr, json_encode($inscribeData), $hash, 7); 
+                        self::commit();
+                        return ['code' => 1, 'message' => 'ok'];
+                    }
+                }
+                self::rollback();
+                return ['code' => 0, 'message' => 'error'];
+            } catch (\Exception $e) {
+                // p($e);
+                // 回滚事务
+                self::rollback();
+                $error_msg = json_encode([
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'code' => $e->getCode(),
+                ], JSON_UNESCAPED_UNICODE);
+                return ['code' => 0, 'message' => $error_msg];
+            }
+        } else {
+            return ['code' => 0, 'message' => 'parameter error'];
+        }
+    }
+
+    /**
      * 获取符文数据详情
      * @author qinlh
      * @since 2024-08-06
@@ -433,6 +475,22 @@ class MyMarket extends Base
     {
         if ($chainid !== '' && $owner !== '') {
             $res = self::where('chainid', $chainid)->update(['owner' => $owner]);
+            if ($res !== false) {
+                return true;
+            }
+        }
+        return;
+    }
+
+    /**
+     * 修改data数据
+     * @author qinlh
+     * @since 2024-08-14
+     */
+    public static function setMyMarketData($chainid = 0, $data='')
+    {
+        if ($chainid !== '' && $data !== '') {
+            $res = self::where('chainid', $chainid)->update(['data' => $data]);
             if ($res !== false) {
                 return true;
             }
