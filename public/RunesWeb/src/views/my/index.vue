@@ -216,7 +216,7 @@
                     splitDialogShow = false
                 }"
                 class="split-items"
-                top="30vh">
+                top="20vh">
                 <div class="dialog-content">
                     <div class="cfxid-number">
                         <span class="title"># {{ splitRowData.chainid }}</span>
@@ -299,7 +299,7 @@
                                     <span>{{ item.amount }}</span>
                                 </div>
                                 <div class="input-number">
-                                    <el-input v-model="sellPriceValues[item.chainid]" placeholder="0.00" @input="sellPriceInput">
+                                    <el-input v-model.number="sellPriceValues[item.id]" placeholder="0.00" @input="sellPriceInput">
                                         <div slot="suffix"> <img :src="require('@/assets/usdt.png')" alt="" width="18"> USDT</div>
                                     </el-input>
                                 </div>
@@ -416,7 +416,7 @@ export default {
             approve: false,
             highlightedIndices: [],
             selectDataList: [],
-            sellPriceValues: this.highlightedIndices && this.highlightedIndices.length ? new Array(this.highlightedIndices.length).fill('') : [],
+            sellPriceValues: [],
             formSearch: {
                 searchName: '',
                 minPrice: '',
@@ -721,7 +721,6 @@ export default {
             this.transferItemsDialogShow = true;
         },
         sellNowClick(row) { //单个出售
-            console.log(row);
             this.selectDataList = [];
             this.sellPriceValues = [];
             this.selectDataList.push(row);
@@ -741,9 +740,7 @@ export default {
         },
         sellPriceInput(value) { //出售价格输入框事件
             if(this.samePriceChecked) {
-                this.sellPriceValues.forEach((item, index) => {
-                    this.sellPriceValues[index] = value;
-                })
+                this.sellPriceValues = this.sellPriceValues.map(() => value);
             }
         },
         onLoadMoreData() {
@@ -816,17 +813,25 @@ export default {
         },
         async lockingSellContract() { //出售
             this.trading = true;
-            const indexArray = this.sellPriceValues.map((value, index) => index);
+            const indexArray = this.sellPriceValues.map((items, index) => {
+                const item = this.selectDataList.find((itemss, listIndex) => {
+                    // console.log(itemss, index);
+                    return itemss.id == index;
+                });
+                return item ? item.chainid : null; // 如果找到对应索引的项，返回chainid，否则返回null
+            });
+            // const indexArray = this.sellPriceValues.map((value, index) => index);
             const valueArray = this.sellPriceValues.map((value, index) => toWei(value, 18));
             
             const cfxsIds = indexArray.filter((value, index) => {
                 return value !== null && value !== "" && value !== undefined;
             });
             const usdIds = new Array(cfxsIds.length).fill("0");
-
+            
             const prices = valueArray.filter((value, index) => {
                 return value !== null && value !== "" && value !== undefined;
             });
+            // console.log(cfxsIds, prices);
             lockingScriptbatch(cfxsIds, prices, usdIds, this.hoursDifference).then(async (hash) => {
                 if (hash) {
                     this.trading = false;

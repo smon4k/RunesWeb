@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="item">
+    <div class="content">
       <el-card shadow="hover" v-loading="receiveLoading">
         <div slot="header" class="header">
           <div>
@@ -17,9 +17,9 @@
             <div class="input-title">
               <div class="amount">
                 <span>Amount</span> 
-                <el-button size="mini">Select</el-button>
+                <el-button v-if="inputName === 'CFXs'"ize="mini" @click="showSelectDialog">Select</el-button>
               </div>
-              <div>Total: 0</div>
+              <div>Total: {{ CFXsSelectedAmount }}</div>
               <!-- <div class="textRight">{{ $t('swap:Balance') }}: {{ inputBalance }}</div> -->
             </div>
             <div class="input-box">
@@ -27,9 +27,10 @@
                 class="input-input"
                 v-model="inputValue"
                 placeholder="0.0"
+                :disabled="inputName !== 'Coin'"
                 @input="inputChangeValue"
               ></el-input>
-              <el-dropdown trigger="click" tabIndex="1" @command="dropdownMenuClick">
+              <el-dropdown trigger="click" tabIndex="1" @command="dropdownInputMenuClick">
                 <span class="el-dropdown-link">
                   <img :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="20" v-if="inputName === 'CFXs'">
                   <img :src="require('@/assets/svg/nft.svg')" alt="" width="20" v-if="inputName === 'NFT'">
@@ -56,7 +57,7 @@
           <div class="output">
             <div class="input-title">
               <div>Amount</div>
-              <div>Total: 0</div>
+              <div>Total: {{ CFXsSelectedAmount }}</div>
               <!-- <div class="textRight">{{ $t('swap:Balance') }}: {{ inputBalance }}</div> -->
             </div>
             <div class="input-box">
@@ -64,9 +65,10 @@
                 class="input-input"
                 v-model="outputValue"
                 placeholder="0.0"
+                :disabled="true"
                 @input="outputChangeValue"
               ></el-input>
-              <el-dropdown trigger="click" tabIndex="1" @command="dropdownMenuClick">
+              <el-dropdown trigger="click" tabIndex="1" @command="dropdownOutputMenuClick">
                 <span class="el-dropdown-link">
                   <img :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="20" v-if="outputName === 'CFXs'">
                   <img :src="require('@/assets/svg/nft.svg')" alt="" width="20" v-if="outputName === 'NFT'">
@@ -75,25 +77,35 @@
                   <i class="el-icon-arrow-down el-icon--right"></i>
                 </span>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item command="CFXs"><img :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="20">CFXs</el-dropdown-item>
-                  <el-dropdown-item command="NFT"><img :src="require('@/assets/svg/nft.svg')" alt="" width="20">NFT</el-dropdown-item>
-                  <el-dropdown-item command="Coin"><img :src="require('@/assets/svg/coin.svg')" alt="" width="20">Coin</el-dropdown-item>
+                  <el-dropdown-item :disabled="inputName == '' || inputName === 'CFXs'" command="CFXs"><img :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="20">CFXs</el-dropdown-item>
+                  <el-dropdown-item :disabled="inputName == '' || inputName === 'NFT' || inputName === 'Coin'" command="NFT"><img :src="require('@/assets/svg/nft.svg')" alt="" width="20">NFT</el-dropdown-item>
+                  <el-dropdown-item :disabled="inputName == '' || inputName === 'Coin' || inputName === 'NFT'" command="Coin"><img :src="require('@/assets/svg/coin.svg')" alt="" width="20">Coin</el-dropdown-item>
                 </el-dropdown-menu>
               </el-dropdown>
             </div>
           </div>
 
-          <div
-            class="price"
-            v-show="inputValue > 0 && outputValue > 0"
-          >
+          <div class="price">
             <el-row>
-              <el-col :span="5">{{ $t('swap:Price') }}</el-col>
+              <el-col :span="5">
+                <div class="fee-icon">
+                  <span>Fee</span>
+                  <el-tooltip class="item" effect="dark" placement="right">
+                    <div slot="content">
+                      CFXs to Token: CFXs amount*0.01 CFX <br />
+                      CFXs to NFT: CFXs amount*0.1 CFX <br />
+                      Token to CFXs: 0.2 CFX <br />
+                      NFT to CFXs: CFXs amount*0.02 CFX
+                    </div>
+                    <i class="el-icon-question"></i>
+                  </el-tooltip>
+                </div>
+              </el-col>
               <el-col :span="19" style="text-align: right">
                   <span>
-                    <span>{{ exchangePrice }}</span>
-                    <span>{{ outputName }}</span>
-                    <span> {{ $t('swap:Per') }} {{ inputName }}</span>
+                    <span>{{ 0 }}</span>
+                    <span>{{ 'CFX' }}</span>
+                    <!-- <span> {{ $t('swap:Per') }} {{ inputName }}</span> -->
                   </span>
                   <!-- <span v-else>
                     <span>{{ inputPricePer }} </span>
@@ -115,11 +127,58 @@
       </el-card>
     </div>
 
+      <el-dialog
+          title="Select CFXs"
+          :visible.sync="selectCfxsDialogShow"
+          width="40%"
+          :before-close="() => {
+            selectCfxsDialogShow = false;
+          }"
+          class="select-cfxs"
+          top="20vh">
+          <div class="dialog-content">
+              <div class="select-all">
+                <el-checkbox v-model="selectAllChecked" @change="selectAllChange">Select Al</el-checkbox>
+              </div>
+              <div class="card">
+                  <el-row :gutter="screenWidth > adaptiveSize ? 24 : 10">
+                      <el-col :xs="24" :sm="12" :md="8" v-for="(item, index) in dataList" :key="index">
+                          <div class="card-content" :class="{ 'highlight-border': isSelected(index) }" ref="card" @click.stop="toggleHighlight(index)">
+                              <div class="ids">#{{ item.chainid }}</div>
+                              <div class="count-num">{{ item.amount }}</div>
+                          </div>
+                      </el-col>
+                  </el-row>
+              </div>
+              <div class="no-more">
+                  <span v-if="isNoMoreData">No More</span>
+                  <div v-else class="load-more">
+                      <div v-if="!loading" @click="onLoadMoreData">Load more</div>
+                      <div v-if="loading" class="loading-icon">
+                          <div class="loading-container">
+                              <div class="loading-spinner"></div>
+                          </div>
+                          <span>加载中</span>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          <div class="dialog-button">
+            <div class="left">
+              <div class="item-num">{{ highlightedIndices.length }} item</div>
+              <div class="clear" @click="clearSelectAll()">Clear</div>
+            </div>
+            <div class="right">
+                <el-button type="primary" :class="{ 'batch-listing': highlightedIndices.length > 0 }" :disabled="highlightedIndices.length <= 0" @click="selectCfxConfirm">CONFIRM</el-button>
+            </div>
+          </div>
+      </el-dialog>
   </div>
 </template>
 <script>
 import { mapState } from "vuex";
 import TOKEN from '@/wallet/token.js'
+import { get } from "@/common/axios.js";
 import { keepDecimalNotRounding, byDecimals} from '@/utils/tools'
 import { clickApprove, swapGTokenTogBuyToken, swapBuyTokenTogToken } from '@/wallet/swap'
 import { getBalance, isApproved, getSwapPoolsAmountsOut } from "@/wallet/serve";
@@ -127,6 +186,7 @@ import { approve, bettingTransfer } from "@/wallet/trade";
 export default {
   data() {
     return {
+      screenWidth: document.body.clientWidth,
       receiveNum: "--",
       btnLoading:false,
       btnDisabled:false,
@@ -141,7 +201,6 @@ export default {
       inputApproved: false,
       outputApproved: false,
       exchangePrice: 1,
-
 
       exchangeArray: {
         INPUT: "",
@@ -160,6 +219,15 @@ export default {
       isFirstEnter: true, ////是否首次加载
       inputPricePer: 0, //input Price
       outputPricePer: 0, //output Price
+      selectCfxsDialogShow: false,
+      loading: false,
+      dataList: [],
+      currPage: 1,
+      pageSize: 20,
+      highlightedIndices: [],
+      isNoMoreData: false,
+      selectAllChecked: false,
+      CFXsSelectedAmount: 0,
     };
   },
    created(){
@@ -170,10 +238,32 @@ export default {
   },
   computed: {
     ...mapState({
-      chainName:state=>state.base.chainName,
+      apiUrl: state => state.base.apiUrl,
+      address: state => state.base.address,
       isConnected: (state) => state.base.isConnected,
+      chainName:state=>state.base.chainName,
       exchangeAddress: (state) => state.base.exchangeAddress,
+      adaptiveSize: state => state.comps.adaptiveSize,
     }),
+    calcOutputInput() {
+      let number = 0;
+      if(this.inputName !== '' && this.outputName !== '') {
+        if(this.inputName === 'CFXs') {
+          if(this.outputName === 'NFT') {
+            number = this.CFXsSelectedAmount * 0.1;
+          } 
+          if(this.outputName === 'Coin') {
+            number = this.CFXsSelectedAmount * 0.01;
+          }
+        }
+        if(this.inputName === 'NFT') {
+          if(this.outputName === 'CFXs') {
+            number = this.CFXsSelectedAmount * 0.02;
+          } 
+        }
+      }
+      this.outputValue = number;
+    },
   },
   watch: {
     isConnected: {
@@ -194,51 +284,105 @@ export default {
     }
   },
   mounted() {
-      // window.clickGuruApprove = this.clickGuruApprove;
+    window.onresize = () => {
+      this.screenWidth = document.body.clientWidth;
+    }
   },
   methods: {
+    showSelectDialog() {
+      this.dataList = [];
+      this.highlightedIndices = [];
+      this.currPage = 1;
+      this.getMyMarketplaceData();
+      this.selectCfxsDialogShow = true;
+    },
+    onLoadMoreData() {
+      this.currPage += 1;
+      this.getMyMarketplaceData();
+    },
+    selectCfxConfirm() { //确认选择CFXs
+      let amount = 0;
+      this.dataList.forEach((item, index) => {
+          if (this.highlightedIndices.includes(index)) {
+            amount += Number(item.amount);
+          }
+      });
+      this.CFXsSelectedAmount = amount;
+      this.inputValue = amount;
+      this.selectCfxsDialogShow = false;
+      this.calcOutputInput;
+    },
+    getMyMarketplaceData(ServerWhere) {
+        if (!ServerWhere || ServerWhere == undefined || ServerWhere.length <= 0) {
+            ServerWhere = {
+                limit: this.pageSize,
+                page: this.currPage,
+                owner: this.address,
+            };
+        }
+        this.loading = true;
+        get(this.apiUrl + "/Api/Market/getMyMarketplaceData", ServerWhere, async json => {
+            if (json.code == 10000) {
+                let list = (json.data && json.data.lists) || [];
+                // console.log(list);
+                if (Array.isArray(list) && Array.isArray(this.dataList)) {
+                    this.dataList = this.dataList.concat(list);
+                    if(list.length < this.pageSize) {
+                        this.isNoMoreData = true;
+                    }
+                }
+                this.loading = false;
+                this.total = json.data.count;
+                this.$forceUpdate();
+            } else {
+                this.$message.error("加载数据失败");
+            }
+        });
+    },
+    isSelected(index) {
+        if(this.highlightedIndices) {
+            return this.highlightedIndices.includes(index);
+        }
+    },
+    toggleHighlight(index) {
+      const currentIndex = this.highlightedIndices.indexOf(index);
+      if (currentIndex > -1) {
+          // 如果索引已高亮，移除它
+          this.highlightedIndices.splice(currentIndex, 1);
+      } else {
+          // 否则，添加这个索引到高亮数组
+          this.highlightedIndices.push(index);
+      }
+    },
+    selectAllChange(row) {
+        if (!row) {
+            this.highlightedIndices = [];
+        } else {
+            this.highlightedIndices = this.dataList.map((_, index) => index);
+        }
+    },
+    clearSelectAll() {
+        this.highlightedIndices = [];
+        this.selectAllChecked = false;
+    },
     //To Value 触发事件
     async inputChangeValue(toValue) {
-      console.log(toValue);
-      if(toValue > this.inputBalance) {// 如果超过余额 给最大值
-        this.inputValue = this.inputBalance;
-      }
-      if(toValue) { 
-        let outputValue = Number(this.inputValue) * this.exchangePrice;
-        this.outputValue = outputValue;
-        this.btnDisabled = false;
-        this.btnName = this.$t('swap:Exchange');
-      } else {
-        this.outputValue = 0;
-        this.btnDisabled = true;
-        this.btnName = this.$t('swap:Exchange');
-      }
+      this.inputValue = toValue;
+      this.outputValue = toValue;
+      return;
     },
     //out Value 触发事件
     async outputChangeValue(toValue) {
-      console.log(toValue);
-      if(toValue > this.outputBalance) { // 如果超过余额 给最大值
-        this.outputValue = this.outputBalance;
-      }
-      if(toValue) {
-        let inputValue = Number(this.outputValue) / this.exchangePrice;
-        if(inputValue > this.inputBalance) {
-          this.btnDisabled = true;
-          this.btnName = this.inputName + this.$t('swap:InsufficientBalance');
-        } else {
-          this.btnDisabled = false;
-          this.btnName = this.$t('swap:Exchange');
-        }
-        this.inputValue = inputValue;
-      } else {
-        this.inputValue = 0;
-        this.btnDisabled = true;
-        this.btnName = this.$t('swap:Exchange');
-      }
+      return;
     },
-    async dropdownMenuClick(command) { //INPUT 下拉框选择币种事件
+    async dropdownInputMenuClick(command) { //INPUT 下拉框选择币种事件
         this.inputName = command;
-        await this.getLusdBalance();
+        this.inputValue = '';
+        this.outputValue = '';
+    },
+    async dropdownOutputMenuClick(command) { //OUTPUT 下拉框选择币种事件
+        this.outputName = command;
+        this.calcOutputInput;
     },
     async getLusdBalance() {  //获取币种余额 及 是否批准
         let inputBalance = await getBalance(TOKEN[this.chainName][this.inputName], 18);
@@ -372,6 +516,9 @@ export default {
         margin-right: 5px;
     }
 }
+.el-dropdown-menu__item.is-disabled {
+  opacity: 0.5;
+}
 .el-dropdown-menu__item:focus,.el-dropdown-menu__item:hover {
   background-color: #ad8d65 !important;
   color: rgb(0, 0, 0/1) !important;
@@ -388,7 +535,14 @@ export default {
       display: none !important;
     }
 }
-
+.el-tooltip__popper {
+  line-height: 25px;
+}
+.el-tooltip__popper.is-dark {
+  font-size: 14px;
+  // background-color: #525252;
+  // color: #aaa;
+}
 </style>
 <style lang="scss" scoped>
 .container {
@@ -398,9 +552,9 @@ export default {
     // padding-top: 50px;
     width: 100%;
     margin: 0 auto;
-    display: flex;
+    display: contents;
     position: fixed;
-    .item {
+    .content {
       border-radius: 10px;
       padding-top: 50px;
       margin-left: 16px;
@@ -542,6 +696,13 @@ export default {
     .price {
       margin-top: 10px;
       line-height: 30px;
+      color: #aaa;
+      font-size: 16px;
+      .fee-icon {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
       .refresh {
         width: 22px;
         height: 22px;
@@ -650,6 +811,167 @@ export default {
                 }
             }
         }
+    }
+    .select-cfxs {
+      .el-dialog {
+          height: 566px;
+          background-color: #202020;
+          .el-dialog__header {
+              .el-dialog__title {
+                  color: #fff;
+              }
+          }
+          .dialog-content {
+              display: flex;
+              // padding: 16px;
+              flex-direction: column;
+              height: 400px;
+              .select-all {
+                display: flex;
+                justify-content: end;
+                margin: 12px 0;
+                .el-checkbox {
+                  color: #aaa;
+                  .el-checkbox__inner {
+                      width: 18px;
+                      height: 18px;
+                      background-color: transparent;
+                      border:1px solid #ad8d65;
+                  }
+                  .el-checkbox__inner::after {
+                    //width: 6px;
+                    //height: 10px;
+                    left: 6px;
+                    top: 3px;
+                  }
+                  .el-checkbox__input.is-checked .el-checkbox__inner {
+                    background-color: #ad8d65;
+                  }
+                  .el-checkbox__label {
+                      font-size: 16px;
+                      font-weight: none;
+                      padding-left: 6px;
+                      color: #aaa;
+                  }
+      
+                }
+              }
+              .card {
+                  .card-content {
+                      display: block;
+                      background-color: #181818;
+                      border: 2px solid #202020;
+                      border-radius: 8px;
+                      // height: 276px;
+                      margin-bottom: 24px;
+                      cursor: pointer;
+                      padding: 16px;
+                      .ids {
+                          color: #ad8d65;
+                      }
+                      .count-num {
+                          font-size: 16px;
+                          font-weight: 500;
+                          color: #fff;
+                      }
+                  }
+              }
+              .highlight-border {
+                  border-color: #ad8d65 !important;
+              }
+          }
+          .dialog-button {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              height: 60px;
+              color: #aaa;
+              font-size: 14px;
+              border-top: 1px solid #282828;
+              border-width: 1px;
+              .text {
+                  display: block;
+                  margin-bottom: 24px;
+              }
+              .el-button {
+                  width: 100%;
+                  background: hsla(0, 0%, 50%, .2);
+                  color: #aaa;
+                  border: 1px solid transparent;
+                  height: 48px;
+              }
+              .el-button--primary.is-disabled:hover {
+                  background: hsla(0, 0%, 50%, .2);
+                  color: #aaa;
+              }
+              .batch-listing {
+                  background: #ad8d65;
+                  color: rgb(0, 0, 0/1);
+              }
+              .left {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                .item-num {
+                    width: 80px;
+                }
+                .clear {
+                    cursor: pointer;
+                    color: #ad8d65;
+                }
+              }
+              .right {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
+          }
+      }
+      .no-more {
+        width: 100%;
+        height: 60px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+        font-size: 14px;
+        .load-more {
+            color: #ad8d65;
+            cursor: pointer;
+            .loading-icon {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 5px;
+            }
+            /* 定义动画名称为 spinner */
+            @keyframes spinner {
+                from {
+                    transform: rotate(0deg);
+                }
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            /* 应用动画到加载圈的类 */
+            .loading-spinner {
+                border: 3px solid #282828; /* 灰色边框 */
+                border-top: 3px solid #ad8d65; /* 蓝色顶部边框 */
+                border-radius: 50%; /* 圆形 */
+                width: 10px;
+                height: 10px;
+                animation: spinner 1s linear infinite; /* 应用动画 */
+            }
+
+            /* 可选：添加一些样式来隐藏加载圈的溢出 */
+            .loading-container {
+                display: inline-block;
+                position: relative;
+                overflow: hidden;
+            }
+        }
+      }
     }
   }
 }

@@ -26,12 +26,13 @@ class TransactionTask extends Base
     public static function saveTransactionTask($address='', $hash='', $data=[], $type=0) {
         if($address !== '' && $hash !== '' && count($data) > 0 && $type > 0) {
             try {
+                $method = self::getMethodData($type);
                 $insertData = [
                     "address" => $address,
                     "hash" => $hash,
                     "parameter" => json_encode($data, JSON_UNESCAPED_UNICODE),
-                    "remark" => '',
-                    "method" => self::getMethodData($type),
+                    "remark" => $method['name'],
+                    "method" => $method['method'],
                     "addtime" => date("Y-m-d H:i:s"),
                     "updatetime" => date("Y-m-d H:i:s"),
                     "type" => $type,
@@ -65,8 +66,18 @@ class TransactionTask extends Base
                 4 => 'processTransaction',
                 5 => 'splitProcessTransaction',
                 6 => 'transfer',
+                7 => 'inscribe',
             ];
-            return $methods[$type];
+            $messages = [
+                1 => '购买',
+                2 => '出售',
+                3 => '取消出售',
+                4 => '合并',
+                5 => '拆分',
+                6 => '转赠',
+                7 => '发布',
+            ];
+            return ['method' => $methods[$type], 'name' => $messages[$type]];
         }
         return "";
     }

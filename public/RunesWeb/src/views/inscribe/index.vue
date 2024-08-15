@@ -30,7 +30,7 @@
                         <span class="id">#{{ selectedData.chainid }}</span>
                         <img :src="require('@/assets/svg/close.svg')" alt="" width="16" @click="clearSelectedData">
                     </div>
-                    <el-button size="mini" @click="showSelectDialog(item)" v-else>Select</el-button>
+                    <el-button size="mini" @click="showSelectDialog" v-else>Select</el-button>
                 </div>
                 <div class="disbutton">
                     <el-button type="primary" :disabled="data == '' || !selectedData.chainid" @click="submitInscribeContract">SUBMIT</el-button>
@@ -175,7 +175,7 @@ export default {
         recordsSubmitClick(tab, event) {
             console.log(tab, event);
         },
-        showSelectDialog(item) {
+        showSelectDialog() {
             this.selectCfxsDialogShow = true;
         },
         closeSelectCfxsDialog() {

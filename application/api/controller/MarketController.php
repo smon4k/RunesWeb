@@ -284,3 +284,5 @@ class MarketController extends BaseController
 // inscribe
 // https://evm.confluxscan.io/tx/0x1c2fd0122decec511368f759c79edd5d626cb91ed61678ca7adff10aece8ac21 inscribe
 // https://evm.confluxscan.io/tx/0xeadae3e769fc478d98bf955c5a7c495e2a5ed09a116b81dfd03dd847a57a06ed userDataRegist
+
+// CFXs or NFT https://evm.confluxscan.io/tx/0xb4aeed4a072e6db2e11fbc5de48bd0e3c9bed2431d7860107661e61727a87b50

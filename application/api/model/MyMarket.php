@@ -137,7 +137,7 @@ class MyMarket extends Base
                             ];
                             $insertId = Market::insertData($insertData);
                             if ($insertId) {
-                                $isSetStatus = self::setMyMarketStatus($cfxId, 2);
+                                $isSetStatus = self::setMyMarketStatus($marget['id'], 2);
                                 if($isSetStatus) {
                                     MarketLog::addMarketLogData($cfxId, $sendaddr, json_encode($insertData), $hash, 2);
                                     $insertCount += 1;
@@ -186,7 +186,7 @@ class MyMarket extends Base
                     if(strtolower($market['chainto']) === strtolower($sendaddr)) {
                         $isDelRes = Market::delMarketData($cfxsId);
                         if($isDelRes) {
-                            $isSetStatus = self::setMyMarketStatus($cfxsId, 1);
+                            $isSetStatus = self::setMyMarketStatus($market['id'], 1);
                             if($isSetStatus) {
                                 MarketLog::addMarketLogData($cfxsId, $sendaddr, json_encode($market), $hash, 3);
                                 self::commit();
@@ -229,7 +229,8 @@ class MyMarket extends Base
                     $marget = self::getMyMarketFind($cfxId);
                     if($marget) {
                         $amount += $marget['amount'];
-                        self::setMyMarketStatus($cfxId, 4);
+                        self::setMyMarketStatus($marget['id'], 4);
+                        MarketLog::addMarketLogData($cfxId, $sendaddr, json_encode($marget), $hash, 6, 1);
                     }
                 }
                 $insertData = [
@@ -283,8 +284,8 @@ class MyMarket extends Base
                 $amount = 0;
                 $marget = self::getMyMarketFind($cfxsId);
                 if($marget) {
-                    $isSplit = self::setMyMarketStatus($cfxsId, 3);
-                    MarketLog::addMarketLogData($cfxsId, $sendaddr, json_encode($marget), $hash, 5);
+                    $isSplit = self::setMyMarketStatus($marget['id'], 3);
+                    MarketLog::addMarketLogData($cfxsId, $sendaddr, json_encode($marget), $hash, 5, 1);
                     if($isSplit) {
                         foreach ($newCfxIds as $key => $val) {
                             $insertData = [
@@ -301,7 +302,7 @@ class MyMarket extends Base
                             ];
                             $insertId = self::insert($insertData);
                             if ($insertId) {
-                                // MarketLog::addMarketLogData($cfxId, $sendaddr, json_encode($insertData), $hash, 1); 
+                                MarketLog::addMarketLogData($val, $sendaddr, json_encode($insertData), $hash, 5); 
                                 $insertCount += 1;
                             }
                         }
@@ -426,7 +427,7 @@ class MyMarket extends Base
     public static function getMyMarketFind($chainid=0)
     {
         if ($chainid > 0) {
-            $res = self::where(['chainid' => $chainid])->find();
+            $res = self::where(['chainid' => $chainid, 'is_deleted' => 0])->find();
             if ($res) {
                 return $res->toArray();
             }
@@ -455,10 +456,20 @@ class MyMarket extends Base
      * @author qinlh
      * @since 2024-08-06
      */
-    public static function setMyMarketStatus($chainid = 0, $status=0)
+    public static function setMyMarketStatus($id = 0, $status=0)
     {
-        if ($chainid > 0 && $status > 0) {
-            $res = self::where('chainid', $chainid)->update(['status' => $status]);
+        if ($id > 0 && $status > 0) {
+            if($status == 3 || $status == 4) {
+                $updateArr = [
+                    'status' => $status,
+                    'is_deleted' => 1,
+                ];
+            } else {
+                $updateArr = [
+                    'status' => $status,
+                ];
+            }
+            $res = self::where('id', $id)->update($updateArr);
             if ($res !== false) {
                 return true;
             }
