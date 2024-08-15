@@ -5,7 +5,6 @@
         <div slot="header" class="header">
           <div>
             <span>{{ 'Transform' }}</span>
-            <!-- <el-button size="mini">Select</el-button>-->
           </div> 
           <div class="wormhole"><img :src="require('@/assets/svg/wormhole.svg')" alt="" width="24"></div>
           <!-- <p class="tips">{{ $t('swap:TradeInstant') }}</p> -->
@@ -130,7 +129,7 @@
       <el-dialog
           title="Select CFXs"
           :visible.sync="selectCfxsDialogShow"
-          width="40%"
+          :width="screenWidth > adaptiveSize ? '40%' : '90%'"
           :before-close="() => {
             selectCfxsDialogShow = false;
           }"
@@ -142,7 +141,7 @@
               </div>
               <div class="card">
                   <el-row :gutter="screenWidth > adaptiveSize ? 24 : 10">
-                      <el-col :xs="24" :sm="12" :md="8" v-for="(item, index) in dataList" :key="index">
+                      <el-col :xs="12" :sm="12" :md="8" v-for="(item, index) in dataList" :key="index">
                           <div class="card-content" :class="{ 'highlight-border': isSelected(index) }" ref="card" @click.stop="toggleHighlight(index)">
                               <div class="ids">#{{ item.chainid }}</div>
                               <div class="count-num">{{ item.amount }}</div>
@@ -614,6 +613,7 @@ export default {
                   background: transparent;
                   border-color: #ad8d65;
                   font-size: 14px;
+                  padding: 8px 16px;
                 }
               }
             }

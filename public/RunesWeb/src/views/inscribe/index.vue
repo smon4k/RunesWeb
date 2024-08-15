@@ -55,14 +55,14 @@
             <el-dialog
                 title="Select CFXs"
                 :visible.sync="selectCfxsDialogShow"
-                width="35%"
+                :width="screenWidth > adaptiveSize ? '40%' : '90%'"
                 :before-close="closeSelectCfxsDialog"
                 class="select-cfxs"
                 top="20vh">
                 <div class="dialog-content">
                     <div class="card">
                         <el-row :gutter="screenWidth > adaptiveSize ? 24 : 10">
-                            <el-col :xs="24" :sm="12" :md="8" v-for="(item, index) in dataList" :key="index">
+                            <el-col :xs="12" :sm="12" :md="8" v-for="(item, index) in dataList" :key="index">
                                 <div class="card-content" :class="{ 'highlight-border': isSelected(index) }" ref="card" @click.stop="toggleHighlight(index)">
                                     <div class="ids">#{{ item.chainid }}</div>
                                     <div class="count-num">{{ item.amount }}</div>
