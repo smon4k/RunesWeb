@@ -16,16 +16,17 @@
             <div class="input-title">
               <div class="amount">
                 <span>Amount</span> 
-                <el-button v-if="inputName === 'CFXs'"ize="mini" @click="showSelectDialog">Select</el-button>
+                <el-button v-if="inputName === 'CFXs' || inputName === 'NFT'"ize="mini" @click="showSelectDialog">Select</el-button>
               </div>
-              <div>Total: {{ CFXsSelectedAmount }}</div>
+              <div v-if="inputName === 'Coin'">Balance: {{ CoinBalance }}</div>
+              <div v-else>Total: {{ CFXsSelectedAmount }}</div>
               <!-- <div class="textRight">{{ $t('swap:Balance') }}: {{ inputBalance }}</div> -->
             </div>
             <div class="input-box">
               <el-input
                 class="input-input"
-                v-model="inputValue"
-                placeholder="0.0"
+                v-model.number="inputValue"
+                placeholder="0"
                 :disabled="inputName !== 'Coin'"
                 @input="inputChangeValue"
               ></el-input>
@@ -55,7 +56,7 @@
           <!-- OUTPUT  -->
           <div class="output">
             <div class="input-title">
-              <div>Amount</div>
+              <div>Will Receive</div>
               <div>Total: {{ CFXsSelectedAmount }}</div>
               <!-- <div class="textRight">{{ $t('swap:Balance') }}: {{ inputBalance }}</div> -->
             </div>
@@ -63,7 +64,7 @@
               <el-input
                 class="input-input"
                 v-model="outputValue"
-                placeholder="0.0"
+                placeholder="0"
                 :disabled="true"
                 @input="outputChangeValue"
               ></el-input>
@@ -102,7 +103,7 @@
               </el-col>
               <el-col :span="19" style="text-align: right">
                   <span>
-                    <span>{{ 0 }}</span>
+                    <span>{{ calcFee }}</span>
                     <span>{{ 'CFX' }}</span>
                     <!-- <span> {{ $t('swap:Per') }} {{ inputName }}</span> -->
                   </span>
@@ -119,9 +120,9 @@
           </div>
         </div>
         <div class="btn">
-          <el-button class="exchangeButton" v-if="!inputApproved" :loading="btnLoading" :disabled="btnLoading" @click="startApprove(inputName)">批准 {{ inputName }}</el-button>
-          <el-button class="exchangeButton" v-else-if="!outputApproved" :loading="btnLoading" :disabled="btnLoading" @click="startApprove(outputName)">批准 {{ outputName }}</el-button>
-          <el-button class="exchangeButton" v-else v-loading="btnLoading" :disabled="btnDisabled || (!inputValue || inputValue <= 0) || (!outputValue || outputValue <= 0)" @click="confirmExchange">{{ btnName }}</el-button>
+          <!-- <el-button class="exchangeButton" v-if="!inputApproved" :loading="btnLoading" :disabled="btnLoading" @click="startApprove(inputName)">批准 {{ inputName }}</el-button>
+          <el-button class="exchangeButton" v-else-if="!outputApproved" :loading="btnLoading" :disabled="btnLoading" @click="startApprove(outputName)">批准 {{ outputName }}</el-button> -->
+          <el-button type="primary" :loading="btnLoading" :disabled="btnLoading || (!inputValue || inputValue <= 0) || (!outputValue || outputValue <= 0)" @click="confirmExchange">{{ 'CONFIRM TRANSFORM' }}</el-button>
         </div>
       </el-card>
     </div>
@@ -129,7 +130,7 @@
       <el-dialog
           title="Select CFXs"
           :visible.sync="selectCfxsDialogShow"
-          :width="screenWidth > adaptiveSize ? '40%' : '90%'"
+          :width="screenWidth > adaptiveSize ? '30%' : '90%'"
           :before-close="() => {
             selectCfxsDialogShow = false;
           }"
@@ -181,7 +182,7 @@ import { get } from "@/common/axios.js";
 import { keepDecimalNotRounding, byDecimals} from '@/utils/tools'
 import { clickApprove, swapGTokenTogBuyToken, swapBuyTokenTogToken } from '@/wallet/swap'
 import { getBalance, isApproved, getSwapPoolsAmountsOut } from "@/wallet/serve";
-import { approve, bettingTransfer } from "@/wallet/trade";
+import { approve, bettingTransfer, ExchangeCFXsForECR20721, ExchangeCFXsForOnlyECR20, ECR20721RedemptionOfCFXs, ECR20RedemptionOfCFXs } from "@/wallet/trade";
 export default {
   data() {
     return {
@@ -223,10 +224,13 @@ export default {
       dataList: [],
       currPage: 1,
       pageSize: 20,
+      total: 0,
       highlightedIndices: [],
       isNoMoreData: false,
       selectAllChecked: false,
       CFXsSelectedAmount: 0,
+      CFXsSelectedIds: [],
+      CoinBalance: 0,
     };
   },
    created(){
@@ -244,24 +248,35 @@ export default {
       exchangeAddress: (state) => state.base.exchangeAddress,
       adaptiveSize: state => state.comps.adaptiveSize,
     }),
-    calcOutputInput() {
-      let number = 0;
+    calcOutputValue() {
+      let fee = this.calcFee;
+      if(this.inputName !== '' && this.outputName !== '') {
+        this.outputValue = this.CFXsSelectedAmount * fee;
+      }
+    },
+    calcFee() {
+      let fee = 0;
       if(this.inputName !== '' && this.outputName !== '') {
         if(this.inputName === 'CFXs') {
           if(this.outputName === 'NFT') {
-            number = this.CFXsSelectedAmount * 0.1;
+            fee = 0.1;
           } 
           if(this.outputName === 'Coin') {
-            number = this.CFXsSelectedAmount * 0.01;
+            fee = 0.01;
           }
         }
         if(this.inputName === 'NFT') {
           if(this.outputName === 'CFXs') {
-            number = this.CFXsSelectedAmount * 0.02;
+            fee = 0.02;
+          } 
+        }
+        if(this.inputName === 'Coin') {
+          if(this.outputName === 'CFXs') {
+            fee = 0.2;
           } 
         }
       }
-      this.outputValue = number;
+      return fee;
     },
   },
   watch: {
@@ -292,24 +307,38 @@ export default {
       this.dataList = [];
       this.highlightedIndices = [];
       this.currPage = 1;
-      this.getMyMarketplaceData();
+      this.isNoMoreData = false;
+      if(this.inputName === 'CFXs') {
+        this.getMyMarketplaceData();
+      } 
+      if(this.inputName === 'NFT') {
+        this.getMyNftData();
+      }
       this.selectCfxsDialogShow = true;
     },
     onLoadMoreData() {
       this.currPage += 1;
-      this.getMyMarketplaceData();
+      if(this.inputName === 'CFXs') {
+        this.getMyMarketplaceData();
+      } 
+      if(this.inputName === 'NFT') {
+        this.getMyNftData();
+      }
     },
     selectCfxConfirm() { //确认选择CFXs
       let amount = 0;
+      let selectCFXsids = [];
       this.dataList.forEach((item, index) => {
           if (this.highlightedIndices.includes(index)) {
             amount += Number(item.amount);
+            selectCFXsids.push(item.chainid);
           }
       });
+      this.CFXsSelectedIds = selectCFXsids;
       this.CFXsSelectedAmount = amount;
       this.inputValue = amount;
       this.selectCfxsDialogShow = false;
-      this.calcOutputInput;
+      this.calcOutputValue;
     },
     getMyMarketplaceData(ServerWhere) {
         if (!ServerWhere || ServerWhere == undefined || ServerWhere.length <= 0) {
@@ -320,7 +349,36 @@ export default {
             };
         }
         this.loading = true;
+        this.isNoMoreData = false;
         get(this.apiUrl + "/Api/Market/getMyMarketplaceData", ServerWhere, async json => {
+            if (json.code == 10000) {
+                let list = (json.data && json.data.lists) || [];
+                // console.log(list);
+                if (Array.isArray(list) && Array.isArray(this.dataList)) {
+                    this.dataList = this.dataList.concat(list);
+                    if(list.length < this.pageSize) {
+                        this.isNoMoreData = true;
+                    }
+                }
+                this.loading = false;
+                this.total = json.data.count;
+                this.$forceUpdate();
+            } else {
+                this.$message.error("加载数据失败");
+            }
+        });
+    },
+    getMyNftData(ServerWhere) {
+        if (!ServerWhere || ServerWhere == undefined || ServerWhere.length <= 0) {
+            ServerWhere = {
+                limit: this.pageSize,
+                page: this.currPage,
+                owner: this.address,
+            };
+        }
+        this.loading = true;
+        this.isNoMoreData = false;
+        get(this.apiUrl + "/Api/Market/getMyNftData", ServerWhere, async json => {
             if (json.code == 10000) {
                 let list = (json.data && json.data.lists) || [];
                 // console.log(list);
@@ -366,9 +424,12 @@ export default {
     },
     //To Value 触发事件
     async inputChangeValue(toValue) {
-      this.inputValue = toValue;
-      this.outputValue = toValue;
-      return;
+      if (typeof toValue === 'number' && !Number.isInteger(toValue)) {
+        this.inputValue = Math.floor(toValue);
+        this.outputValue = Math.floor(toValue);
+      } else {
+        this.inputValue = "";
+      }
     },
     //out Value 触发事件
     async outputChangeValue(toValue) {
@@ -376,12 +437,15 @@ export default {
     },
     async dropdownInputMenuClick(command) { //INPUT 下拉框选择币种事件
         this.inputName = command;
+        this.outputName = '';
         this.inputValue = '';
         this.outputValue = '';
+        this.CFXsSelectedAmount = 0;
+        this.CFXsSelectedIds = 0;
     },
     async dropdownOutputMenuClick(command) { //OUTPUT 下拉框选择币种事件
         this.outputName = command;
-        this.calcOutputInput;
+        this.calcOutputValue;
     },
     async getLusdBalance() {  //获取币种余额 及 是否批准
         let inputBalance = await getBalance(TOKEN[this.chainName][this.inputName], 18);
@@ -458,35 +522,29 @@ export default {
     },
     //用户开始兑换操作
     confirmExchange() {
+      if(this.CFXsSelectedIds.length > 0) {
         this.btnLoading = true
-        if((this.inputName === 'HT' && this.outputName === 'LUSD')) { // HT or LUSD
-          bettingTransfer(TOKEN[this.chainName][this.outputName], this.exchangeAddress, this.inputValue).then(async (result)=> {
-              console.log(result);
-              if(result) {
-                this.btnLoading = false;
-                await this.getLusdBalance();
-              }
-          }).finally(()=>{
-              this.btnLoading = false
-          })
-        } else {
-          let methodsFunName = '';
-          if((this.inputName === 'USDT' && this.outputName === 'LUSD')) { // USDT or LUSD
-            // console.log(this.exchangeMoney.INPUT, this.exchangeMoney.OUTPUT, methodsFunName);
-            methodsFunName = swapBuyTokenTogToken;
-          } else if((this.inputName === 'LUSD' && this.outputName === 'USDT')) { // LUSD or USDT
-            methodsFunName = swapGTokenTogBuyToken;
-          }
-            methodsFunName(this.inputValue, this.outputValue, TOKEN[this.chainName][this.inputName], TOKEN[this.chainName][this.outputName]).then(async (result)=> {
-              console.log(result);
-              if(result) {
-                this.btnLoading = false;
-                await this.getLusdBalance();
-              }
-          }).finally(()=>{
-              this.btnLoading = false
-          })
+        let contractName = '';
+        if(this.inputName === 'CFXs' && this.outputName === 'NFT') {
+          contractName = ExchangeCFXsForECR20721;
         }
+        if(this.inputName === 'CFXs' && this.outputName === 'Coin') {
+          contractName = ExchangeCFXsForOnlyECR20;
+        }
+        if(this.inputName === 'Coin' && this.outputName === 'CFXs') {
+          contractName = ECR20RedemptionOfCFXs;
+        }
+        if(this.inputName === 'NFT' && this.outputName === 'CFXs') {
+          contractName = ECR20721RedemptionOfCFXs;
+        }
+        contractName(this.CFXsSelectedIds).then(async (result)=> {
+            if(result) {
+              this.btnLoading = false;
+            }
+        }).finally(()=>{
+            this.btnLoading = false
+        })
+      }
     },
   },
 };
@@ -671,25 +729,20 @@ export default {
       .btn {
         padding-top: 30px;
         text-align: center;
-        button {
-          background: #141a1f;
-          color: #fff;
-          line-height: 26px;
-          margin-right: 23px;
-          position: relative;
-          overflow: hidden;
-          width: 100%;
+        .el-button {
           height: 48px;
-          border: none;
-          border-radius: 19px;
-          outline: none;
-          cursor: pointer;
+          width: 100%;
+          background-color: #ad8d65;
+          border: 0;
+          color: rgb(0, 0, 0/1);
         }
-        button:hover {
-          background: #21313b;
+        .el-button--primary.is-disabled {
+            background: hsla(0, 0%, 50%, .2);
+            color: #aaa;
         }
-        button:disabled {
-          background: #141a1f;
+        .el-button--primary.is-disabled:hover {
+            background: hsla(0, 0%, 50%, .2);
+            color: #aaa;
         }
       }
     }
@@ -975,23 +1028,4 @@ export default {
     }
   }
 }
-</style>
-<style lang="scss">
-    .exchangeButton {
-        background: #21313b;
-        color: #fff;
-        line-height: 26px;
-        margin-right: 23px;
-        position: relative;
-        overflow: hidden;
-        width: 100%;
-        height: 48px;
-        border: none;
-        border-radius: 19px;
-        outline: none;
-        cursor: pointer;
-    }
-    .exchangeButton:disabled {
-        background: #8b8b9b;
-    }
 </style>

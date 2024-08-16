@@ -1,5 +1,6 @@
 {
     "CFXsContractAddress": "0x784953BAa605f5e9397245a91d9ca5c2A386cB03",
     "CFXsAndDataContractAddress": "0xc10b927a3bDcd3ECCe3692f68070D3E13e4A6639",
-    "USDT": "0xfe97e85d13abd9c1c33384e796f10b73905637ce"
+    "USDT": "0xfe97e85d13abd9c1c33384e796f10b73905637ce",
+    "CFXsERCBridgeContractAddress": "0x1bC096Ee65eDAd9D51e76F11e721e120CC1CCC2e"
 }

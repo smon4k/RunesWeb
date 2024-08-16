@@ -1,15 +1,11 @@
 
 import {  fromWei , toWei, keepDecimalNotRounding } from '@/utils/tools'
-import { toolNumber, numMulti } from '@/utils/tools'
+import { toolNumber } from '@/utils/tools'
 import  tokenABI from './abis/token.json'
 import CFXsContractMainABI from './abis/CFXsContractMainABI.json'
 import CFXsIdAndDataServiceABI from './abis/CFXsIdAndDataServiceABI.json'
-import gameFillingABIV2 from './abis/gameFillingABIV2.json'
-import LuClsSysABI from './abis/LuClsSysABI.json'
-import hashpowerABI from './abis/hashpowerABI.json'
-import goblinPoolsABI from './abis/goblinPools.json'
-import DicePoolsABI from './abis/DicePoolsABI.json'
-import {saveNotifyStatus, setDepositWithdraw, saveTransactionTask} from "@/wallet/serve";
+import CFXsERCBridgeABI from './abis/CFXsERCBridgeABI.json'
+import {saveTransactionTask} from "@/wallet/serve";
 import Address from '@/wallet/address.json'
 
 // 领取空投奖励
@@ -660,37 +656,18 @@ export const userDataRegist = async function (cfxsIds=[], dataTypes=[], names=[]
   })
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /**
- * Luck001 USDT 兑换 Luck001 1:1
+ * CFXs 兑换 NFT
  * @param {*} amount 数量
- * @param {*} decimals 位数
  * @returns 
  */
-export const BuyTokenToLuck001 = function (amount, decimals=18){
-  console.log('BuyTokenToLuck001' , amount);
+export const ExchangeCFXsForECR20721 = function (cfxsIds=[]){
+  console.log('ExchangeCFXsForECR20721', cfxsIds);
   // const tokenAddress = __ownInstance__.$store.state.base.tokenAddress
   const address = __ownInstance__.$store.state.base.address;
-  const contractAddress = __ownInstance__.$store.state.base.luck001Address;
-  const contract = new web3.eth.Contract(LuClsSysABI, contractAddress);
-  const depositAmount = toWei(amount, decimals)
-  let encodedABI = contract.methods.BuyTokenToLuck001(depositAmount).encodeABI();
+  const contractAddress = Address.CFXsERCBridgeContractAddress;;
+  const contract = new web3.eth.Contract(CFXsERCBridgeABI, contractAddress);
+  let encodedABI = contract.methods.ExchangeCFXsForECR20721(cfxsIds).encodeABI();
   // let value = toWei(amount, decimals);
   let timestamp = new Date().getTime().toString()
   __ownInstance__.$store.dispatch('createOrderForm' , {val:0 ,id:timestamp })
@@ -744,115 +721,194 @@ export const BuyTokenToLuck001 = function (amount, decimals=18){
 }
 
 /**
- * tronWeb 转账处理
- * @param {*} amount 转账数量
+ * CFXs 兑换 Coin
+ * @param {*} amount 数量
+ * @returns 
  */
-export const tronWebSendTrx = function (amount=0, recipientAddress='', fillingRecordParams={}){
-  // tronLink;
-  const privateKey = __ownInstance__.$store.state.base.tronPrivateKey;
-  const amountNum = Number(amount);
-  return new Promise(async (resolve, reject) => {
-    // 调用TronWeb的相应方法执行转账
-    const transaction = await tronLink.tronWeb.transactionBuilder.sendTrx(
-      recipientAddress,
-      amountNum
-    );
-    console.log('transaction', transaction);
-    const signedTransaction = await tronLink.tronWeb.trx.sign(
-      transaction,
-      privateKey
-    );
-    console.log('signedTransaction', signedTransaction);
-    const result = await tronLink.tronWeb.trx.sendRawTransaction(
-      signedTransaction
-    );
-    console.log('result', result);
-    resolve(result);
+export const ExchangeCFXsForOnlyECR20 = function (cfxsIds=[]){
+  console.log('ExchangeCFXsForOnlyECR20', cfxsIds);
+  // const tokenAddress = __ownInstance__.$store.state.base.tokenAddress
+  const address = __ownInstance__.$store.state.base.address;
+  const contractAddress = Address.CFXsERCBridgeContractAddress;;
+  const contract = new web3.eth.Contract(CFXsERCBridgeABI, contractAddress);
+  let encodedABI = contract.methods.ExchangeCFXsForOnlyECR20(cfxsIds).encodeABI();
+  // let value = toWei(amount, decimals);
+  let timestamp = new Date().getTime().toString()
+  __ownInstance__.$store.dispatch('createOrderForm' , {val:0 ,id:timestamp })
+  return new Promise((resolve, reject) => {
+    let hashInfo
+    web3.eth.getTransactionCount(address).then(async transactionNonce => {
+      let gasPrice = await web3.eth.getGasPrice();
+      let estimateGas = await web3.eth.estimateGas({
+        from: address,
+        to: contractAddress, // 池地址
+        data: encodedABI, // Required
+      })
+      // console.log('estimateGas' ,estimateGas)
+      const params = [{
+        from: address,
+        to: contractAddress, // 池地址
+        data: encodedABI, // Required
+        gasPrice: web3.utils.toHex(gasPrice), // Optional
+        gas: web3.utils.toHex(estimateGas), // Optional
+        // gas: web3.utils.toHex(400000), // Optional
+        // chainId: 128,
+      }];
+      // params[0].value =  web3.utils.toHex(value) 
+      web3.eth.sendTransaction(params[0])
+        .on('transactionHash', function (hash) {
+          console.log('hash', hash);
+          if (hash) {
+            hashInfo = hash
+          }
+        })
+        .on('receipt', function (receipt) {
+          // 交易成功
+          __ownInstance__.$store.dispatch('changeTradeStatus' , {  id:timestamp , val:1 , hash:hashInfo})
+          resolve(receipt)
+        })
+        .on('confirmation', function (confirmationNumber, receipt) {
+        })
+        .on('error', function (err) {
+          let isUserDeny = err.code === 4001 
+          __ownInstance__.$store.dispatch('changeTradeStatus' , {  id:timestamp , val:2 , isUserDeny, hash:hashInfo})
+          console.log('err' , err)
+          reject(err)
+        })
+    })
+    .catch(err=>{
+      console.log('BuyTokenToLuck001_err',err)
+      __ownInstance__.$store.dispatch('changeTradeStatus' , {  id:timestamp , val:2, hash:hashInfo})
+      reject(err)
+    })
   })
 }
 
 /**
- * 调用智能合约 进行转账
+ * Coin 兑换 CFXs
  * @param {*} amount 数量
- * @param {*} contractAddress 币种合约地址
- * @param {*} turnoutAddress 转出钱包地址
- * @param {*} recipientAddress 接受钱包地址
- * @param {*} fillingRecordParams 参数
  * @returns 
  */
-export const tronWebTriggerSmartContract = function (amount=0, contractAddress='', recipientAddress='',  fillingRecordParams={}, hand_fee=0){
-  const privateKey = __ownInstance__.$store.state.base.tronPrivateKey;
+export const ECR20RedemptionOfCFXs = function (amount=0, decimals = 18){
+  console.log('ECR20RedemptionOfCFXs', amount);
+  // const tokenAddress = __ownInstance__.$store.state.base.tokenAddress
   const address = __ownInstance__.$store.state.base.address;
-  // const recipientAddress = fromAddress || __ownInstance__.$store.state.base.gamesFillingAddress;
-  const amountNum = Number(amount);
+  const contractAddress = Address.CFXsERCBridgeContractAddress;;
+  const contract = new web3.eth.Contract(CFXsERCBridgeABI, contractAddress);
+  let encodedABI = contract.methods.ExchangeCFXsForOnlyECR20(amount).encodeABI();
+  // let value = toWei(amount, decimals);
   let timestamp = new Date().getTime().toString()
-  console.log(contractAddress, recipientAddress);
   __ownInstance__.$store.dispatch('createOrderForm' , {val:0 ,id:timestamp })
-  return new Promise(async (resolve, reject) => {
-    let hashInfo;
-    try {
-      // 构建方法参数，将接收地址和金额转为对应的Hex格式
-      let parameter = [{type:'address', value: recipientAddress},{type:'uint256',value: amountNum * 10 ** 6}];
-      let options = {
-        feeLimit: tronLink.tronWeb.toSun(hand_fee),
-        // callValue: 0.00021 * 10 ** 6,
-        // tokenValue: amountNum * 10 ** 6,
-      };
-      console.log(options);
-      // 调用TronWeb的相应方法执行转账
-      let transferData;
-      let transaction;
-      if(contractAddress == 'T000000000000000000000000000000000') {
-        transferData = await tronLink.tronWeb.transactionBuilder.sendTrx(
-          recipientAddress,
-          amountNum * 10 ** 6,
-          address
-        );
-        transaction = transferData;
-      } else {
-        transferData = await tronLink.tronWeb.transactionBuilder.triggerSmartContract(
-          contractAddress,
-          'transfer(address,uint256)',
-          options,
-          parameter,
-          address
-        );
-        transaction = transferData.transaction;
-      }
-      if(transferData) {
-        console.log('transferData', transferData);
-        const signedTransaction = await tronLink.tronWeb.trx.sign(
-          transaction,
-          privateKey
-        );
-        console.log('signedTransaction', signedTransaction);
-        if(signedTransaction) {
-          const result = await tronLink.tronWeb.trx.sendRawTransaction(signedTransaction);
-          console.log('result', result);
-          if(result && result.result) {
-            hashInfo = result.txID || result.txid;
-            // console.log("hashInfo", hashInfo);
-            fillingRecordParams.hash = hashInfo;
-            // console.log("hashInfo", fillingRecordParams);
-            await setDepositWithdraw(fillingRecordParams);
-            // 交易成功
-            __ownInstance__.$store.dispatch('changeTradeStatus' , {  id:timestamp , val:1 , hash:hashInfo})
-            resolve(hashInfo);
-          } else {
-            __ownInstance__.$store.dispatch('changeTradeStatus' , {  id:timestamp , val:2, errMessage: result.code})
+  return new Promise((resolve, reject) => {
+    let hashInfo
+    web3.eth.getTransactionCount(address).then(async transactionNonce => {
+      let gasPrice = await web3.eth.getGasPrice();
+      let estimateGas = await web3.eth.estimateGas({
+        from: address,
+        to: contractAddress, // 池地址
+        data: encodedABI, // Required
+      })
+      // console.log('estimateGas' ,estimateGas)
+      const params = [{
+        from: address,
+        to: contractAddress, // 池地址
+        data: encodedABI, // Required
+        gasPrice: web3.utils.toHex(gasPrice), // Optional
+        gas: web3.utils.toHex(estimateGas), // Optional
+        // gas: web3.utils.toHex(400000), // Optional
+        // chainId: 128,
+      }];
+      // params[0].value =  web3.utils.toHex(value) 
+      web3.eth.sendTransaction(params[0])
+        .on('transactionHash', function (hash) {
+          console.log('hash', hash);
+          if (hash) {
+            hashInfo = hash
           }
-        }
-      }
-      // __ownInstance__.$store.dispatch('changeTradeStatus' , {  id:timestamp , val:2, errMessage: 'Error'})
-      reject(false)
-    } catch (err) {
-      console.log('error', err);
-      __ownInstance__.$store.dispatch('changeTradeStatus' , {  id:timestamp , val:2, errMessage: err})
-      reject(false)
-      // error handling
-    }
-    reject(false);
-  }).catch((e) => {
-    return e;
-  });
+        })
+        .on('receipt', function (receipt) {
+          // 交易成功
+          __ownInstance__.$store.dispatch('changeTradeStatus' , {  id:timestamp , val:1 , hash:hashInfo})
+          resolve(receipt)
+        })
+        .on('confirmation', function (confirmationNumber, receipt) {
+        })
+        .on('error', function (err) {
+          let isUserDeny = err.code === 4001 
+          __ownInstance__.$store.dispatch('changeTradeStatus' , {  id:timestamp , val:2 , isUserDeny, hash:hashInfo})
+          console.log('err' , err)
+          reject(err)
+        })
+    })
+    .catch(err=>{
+      console.log('BuyTokenToLuck001_err',err)
+      __ownInstance__.$store.dispatch('changeTradeStatus' , {  id:timestamp , val:2, hash:hashInfo})
+      reject(err)
+    })
+  })
+}
+
+
+/**
+ * NFT 兑换 CFXs
+ * @param {*} amount 数量
+ * @returns 
+ */
+export const ECR20721RedemptionOfCFXs = function (cfxsIds=[]){
+  console.log('ECR20721RedemptionOfCFXs', cfxsIds);
+  // const tokenAddress = __ownInstance__.$store.state.base.tokenAddress
+  const address = __ownInstance__.$store.state.base.address;
+  const contractAddress = Address.CFXsERCBridgeContractAddress;;
+  const contract = new web3.eth.Contract(CFXsERCBridgeABI, contractAddress);
+  let encodedABI = contract.methods.ECR20721RedemptionOfCFXs(cfxsIds).encodeABI();
+  // let value = toWei(amount, decimals);
+  let timestamp = new Date().getTime().toString()
+  __ownInstance__.$store.dispatch('createOrderForm' , {val:0 ,id:timestamp })
+  return new Promise((resolve, reject) => {
+    let hashInfo
+    web3.eth.getTransactionCount(address).then(async transactionNonce => {
+      let gasPrice = await web3.eth.getGasPrice();
+      let estimateGas = await web3.eth.estimateGas({
+        from: address,
+        to: contractAddress, // 池地址
+        data: encodedABI, // Required
+      })
+      // console.log('estimateGas' ,estimateGas)
+      const params = [{
+        from: address,
+        to: contractAddress, // 池地址
+        data: encodedABI, // Required
+        gasPrice: web3.utils.toHex(gasPrice), // Optional
+        gas: web3.utils.toHex(estimateGas), // Optional
+        // gas: web3.utils.toHex(400000), // Optional
+        // chainId: 128,
+      }];
+      // params[0].value =  web3.utils.toHex(value) 
+      web3.eth.sendTransaction(params[0])
+        .on('transactionHash', function (hash) {
+          console.log('hash', hash);
+          if (hash) {
+            hashInfo = hash
+          }
+        })
+        .on('receipt', function (receipt) {
+          // 交易成功
+          __ownInstance__.$store.dispatch('changeTradeStatus' , {  id:timestamp , val:1 , hash:hashInfo})
+          resolve(receipt)
+        })
+        .on('confirmation', function (confirmationNumber, receipt) {
+        })
+        .on('error', function (err) {
+          let isUserDeny = err.code === 4001 
+          __ownInstance__.$store.dispatch('changeTradeStatus' , {  id:timestamp , val:2 , isUserDeny, hash:hashInfo})
+          console.log('err' , err)
+          reject(err)
+        })
+    })
+    .catch(err=>{
+      console.log('BuyTokenToLuck001_err',err)
+      __ownInstance__.$store.dispatch('changeTradeStatus' , {  id:timestamp , val:2, hash:hashInfo})
+      reject(err)
+    })
+  })
 }

@@ -15,6 +15,7 @@ namespace app\api\controller;
 use app\api\model\Market;
 use app\api\model\MyMarket;
 use app\api\model\MarketLog;
+use app\api\model\UserNft;
 use app\api\model\Task;
 use think\Request;
 use think\Controller;
@@ -81,7 +82,7 @@ class MarketController extends BaseController
     }
 
     /**
-     * 获取我的已购买市场数据
+     * 获取我的已购买或者待出售市场数据
      * @author qinlh
      * @since 2024-08-05
      */
@@ -110,6 +111,25 @@ class MarketController extends BaseController
             $where['chainid|owner'] = $idAddress;
         }
         $result = MyMarket::getMyMarketplaceData($where, $page, $limit);
+        // p($result);
+        return $this->as_json($result);
+    }
+
+    /**
+     * 获取我的NFT数据
+     * @author qinlh
+     * @since 2024-08-16
+     */
+    public function getMyNftData(Request $request)
+    {
+        $regmarket = $request->request('regmarket', 0, 'intval');
+        $address = $request->request('owner', '', 'trim');
+        $page = $request->request('page', 1, 'intval');
+        $limit = $request->request('limit', 20, 'intval');
+        $where = [];
+        $where['status'] = 1;
+        $where['to'] = $address;
+        $result = UserNft::getMyNftData($where, $page, $limit);
         // p($result);
         return $this->as_json($result);
     }
@@ -274,6 +294,8 @@ class MarketController extends BaseController
             return $this->as_json('70001', $result['message']);
         }
     }
+
+
 }
 
 
@@ -285,4 +307,7 @@ class MarketController extends BaseController
 // https://evm.confluxscan.io/tx/0x1c2fd0122decec511368f759c79edd5d626cb91ed61678ca7adff10aece8ac21 inscribe
 // https://evm.confluxscan.io/tx/0xeadae3e769fc478d98bf955c5a7c495e2a5ed09a116b81dfd03dd847a57a06ed userDataRegist
 
-// CFXs or NFT https://evm.confluxscan.io/tx/0xb4aeed4a072e6db2e11fbc5de48bd0e3c9bed2431d7860107661e61727a87b50
+// CFXs or NFT https://evm.confluxscan.io/tx/0xb4aeed4a072e6db2e11fbc5de48bd0e3c9bed2431d7860107661e61727a87b50 ExchangeCFXsForECR20721(uint256[] CFXsIds)
+// NFT or CFXs https://evm.confluxscan.io/tx/0xa9672132fa60dfc7d3d7d5f28313ddc49192d946c53681addbb2cfd933bb082e ECR20721RedemptionOfCFXs(uint256[] CFXsIds)
+// CFXs or Coin https://evm.confluxscan.io/tx/0x8560f2fb3778cf3bf2f3a2865eb375bbc38ac7e2901d503cba8b8470fc28af30 ExchangeCFXsForOnlyECR20(uint256[] CFXsIds)
+// Coin or CFXs https://evm.confluxscan.io/tx/0x48929dbd5316a5a452670f9d4576e0dd7be34c54f02bd9aafef743ac88848e58 ECR20RedemptionOfCFXs(uint256 amount)
