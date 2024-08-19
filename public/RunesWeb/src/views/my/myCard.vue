@@ -2,7 +2,7 @@
     <div>
         <div class="card">
             <el-row :gutter="screenWidth > adaptiveSize ? 24 : 10">
-                <el-col :xs="12" :sm="6" :md="5" v-for="(item, index) in dataList" :key="index">
+                <el-col :xs="12" :sm="5" :md="4" v-for="(item, index) in dataList" :key="index">
                     <div class="content" :class="{ 'highlight-border': isSelected(index) }" ref="card" @click.stop="toggleHighlightEvent(index)">
                         <div class="top">
                             <div class="currency">

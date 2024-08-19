@@ -395,3 +395,28 @@ function CurlRequest($url, $header, $content=array(), $backHeader=0, $cookie='')
         $return_data = str_pad($date.$sec,13,"0",STR_PAD_RIGHT); //不足13位。右边补0
         return $return_data;
     }
+
+    function fromWei($wei, $unit = 'ether') {
+        // 定义单位转换数组
+        $units = [
+            'wei' => 0,
+            'kwei' => 3,
+            'ada' => 3,
+            'mwei' => 6,
+            'gwei' => 9,
+            'szabo' => 12,
+            'finney' => 15,
+            'ether' => 18
+        ];
+    
+        // 检查单位是否存在
+        if (!array_key_exists($unit, $units)) {
+            throw new Exception("Invalid unit provided.");
+        }
+    
+        // 计算转换后的数值
+        $convertedValue = $wei / pow(10, $units[$unit]);
+    
+        // 返回格式化后的数值，保留小数点后若干位
+        return number_format($convertedValue, 2);
+    }

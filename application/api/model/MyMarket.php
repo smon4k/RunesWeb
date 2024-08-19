@@ -34,7 +34,7 @@ class MyMarket extends Base
                 ->alias("a")
                 ->page($page, $limit)
                 ->field('a.*')
-                ->order("id asc")
+                ->order("chainid asc")
                 ->select()
                 ->toArray();
         if (!$lists) {
@@ -120,13 +120,14 @@ class MyMarket extends Base
                     $marget = self::getMyMarketFind($cfxId);
                     if($marget) {
                         if(strtolower($marget['owner']) === strtolower($sendaddr)) {
-                            $amount = $marget['amount'] * $amounts[$key]; //计算总价 数量 * 出售价格
+                            $sellUnPrice = fromWei($amounts[$key]);
+                            $countPrice = $marget['amount'] * $sellUnPrice; //计算总价 数量 * 出售价格
                             $twentyFourHoursLater = date('Y-m-d H:i:s', time() + $lockhours * 3600); //计算锁定时间
                             $insertData = [
                                 'chainid' => $cfxId,
                                 'chainto' => $sendaddr, 
-                                'amount' => $amount, 
-                                'unitprice' => $amounts[$key], 
+                                'amount' => $countPrice, 
+                                'unitprice' => $sellUnPrice, 
                                 'quantity' => $marget['amount'], 
                                 'regmarket' => $marget['regmarket'], 
                                 'data' => $marget['data'], 
@@ -137,7 +138,7 @@ class MyMarket extends Base
                             ];
                             $insertId = Market::insertData($insertData);
                             if ($insertId) {
-                                $isSetStatus = self::setMyMarketStatus($marget['id'], 2);
+                                $isSetStatus = self::setMyMarketStatus($cfxId, 2);
                                 if($isSetStatus) {
                                     MarketLog::addMarketLogData($cfxId, $sendaddr, json_encode($insertData), $hash, 2);
                                     $insertCount += 1;
@@ -154,7 +155,7 @@ class MyMarket extends Base
                     return ['code' => 0, 'message' => 'error'];
                 }
             } catch (\Exception $e) {
-                // p($e);
+                p($e);
                 // 回滚事务
                 self::rollback();
                 $error_msg = json_encode([
@@ -186,7 +187,7 @@ class MyMarket extends Base
                     if(strtolower($market['chainto']) === strtolower($sendaddr)) {
                         $isDelRes = Market::delMarketData($cfxsId);
                         if($isDelRes) {
-                            $isSetStatus = self::setMyMarketStatus($market['id'], 1);
+                            $isSetStatus = self::setMyMarketStatus($cfxsId, 1);
                             if($isSetStatus) {
                                 MarketLog::addMarketLogData($cfxsId, $sendaddr, json_encode($market), $hash, 3);
                                 self::commit();
@@ -229,7 +230,7 @@ class MyMarket extends Base
                     $marget = self::getMyMarketFind($cfxId);
                     if($marget) {
                         $amount += $marget['amount'];
-                        self::setMyMarketStatus($marget['id'], 4);
+                        self::setMyMarketStatus($cfxId, 4);
                         MarketLog::addMarketLogData($cfxId, $sendaddr, json_encode($marget), $hash, 6, 1);
                     }
                 }
@@ -284,7 +285,7 @@ class MyMarket extends Base
                 $amount = 0;
                 $marget = self::getMyMarketFind($cfxsId);
                 if($marget) {
-                    $isSplit = self::setMyMarketStatus($marget['id'], 3);
+                    $isSplit = self::setMyMarketStatus($cfxsId, 3);
                     MarketLog::addMarketLogData($cfxsId, $sendaddr, json_encode($marget), $hash, 5, 1);
                     if($isSplit) {
                         foreach ($newCfxIds as $key => $val) {
@@ -456,10 +457,10 @@ class MyMarket extends Base
      * @author qinlh
      * @since 2024-08-06
      */
-    public static function setMyMarketStatus($id = 0, $status=0)
+    public static function setMyMarketStatus($chainid = 0, $status=0)
     {
-        if ($id > 0 && $status > 0) {
-            if($status == 3 || $status == 4) {
+        if ($chainid > 0 && $status > 0) {
+            if($status == 4 || $status == 5) {
                 $updateArr = [
                     'status' => $status,
                     'is_deleted' => 1,
@@ -469,7 +470,7 @@ class MyMarket extends Base
                     'status' => $status,
                 ];
             }
-            $res = self::where('id', $id)->update($updateArr);
+            $res = self::where('chainid', $chainid)->update($updateArr);
             if ($res !== false) {
                 return true;
             }

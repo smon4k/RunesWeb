@@ -54,22 +54,22 @@ export default {
     }
 };
 
-    // CFXsContractMain 
-    // CFXs符文合约:
-    // 0x784953BAa605f5e9397245a91d9ca5c2A386cB03
+// CFXsContractMain 
+// CFXs符文合约:
+// 0x5B5cA516a154816c977721aEaA133Bba6Be4b5B8
 
-    // CFXsIdAndDataService 
-    // CIS服务及Data类别合约: 
-    // 0xc10b927a3bDcd3ECCe3692f68070D3E13e4A6639
+// CFXsIdAndDataService 
+// CIS服务及Data类别合约: 
+// 0xbB339b0eb57dD81e1381C29B2e9be4D9176E2C37
 
-    // CFXsERC20
-    // ERC20版CFXs合约：     
-    // 0x1bC096Ee65eDAd9D51e76F11e721e120CC1CCC2e    
+// CFXsERC20
+// ERC20版CFXs合约：     
+// 0x797Cb41A75B5460E2aD458564084C63E5B091252    
 
-    // CFXsERC721
-    // ERC721版CFXs合约：      
-    // 0x2A77e9A1a74377a8123C979c4c53A266e25d2Bd5
+// CFXsERC721
+// ERC721版CFXs合约：      
+//  0x67f20599e34516B4f0138c183A79F93B28a5D8a9
 
-    // CFXsERCBridge 
-    // 虫洞bridge合约： 
-    // 0x3039a4c09ca8dED5e2Be1A2f5722f2104D603f33
+// CFXsERCBridge 
+// 虫洞bridge合约： 
+// 0x6B25573D69CC04Db27D70daD4f338c75111A0087

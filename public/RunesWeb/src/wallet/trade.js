@@ -126,7 +126,7 @@ export const unlockingScriptbatch = async function (cfxsIds=[], amounts=[], usdI
         })
         .on('receipt', function (receipt) {
           __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 1, hash: hashInfo })
-          resolve()
+          resolve(hashInfo)
         })
         .on('error', function (err) {
           let isUserDeny = err.code === 4001
@@ -194,7 +194,7 @@ export const lockingScriptbatch = async function (cfxsIds=[], amounts=[], usdIds
         })
         .on('receipt', function (receipt) {
           __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 1, hash: hashInfo })
-          resolve()
+          resolve(hashInfo)
         })
         .on('error', function (err) {
           let isUserDeny = err.code === 4001
@@ -260,7 +260,7 @@ export const ownerUnlockingScript = async function (cfxsId='') {
         })
         .on('receipt', function (receipt) {
           __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 1, hash: hashInfo })
-          resolve()
+          resolve(hashInfo)
         })
         .on('error', function (err) {
           let isUserDeny = err.code === 4001
@@ -311,11 +311,11 @@ export const processTransaction = async function (cfxsIds=[], outputs=[], type=0
           if (hash) {
             hashInfo = hash
             let params = {};
-            if(type == 1) {
+            if(type == 4) {
               params = {
                 "address": address,
                 "hash": hash,
-                "type": 4,
+                "type": type,
                 "data": {
                     "cfxsIds": cfxsIds,
                     "amount": outputs[0],
@@ -328,7 +328,7 @@ export const processTransaction = async function (cfxsIds=[], outputs=[], type=0
               params = {
                 "address": address,
                 "hash": hash,
-                "type": 5,
+                "type": type,
                 "data": {
                     "cfxsId": cfxsIds[0],
                     "amounts": outputs,
@@ -344,7 +344,7 @@ export const processTransaction = async function (cfxsIds=[], outputs=[], type=0
         })
         .on('receipt', function (receipt) {
           __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 1, hash: hashInfo })
-          resolve()
+          resolve(hashInfo)
         })
         .on('error', function (err) {
           let isUserDeny = err.code === 4001
@@ -411,7 +411,7 @@ export const transfer = async function (cfxsIds=[], toaddress="") {
         })
         .on('receipt', function (receipt) {
           __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 1, hash: hashInfo })
-          resolve()
+          resolve(hashInfo)
         })
         .on('error', function (err) {
           let isUserDeny = err.code === 4001
@@ -465,7 +465,7 @@ export const idRegist = async function (cfxsId="", userAddr="") {
         })
         .on('receipt', function (receipt) {
           __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 1, hash: hashInfo })
-          resolve()
+          resolve(hashInfo)
         })
         .on('error', function (err) {
           let isUserDeny = err.code === 4001
@@ -519,7 +519,7 @@ export const addrRegist = async function (cfxsId="") {
         })
         .on('receipt', function (receipt) {
           __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 1, hash: hashInfo })
-          resolve()
+          resolve(hashInfo)
         })
         .on('error', function (err) {
           let isUserDeny = err.code === 4001
@@ -585,7 +585,7 @@ export const inscribe = async function (cfxsId="", data="") {
         })
         .on('receipt', function (receipt) {
           __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 1, hash: hashInfo })
-          resolve()
+          resolve(hashInfo)
         })
         .on('error', function (err) {
           let isUserDeny = err.code === 4001
@@ -639,7 +639,7 @@ export const userDataRegist = async function (cfxsIds=[], dataTypes=[], names=[]
         })
         .on('receipt', function (receipt) {
           __ownInstance__.$store.dispatch('changeTradeStatus', { id: timestamp, val: 1, hash: hashInfo })
-          resolve()
+          resolve(hashInfo)
         })
         .on('error', function (err) {
           let isUserDeny = err.code === 4001
@@ -665,7 +665,7 @@ export const ExchangeCFXsForECR20721 = function (cfxsIds=[]){
   console.log('ExchangeCFXsForECR20721', cfxsIds);
   // const tokenAddress = __ownInstance__.$store.state.base.tokenAddress
   const address = __ownInstance__.$store.state.base.address;
-  const contractAddress = Address.CFXsERCBridgeContractAddress;;
+  const contractAddress = Address.CFXsERC20BridgeContractAddress;;
   const contract = new web3.eth.Contract(CFXsERCBridgeABI, contractAddress);
   let encodedABI = contract.methods.ExchangeCFXsForECR20721(cfxsIds).encodeABI();
   // let value = toWei(amount, decimals);
@@ -729,7 +729,7 @@ export const ExchangeCFXsForOnlyECR20 = function (cfxsIds=[]){
   console.log('ExchangeCFXsForOnlyECR20', cfxsIds);
   // const tokenAddress = __ownInstance__.$store.state.base.tokenAddress
   const address = __ownInstance__.$store.state.base.address;
-  const contractAddress = Address.CFXsERCBridgeContractAddress;;
+  const contractAddress = Address.CFXsERC20BridgeContractAddress;;
   const contract = new web3.eth.Contract(CFXsERCBridgeABI, contractAddress);
   let encodedABI = contract.methods.ExchangeCFXsForOnlyECR20(cfxsIds).encodeABI();
   // let value = toWei(amount, decimals);
@@ -793,7 +793,7 @@ export const ECR20RedemptionOfCFXs = function (amount=0, decimals = 18){
   console.log('ECR20RedemptionOfCFXs', amount);
   // const tokenAddress = __ownInstance__.$store.state.base.tokenAddress
   const address = __ownInstance__.$store.state.base.address;
-  const contractAddress = Address.CFXsERCBridgeContractAddress;;
+  const contractAddress = Address.CFXsERC20BridgeContractAddress;;
   const contract = new web3.eth.Contract(CFXsERCBridgeABI, contractAddress);
   let encodedABI = contract.methods.ExchangeCFXsForOnlyECR20(amount).encodeABI();
   // let value = toWei(amount, decimals);
@@ -858,7 +858,7 @@ export const ECR20721RedemptionOfCFXs = function (cfxsIds=[]){
   console.log('ECR20721RedemptionOfCFXs', cfxsIds);
   // const tokenAddress = __ownInstance__.$store.state.base.tokenAddress
   const address = __ownInstance__.$store.state.base.address;
-  const contractAddress = Address.CFXsERCBridgeContractAddress;;
+  const contractAddress = Address.CFXsERC20BridgeContractAddress;;
   const contract = new web3.eth.Contract(CFXsERCBridgeABI, contractAddress);
   let encodedABI = contract.methods.ECR20721RedemptionOfCFXs(cfxsIds).encodeABI();
   // let value = toWei(amount, decimals);

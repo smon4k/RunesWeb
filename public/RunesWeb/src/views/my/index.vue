@@ -299,7 +299,7 @@
                                     <span>{{ item.amount }}</span>
                                 </div>
                                 <div class="input-number">
-                                    <el-input v-model.number="sellPriceValues[item.id]" placeholder="0.00" @input="sellPriceInput">
+                                    <el-input v-model="sellPriceValues[item.id]" placeholder="0.00" @input="sellPriceInput">
                                         <div slot="suffix"> <img :src="require('@/assets/usdt.png')" alt="" width="18"> USDT</div>
                                     </el-input>
                                 </div>
@@ -861,7 +861,7 @@ export default {
                 ""
             ]];
             this.trading = true;
-            processTransaction(cfxsIds, outputs).then((hash) => {
+            processTransaction(cfxsIds, outputs, 4).then((hash) => {
                 if (hash) {
                     this.trading = false;
                     this.messageItemsDialogShow = false;
@@ -890,7 +890,7 @@ export default {
                     ]);
                 })
             }
-            processTransaction(cfxsIds, outputs).then((hash) => {
+            processTransaction(cfxsIds, outputs, 5).then((hash) => {
                 if (hash) {
                     this.trading = false;
                     this.splitDialogShow = false;

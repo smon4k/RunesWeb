@@ -176,7 +176,7 @@ def call_api_on_success(method, parameter, type, newCFXidData=[]):
     
 def listen_for_transaction_updates():
     """监听数据库中的交易状态并更新"""
-    connection = pymysql.connect(**db_config)
+    connection = pymysql.connect(**db_config, autocommit=True)
     # print(connection)
     try:
         while True:
@@ -186,7 +186,6 @@ def listen_for_transaction_updates():
                 pending_transactions = cursor.fetchall()
                 for row in pending_transactions:
                     hash, status, number, method, parameter, type = row
-                    # print(hash)
                     receipt = check_transaction_status(hash, type)
                     # print(receipt)
                     if receipt is not None:
