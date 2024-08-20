@@ -274,16 +274,16 @@
                     <div class="exchange-chain" v-if="versionName === 'chain'">
                         <el-dropdown trigger="click" @command="dropdownChainMenuClick" placement="top">
                             <span class="el-dropdown-link">
-                                <img :src="require(`@/assets/` + chain_name + `.png`)" alt="" width="18">
+                                <!-- <img :src="require(`@/assets/` + chain_name + `.png`)" alt="" width="18"> -->
                                 {{ chain_name }}<i class="el-icon-arrow-down el-icon--right"></i>
                             </span>
                             <el-dropdown-menu slot="dropdown" popper-class="popper-select" class="popper-select">
                                 <el-dropdown-item command="HECO">
-                                    <img src="@/assets/HECO.png" alt="" width="18">
+                                    <!-- <img src="@/assets/HECO.png" alt="" width="18"> -->
                                     <span class="chain-name">{{ 'HECO' }}</span>
                                 </el-dropdown-item>
                                 <el-dropdown-item command="ARB">
-                                    <img src="@/assets/ARB.png" alt="" width="18">
+                                    <!-- <img src="@/assets/ARB.png" alt="" width="18"> -->
                                     <span class="chain-name">{{ 'ARB' }}</span>
                                 </el-dropdown-item>
                             </el-dropdown-menu>

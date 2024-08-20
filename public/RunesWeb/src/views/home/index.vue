@@ -301,7 +301,7 @@
 <script>
 import { get, post } from "@/common/axios.js";
 import { mapGetters, mapState } from "vuex";
-import { toWei, keepDecimalNotRounding } from '@/utils/tools'
+import { toWei, fromWei, keepDecimalNotRounding } from '@/utils/tools'
 import { approve, unlockingScriptbatch } from "@/wallet/trade";
 import { getBalance, isApproved } from "@/wallet/serve";
 import Address from '@/wallet/address.json'
@@ -372,10 +372,10 @@ export default {
             let amounts = [];
             this.dataList.forEach((item, index) => {
                 if (this.highlightedIndices.includes(index)) {
-                    totalUSDT += Number(item.amount);
+                    totalUSDT += Number(item.unitprice);
                     totalCfxs += Number(item.quantity);
                     cfxsIds.push(item.chainid);
-                    amounts.push(toWei(item.quantity, 18));
+                    amounts.push(toWei(item.unitprice, 18));
                 }
             });
             return { totalUSDT, totalSlots, totalCfxs, cfxsIds, amounts };
@@ -496,7 +496,7 @@ export default {
                     row.chainid
                 ],
                 amounts: [
-                    toWei(row.quantity, 18)
+                    toWei(row.unitprice, 18)
                 ],
             };
             this.approve = false;
@@ -590,8 +590,12 @@ export default {
         },
         buyNowContract() {
             this.trading = true;
-            let usdIds = new Array(this.buyNowData.cfxsIds).fill("0");
-            unlockingScriptbatch(this.buyNowData.cfxsIds, this.buyNowData.amounts, usdIds).then(async (hash) => {
+            let usdIds = new Array(this.buyNowData.cfxsIds.length).fill("0");
+            console.log(this.buyNowData.amounts);
+            let totalAmount = this.buyNowData.amounts.reduce((accumulator, current) => {
+                return accumulator + Number(fromWei(Number(current), 18));
+            }, 0); // 0 是累加器的初始值
+            unlockingScriptbatch(this.buyNowData.cfxsIds, this.buyNowData.amounts, usdIds, this.buyNowData.cfxs).then(async (hash) => {
                 if (hash) {
                     this.approve = true;
                     this.trading = false;

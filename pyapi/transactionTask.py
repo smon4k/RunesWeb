@@ -34,7 +34,13 @@ def check_transaction_status(tx_hash, type):
             "params": [tx_hash],
             "id": 1
         })
+        
         receipt = response.json().get('result')
+
+        if receipt is None:
+            # print(f"No receipt found for transaction: {tx_hash}")
+            return None
+        
         cFXsEventData = []
         if(type == 4 or type == 5):
             cFXsEventData = get_logs_info_message(receipt)
@@ -145,7 +151,7 @@ def call_api_on_success(method, parameter, type, newCFXidData=[]):
                 newCfxIds = [item['id'] for item in newCFXidData]
                 amounts = [item['amount'] for item in newCFXidData]
                 params = {
-                    "cfxsId": payload['cfxsIds'][0],
+                    "cfxsId": payload['cfxsId'],
                     "amounts": amounts,
                     "sendaddr": payload['sendaddr'],
                     "newCfxIds": newCfxIds,
@@ -176,9 +182,14 @@ def call_api_on_success(method, parameter, type, newCFXidData=[]):
     
 def listen_for_transaction_updates():
     """监听数据库中的交易状态并更新"""
-    connection = pymysql.connect(**db_config, autocommit=True)
+    connection = pymysql.connect(**db_config)
+
     # print(connection)
     try:
+        with connection.cursor() as cursor:
+            # 设置隔离级别为 READ COMMITTED
+            cursor.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;")
+
         while True:
             with connection.cursor() as cursor:
                 sql = "SELECT hash, status, number, method, parameter, type FROM r_transaction_task WHERE status = 1 OR status = 3 LIMIT 10"
@@ -196,7 +207,7 @@ def listen_for_transaction_updates():
                             api_response = call_api_on_success(method, parameter, type, receipt['data'])
                             if api_response:
                                 connection.commit()
-                                # print(f"API called successfully. Response: {api_response}")
+                                print(f"API called successfully. Response: {api_response}")
                         # print(f"Transaction {hash} updated to {new_status }")
             
             # 每隔 2 秒检查一次

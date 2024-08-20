@@ -33,7 +33,7 @@
                     <el-button size="mini" @click="showSelectDialog" v-else>Select</el-button>
                 </div>
                 <div class="disbutton">
-                    <el-button type="primary" :disabled="data == '' || !selectedData.chainid" @click="submitInscribeContract">SUBMIT</el-button>
+                    <el-button type="primary" :loading="trading" :disabled="trading || data == '' || !selectedData.chainid" @click="submitInscribeContract">SUBMIT</el-button>
                 </div>
             </div>
             <!-- 底部tab -->
@@ -95,7 +95,7 @@ import { get, post } from "@/common/axios.js";
 import { mapGetters, mapState } from "vuex";
 import { keepDecimalNotRounding } from "@/utils/tools";
 import { approve, inscribe, userDataRegist } from "@/wallet/trade";
-import { getBalance, isApproved } from "@/wallet/serve";
+import { getBalance, isApproved, saveTransactionTask} from "@/wallet/serve";
 import Address from '@/wallet/address.json'
 export default {
     name: '',
@@ -119,6 +119,7 @@ export default {
             isNoMoreData: false,
             isLoading: false,
             selectedData: {},
+            trading: false,
         }
     },
     mounted() {
@@ -241,8 +242,20 @@ export default {
             const series = "";
             inscribe(this.selectedData.chainid, this.data).then((hash) => {
                 if (hash) {
-                    userDataRegist(cfxsIds, dataTypes, names, series).then((hash2) => {
+                    userDataRegist(cfxsIds, dataTypes, names, series).then(async (hash2) => {
                         if(hash2) {
+                            const params = {
+                                "address": this.address,
+                                "hash": hash,
+                                "type": 7,
+                                "data": {
+                                    "cfxsId": this.selectedData.chainid,
+                                    "sendaddr": this.address,
+                                    "data": this.data,
+                                    "hash": hash,
+                                }
+                            };
+                            await saveTransactionTask(params);
                             this.trading = false;
                         }
                     }).finally(() => {

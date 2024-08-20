@@ -148,13 +148,13 @@
         <div class="networlk-list">
             <el-button :class="chainName === 'BSC' ? 'active' : ''" @click="selectNetworkClick('BSC')">
                 <div class="item">
-                    <img src="@/assets/BSC.png" alt="" width="50">
+                    <!-- <img src="@/assets/BSC.png" alt="" width="50"> -->
                     <span class="name">BNB CHAIN mainnet</span>
                 </div>
             </el-button>
             <el-button :class="chainName === 'ARB' ? 'active' : ''" @click="selectNetworkClick('ARB')">
                 <div class="item">
-                    <img src="@/assets/ARB.png" alt="" width="50">
+                    <!-- <img src="@/assets/ARB.png" alt="" width="50"> -->
                     <span class="name">Arbitrum mainnet</span>
                 </div>
             </el-button>

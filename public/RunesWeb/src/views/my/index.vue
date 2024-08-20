@@ -227,7 +227,7 @@
                         <el-radio v-model="splitType" label="2" @input="radioInputChange">Share</el-radio>
                     </div>
                     <div class="split-number" v-if="splitType == 1">
-                        <el-input placeholder="Must be an integer > 1 or < 1000" v-model="splitNumbers[index]" v-for="(item, index) in splitNumbers" :key="index" @input="splitNumbersInput">
+                        <el-input placeholder="Must be an integer > 1 or < 1000" v-model.number="splitNumbers[index]" v-for="(item, index) in splitNumbers" :key="index" @input="splitNumbersInput">
                             <template slot="prepend"><img :src="require('@/assets/svg/minus.svg')" alt="" width="24" @click="minusNumbers"></template>
                             <template slot="append"><img :src="require('@/assets/svg/plus.svg')" alt="" width="24" @click="plusNumbers"></template>
                         </el-input>
@@ -305,7 +305,7 @@
                                 </div>
                                 <div class="total-price">
                                     <span>Total Price</span>
-                                    <span>{{ new Intl.NumberFormat('en-US').format(sellPriceValues[item.chainid]) }}</span>
+                                    <span>{{ sellPriceValues[item.chainid] > 0 ? new Intl.NumberFormat('en-US').format(sellPriceValues[item.chainid]) : 0 }}</span>
                                 </div>
                             </div>
                         </div>
@@ -338,7 +338,7 @@
                         <span class="number">{{ totalSellPrice }} USDT</span>
                     </div>
                     <div class="button-dialog">
-                        <el-button type="primary" :disabled="trading" :loading="trading" @click="lockingSellContract" >COMPLETE LISTING</el-button>
+                        <el-button type="primary" :disabled="trading || totalSellPrice <= 0" :loading="trading" @click="lockingSellContract" >COMPLETE LISTING</el-button>
                     </div>
                 </div>
             </el-dialog>
@@ -510,7 +510,7 @@ export default {
             this.dataList.forEach((item, index) => {
                 if (this.highlightedIndices.includes(index)) {
                     totalCfxs += Number(item.amount);
-                    cfxsIds.push(item.chainid);
+                    cfxsIds.push(Number(item.chainid));
                 }
             });
             return { totalSlots, totalCfxs, cfxsIds };
@@ -537,7 +537,11 @@ export default {
             }, 0);
 
             // 然后使用 Intl.NumberFormat 格式化最终的累加结果
-            return new Intl.NumberFormat('en-US').format(total);
+            if(total > 0) {
+                return new Intl.NumberFormat('en-US').format(total);
+            } else {
+                return 0;
+            }
         },
         calculatedSplit() {
             const base = Math.floor(Number(this.splitRowData.amount) / Number(this.splitNumber)); // 每份的基础数值
@@ -836,6 +840,10 @@ export default {
                 if (hash) {
                     this.trading = false;
                     this.quickListDialogShow = false;
+                    setTimeout(() => {
+                        this.refreshOrderDataClick();
+                        this.refreshDataClick();
+                    }, 1000);
                 }
             }).finally(() => {
                 this.trading = false;
@@ -847,6 +855,10 @@ export default {
                 if (hash) {
                     this.trading = false;
                     this.cancelListingDialogShow = false;
+                    setTimeout(() => {
+                        this.refreshOrderDataClick();
+                        this.refreshDataClick();
+                    }, 1000);
                 }
             }).finally(() => {
                 this.trading = false;
@@ -865,6 +877,9 @@ export default {
                 if (hash) {
                     this.trading = false;
                     this.messageItemsDialogShow = false;
+                    setTimeout(() => {
+                        this.refreshDataClick();
+                    }, 1000);
                 }
             }).finally(() => {
                 this.trading = false;
@@ -894,6 +909,9 @@ export default {
                 if (hash) {
                     this.trading = false;
                     this.splitDialogShow = false;
+                    setTimeout(() => {
+                        this.refreshDataClick();
+                    }, 1000);
                 }
             }).finally(() => {
                 this.trading = false;
@@ -903,10 +921,13 @@ export default {
             const data = this.calcTotalNumber;
             const cfxsIds = data.cfxsIds;
             this.trading = true;
-            transfer(cfxsIds, this.transferAddressValue).then((hash) => {
+            transfer(data.cfxsIds, this.transferAddressValue).then((hash) => {
                 if (hash) {
                     this.trading = false;
                     this.transferItemsDialogShow = false;
+                    setTimeout(() => {
+                        this.refreshDataClick();
+                    }, 1000);
                 }
             }).finally(() => {
                 this.trading = false;
@@ -1621,6 +1642,14 @@ export default {
                                 background-color: #ad8d65;
                                 border: 0;
                                 color: rgb(0, 0, 0/1);
+                            }
+                            .el-button--primary.is-disabled {
+                                background: hsla(0, 0%, 50%, .2);
+                                color: #aaa;
+                            }
+                            .el-button--primary.is-disabled:hover {
+                                background: hsla(0, 0%, 50%, .2);
+                                color: #aaa;
                             }
                         }
                     }

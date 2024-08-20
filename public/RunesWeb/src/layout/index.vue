@@ -1,6 +1,5 @@
 <template>
     <div class="app-wrapper">
-        <!-- <sidebar /> -->
         <headerNav />
         <div class="appmain-container">
             <AppMain/>
@@ -8,13 +7,12 @@
     </div>
 </template>
 <script>
-import sidebar from './components/sidebar.vue'
 import headerNav from './components/headerNav.vue'
 import AppMain from './components/AppMain.vue'
 import { mapGetters, mapState } from 'vuex'
 export default {
     name:'Layout',
-    components:{sidebar , headerNav, AppMain},
+    components:{ headerNav, AppMain },
     created(){
         this.$store.commit('copyDefaultState')
     },
@@ -36,39 +34,39 @@ export default {
         pendingOrderAmount:{
             handler(val){
                 if(val){
-                    this.$notify({
-                        title: 'Trading...',
-                        message: `${val} Processing`,
-                        duration: 6000
-                    });
+                    // this.$notify({
+                    //     title: 'Trading...',
+                    //     message: `${val} Processing`,
+                    //     duration: 6000
+                    // });
                 }
             }
         },
         SuccessHash:{
             handler(val){
                 if(val){
-                    this.$notify({
-                        title: 'Success!',
-                        dangerouslyUseHTMLString:true,  
-                        message: `<a href="${this.domainHostAddress + '' + val}" target="_blank">View on Explorer</a>`,
-                        type: 'success',
-                        duration: 6000
-                    });
+                    // this.$notify({
+                    //     title: 'Success!',
+                    //     dangerouslyUseHTMLString:true,  
+                    //     message: `<a href="${this.domainHostAddress + '' + val}" target="_blank">View on Explorer</a>`,
+                    //     type: 'success',
+                    //     duration: 6000
+                    // });
                 }
             }
         },
         FailedHash:{
             handler(val){
                 if(val){
-                    this.$notify.error({
-                        title: 'Failed!',
-                        dangerouslyUseHTMLString:true,  
-                        message: this.errMessage || `<a href="${this.domainHostAddress + '' + val}" target="_blank">View on Explorer</a>`,
-                        duration: 6000
-                    });
-                    if(this.errMessage){
-                        this.$store.commit('setErrMessage' , '')
-                    }
+                    // this.$notify.error({
+                    //     title: 'Failed!',
+                    //     dangerouslyUseHTMLString:true,  
+                    //     message: this.errMessage || `<a href="${this.domainHostAddress + '' + val}" target="_blank">View on Explorer</a>`,
+                    //     duration: 6000
+                    // });
+                    // if(this.errMessage){
+                    //     this.$store.commit('setErrMessage' , '')
+                    // }
                 }
             }
         },
@@ -76,12 +74,11 @@ export default {
             handler(val){
                 console.log('userDenyId' , val);
                 if(val){
-                    
-                    this.$notify.error({
-                        title: 'Failed!',
-                        message: `Refuse`,
-                        duration: 6000
-                    });
+                    // this.$notify.error({
+                    //     title: 'Failed!',
+                    //     message: `Refuse`,
+                    //     duration: 6000
+                    // });
                     
                 }
             }

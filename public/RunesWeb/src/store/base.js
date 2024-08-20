@@ -97,33 +97,20 @@ export default {
             }
             console.log(value);
         },
-        createOrder(state , {id , val}){
-            state.tradeStatus.list.push({id , val })
-            state.tradeStatus.current = id
+        CREATE_ORDER(state, { val, id }) {
+            state.tradeStatus.list = [];
+            state.tradeStatus.list.push({ id, val });
+            console.log("tradeStatus", state.tradeStatus.list);
+            state.tradeStatus.Current = id;
         },
-        change_TradeStatus(state , {id , val , isUserDeny , hash , errMessage}){
-            if(!id) return 
-            let index = state.tradeStatus.list.findIndex(item=>{
-                return item.id === id
-            })
-            console.log(id, errMessage);
-            if(errMessage){
-                state.errMessage = errMessage
-            }
-            if(index !== -1){
-                state.tradeStatus.list[index].val = val 
-                state.tradeStatus.list[index].hash = hash // 1成功 2失败
-
-                if(val === 1){
-                    state.tradeStatus.SuccessHash = hash
-                }else {
-                    state.tradeStatus.list[index].isUserDeny = isUserDeny
-                    if(isUserDeny){
-                        state.tradeStatus.userDenyId = id
-                        console.log('userDenyId' , state.tradeStatus.userDenyId);
-                    }
-                    state.tradeStatus.FailedHash = hash || id
-                }
+        CHANGE_TRADESTATUS(state, status) {
+            if (!status.id) return;
+            let index = state.tradeStatus.list.findIndex((item) => {
+              return item.id === status.id;
+            });
+            if (index !== -1) {
+              state.tradeStatus.list[index].val = status.val; // 1成功 2失败 3进行中
+              status.val === 2 ? (state.tradeStatus.list[index].isUserDeny = status.isUserDeny) : null;
             }
         },
         setHashPowerPoolsList(state, {fixed}){
@@ -247,11 +234,39 @@ export default {
             commit('setAirDropDrawed' , res)
         },
         createOrderForm({commit } , info){
-            commit('createOrder' , info)
+            commit('CREATE_ORDER' , info)
         },
-        changeTradeStatus({commit} , status){
-            commit('change_TradeStatus' , status)
+        changeTradePadding({ commit, dispatch, state }, status) {
+            commit("CHANGE_TRADESTATUS", status);
+            dispatch("showPopUp", {
+                kind: "pending",
+                hash: status.hash,
+                id: status.id,
+            });
         },
+        changeTradeStatus({ commit, dispatch, state }, status) {
+            console.log("改变状态", status);
+            commit("CHANGE_TRADESTATUS", status);
+      
+            if(status.val === 3){
+              dispatch('showPopUp' , {kind:'pending' , isUserDeny:status.isUserDeny , hash:status.hash , id:status.id})
+            }
+            if (status.val === 1) {
+              dispatch("showPopUp", {
+                kind: "success",
+                hash: status.hash,
+                id: status.id,
+              });
+            }
+            if (status.val === 2) {
+              dispatch("showPopUp", {
+                kind: "fail",
+                isUserDeny: status.isUserDeny,
+                hash: status.hash,
+                id: status.id,
+              });
+            }
+          },
         // 获取算力币Pools数据
         async getMarketplaceList({commit , state}, isLoding){
             if(state.hashPowerPoolsList.loading) return 

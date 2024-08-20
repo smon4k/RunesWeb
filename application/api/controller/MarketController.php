@@ -95,10 +95,10 @@ class MarketController extends BaseController
         $idAddress = $request->request('id_address', '', 'trim');
         $merged = $request->request('merged', 0, 'intval');
         $where = [];
-        $where['a.status'] = 1;
-        $where['a.owner'] = $address;
+        $where['status'] = 1;
+        $where['owner'] = $address;
         if ($regmarket && $regmarket > 0) {
-            $where['a.regmarket'] = $regmarket;
+            $where['regmarket'] = $regmarket;
         }
         if($merged && $merged > 0) {
             if($merged == 1) {
@@ -279,7 +279,7 @@ class MarketController extends BaseController
      * inscribe 发布
      * @author qinlh
      * @since 2024-08-14
-     * https://evm.confluxscan.io/tx/0xe490e140caa324a7c17fac1e3be3f2f06219c9f17a0c92ac153ca42c2ac16af8
+     * https://evm.confluxscan.io/tx/0x1c2fd0122decec511368f759c79edd5d626cb91ed61678ca7adff10aece8ac21
      */
     public function inscribe(Request $request)
     {

@@ -27,16 +27,10 @@ class MyMarket extends Base
         if ($limit <= 0) {
             $limit = config('paginate.list_rows');// 获取总条数
         }
-        $count = self::where($where)->alias("a")->count();//计算总页面
+        $count = self::where($where)->count();//计算总页面
         $allpage = intval(ceil($count / $limit));
         // p($where);
-        $lists = self::where($where)
-                ->alias("a")
-                ->page($page, $limit)
-                ->field('a.*')
-                ->order("chainid asc")
-                ->select()
-                ->toArray();
+        $lists = self::where($where)->page($page, $limit)->order("id desc")->select()->toArray();
         if (!$lists) {
             return false;
         }
@@ -388,15 +382,15 @@ class MyMarket extends Base
         if ($cfxsId !== '' && $sendaddr !== '' && $data !== '') {
             self::startTrans();
             try {
-                $marget = self::getMyMarketFind($cfxId);
+                $marget = self::getMyMarketFind($cfxsId);
                 if($marget) {
-                    $isSetData = self::setMyMarketData($cfxId, $data);
+                    $isSetData = self::setMyMarketData($cfxsId, $data);
                     if($isSetData) {
                         $inscribeData = [
                             "cfxsId" => $cfxsId,
                             "data" => $data
                         ];
-                        MarketLog::addMarketLogData($cfxId, $sendaddr, json_encode($inscribeData), $hash, 7); 
+                        MarketLog::addMarketLogData($cfxsId, $sendaddr, json_encode($inscribeData), $hash, 7); 
                         self::commit();
                         return ['code' => 1, 'message' => 'ok'];
                     }
