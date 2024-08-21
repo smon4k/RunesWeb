@@ -6,7 +6,7 @@
           <div>
             <span>{{ 'Transform' }}</span>
           </div> 
-          <div class="wormhole"><img :src="require('@/assets/svg/wormhole.svg')" alt="" width="24"></div>
+          <div class="wormhole"><img :src="require('@/assets/svg/wormhole.svg')" alt="" width="24" @click="wormholeDialogShow = true"></div>
           <!-- <p class="tips">{{ $t('swap:TradeInstant') }}</p> -->
         </div>
         <div class="info">
@@ -173,6 +173,30 @@
             </div>
           </div>
       </el-dialog>
+
+      <el-dialog
+          title="Wormhole"
+          :visible.sync="wormholeDialogShow"
+          :width="screenWidth > adaptiveSize ? '30%' : '90%'"
+          :before-close="() => {
+            wormholeDialogShow = false;
+          }"
+          class="wormhole-dialog"
+          top="10vh">
+          <div class="dialog-content">
+              <span class="wormhole-content">Entering the CFXs world wormhole, the unique “Rosen Bridge” will transform CFXs into ERC20 or ERC721.</span>
+              <span class="wormhole-content">First put on a helmet, then you need to master the following wormhole safety guidelines:</span>
+              <span class="wormhole-title">CFXs to Token</span>
+              <span class="wormhole-content">The ID of CFXs will not be retained, and the total amount of CFXs will be transform into the total amount of Token.</span>
+              <span class="wormhole-title">CFXs to NFT</span>
+              <span class="wormhole-content">The ID of CFXs will be written into the token ID of NFT. In addition to obtaining NFT, the total amount of CFXs will be transform into the total amount of Token.</span>
+              <span class="wormhole-title">Token to CFXs</span>
+              <span class="wormhole-content">Entering the CFXs world wormhole, the unique “Rosen Bridge” will transform CFXs into ERC20 or ERC721. You will receive a new CFXs.</span>
+              <span class="wormhole-title">NFT to CFXs</span>
+              <span class="wormhole-content">NFT token ID and corresponding token balance are restored to the original CFXs.</span>
+              <span class="wormhole-content">Enjoy the journey.</span>
+          </div>
+      </el-dialog>
   </div>
 </template>
 <script>
@@ -231,6 +255,7 @@ export default {
       CFXsSelectedAmount: 0,
       CFXsSelectedIds: [],
       CoinBalance: 0,
+      wormholeDialogShow: false,
     };
   },
    created(){
@@ -1022,6 +1047,39 @@ export default {
                 display: inline-block;
                 position: relative;
                 overflow: hidden;
+            }
+        }
+      }
+    }
+
+    .wormhole-dialog {
+      .el-dialog {
+        height: 668px;
+        background-color: #202020;
+        .el-dialog__header {
+            .el-dialog__title {
+                color: #fff;
+            }
+        }
+        .dialog-content {
+            display: flex;
+            // padding: 16px;
+            flex-direction: column;
+            height: 400px;
+            .wormhole-content {
+              color: #aaa;
+              font-size: 14px;
+              margin-bottom: 16px;
+            }
+            .wormhole-title {
+              width: 96px;
+              margin-bottom: 10px;
+              background-color: #282828;
+              color: #ad8d65;
+              font-size: 12px;
+              padding-top: 4px;
+              padding-bottom: 4px;
+              text-align: center;
             }
         }
       }
