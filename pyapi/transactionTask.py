@@ -36,7 +36,7 @@ def check_transaction_status(tx_hash, type):
         })
         
         receipt = response.json().get('result')
-
+        # print(receipt)
         if receipt is None:
             # print(f"No receipt found for transaction: {tx_hash}")
             return None
@@ -108,6 +108,7 @@ def update_transaction_status(connection, tx_hash, status, msg):
                 cursor.execute(update_sql, (status, current_time, tx_hash))
                 # print(f"Transaction {tx_hash} succeeded. Status updated to success and attempt count reset.")
             elif status == 3 and current_status != 2:  # 执行失败，且之前未成功
+                # print(connection, tx_hash, status, msg)
                 # 增加执行异常次数
                 new_number = current_number + 1
                 if new_number <= 10:
@@ -208,6 +209,8 @@ def listen_for_transaction_updates():
                             if api_response:
                                 connection.commit()
                                 print(f"API called successfully. Response: {api_response}")
+                        else:
+                            connection.commit()
                         # print(f"Transaction {hash} updated to {new_status }")
             
             # 每隔 2 秒检查一次

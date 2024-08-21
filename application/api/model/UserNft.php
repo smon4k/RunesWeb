@@ -40,4 +40,51 @@ class UserNft extends Base
         }
         return ['count'=>$count,'allpage'=>$allpage,'lists'=>$lists];
     }
+
+    /**
+     * 插入数据
+     * @author qinlh
+     * @since 2024-08-21
+     */
+    public static function insertData($insertData=[]) {
+        if(count($insertData) > 0) {
+            $insertId = self::insert($insertData);
+            if($insertId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 获取NFT数据详情
+     * @author qinlh
+     * @since 2024-08-21
+     */
+    public static function getUserNftFind($tokenid=0)
+    {
+        if ($tokenid > 0) {
+            $res = self::where(['tokenid' => $tokenid])->find();
+            if ($res) {
+                return $res->toArray();
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 删除用户NFT数据
+     * @author qinlh
+     * @since 2024-08-21
+     */
+    public static function delUserNftData($tokenid = 0)
+    {
+        if ($tokenid > 0) {
+            $res = self::where('tokenid', $tokenid)->delete();
+            if ($res) {
+                return true;
+            }
+        }
+        return;
+    }
 }

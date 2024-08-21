@@ -34,96 +34,11 @@ export const constantRoutes = [
           component: () => import('@/views/documents/index'),
           meta: { title: 'documents', keepAlive: true }
         },
-        
-        {
-          path: 'banker',
-          name: 'banker',
-          component: () => import('@/views/banker/index'),
-          meta: { title: 'banker', keepAlive: false }
-        },
-        {
-          path: 'bankerSpeed',
-          name: 'bankerSpeed',
-          component: () => import('@/views/banker/indexSpeed'),
-          meta: { title: 'bankerSpeed', keepAlive: false }
-        },
         {
           path: 'exchange/:assets',
           name: 'exchange',
           component: () => import('@/views/exchange/index'),
           meta: { title: 'exchange', keepAlive: false }
-        },
-        //充提
-        {
-          path: 'depositWithdrawal/:type',
-          name: 'depositWithdrawal',
-          component: () => import('@/views/depositWithdrawal/index'),
-          meta: { title: 'depositWithdrawal', keepAlive: false }
-        },
-        {
-          path: 'depositWithdrawal/:type',
-          name: 'depositWithdrawal',
-          component: () => import('@/views/depositWithdrawal/index'),
-          meta: { title: 'depositWithdrawal', keepAlive: false }
-        },
-        // 申请代币
-        {
-          path: 'apply',
-          name: 'apply',
-          component: () => import('@/views/applyOwn/apply'),
-          meta: { title: 'apply', keepAlive: false }
-        },
-        // 推荐
-        {
-          path: 'recommend',
-          name: 'recommend',
-          component: () => import('@/views/recommend/index'),
-          meta: { title: 'recommend', keepAlive: false }
-        },
-        //代币经济
-        {
-          path: 'tokenomics',
-          name: 'tokenomics',
-          component: () => import('@/views/tokenomics/index'),
-          meta: { title: 'tokenomics', keepAlive: false }
-        },
-        //FAQ
-        {
-          path: 'faq',
-          name: 'faq',
-          component: () => import('@/views/faq/index'),
-          meta: { title: 'faq', keepAlive: false }
-        },
-        //算力收益
-        {
-          path: 'hashpower/list',
-          name: 'hashpowerList',
-          component: () => import('@/views/hashpower/list'),
-          meta: { title: 'hashpowerList', keepAlive: false }
-        },
-        {
-          path: 'hashpower/buy',
-          name: 'hashpowerBuy',
-          component: () => import('@/views/hashpower/buy'),
-          meta: { title: 'hashpowerBuy', keepAlive: false }
-        },
-        {
-          path: 'hashpower/detail',
-          name: 'hashpowerDetail',
-          component: () => import('@/views/hashpower/detail'),
-          meta: { title: 'hashpowerDetail', keepAlive: false }
-        },
-        {
-          path: 'hashpower/abstract',
-          name: 'hashpowerAbstract',
-          component: () => import('@/views/hashpower/abstract'),
-          meta: { title: 'hashpowerAbstract', keepAlive: false }
-        },
-        {
-          path: 'hashpower/history',
-          name: 'hashpowerHistory',
-          component: () => import('@/views/hashpower/history'),
-          meta: { title: 'hashpowerHistory', keepAlive: false }
         },
       ]
     },

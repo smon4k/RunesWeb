@@ -67,6 +67,8 @@ class TransactionTask extends Base
                 5 => 'splitProcessTransaction',
                 6 => 'transfer',
                 7 => 'inscribe',
+                8 => 'exchangeCFXsForECR20721',
+                9 => 'ECR20721RedemptionOfCFXs',
             ];
             $messages = [
                 1 => '购买',
@@ -76,6 +78,8 @@ class TransactionTask extends Base
                 5 => '拆分',
                 6 => '转赠',
                 7 => '发布',
+                8 => 'CFXs转NFT',
+                9 => 'NFT转CFXs',
             ];
             return ['method' => $methods[$type], 'name' => $messages[$type]];
         }

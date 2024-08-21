@@ -364,7 +364,7 @@
                         <span class="text">The merged CFXs will generate a new CFXs ID. The amount of new CFXs according to the total amount of merged CFXs.</span>
                     </div>
                     <div class="button-dialog">
-                        <el-button type="primary" :class="{ 'merge-border': resolveAddressValue }" :disabled="trading || !resolveAddressValue" :loading="trading" @click="resolveAddressContract">CONFIRM</el-button>
+                        <el-button type="primary" :class="{ 'merge-border': resolveAddressValue }" :disabled="trading || !resolveAddressValue || !validateAddress(resolveAddressValue)" :loading="trading" @click="resolveAddressContract">CONFIRM</el-button>
                     </div>
                 </div>
             </el-dialog>
@@ -643,6 +643,9 @@ export default {
                     this.$message.error("加载数据失败");
                 }
             });
+        },
+        validateAddress(address) {
+            return web3.utils.isAddress(address);
         },
         tabOrderClick() {
             this.currPageOrder = 1;

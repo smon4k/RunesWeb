@@ -213,8 +213,7 @@ class User extends Base
                     'birthday' => '',
                     'background_img' => '',
                     'time' => date('Y-m-d H:i:s'),
-                    // 'local_balance' => $local_balance,
-                    // 'wallet_balance' => 0,
+                    'coin_balance' => 0,
                     'status' => 1,
                 ];
                 $userId = self::insertGetId($insertData);
@@ -256,8 +255,7 @@ class User extends Base
                 'birthday' => '',
                 'background_img' => '',
                 'time' => date('Y-m-d H:i:s'),
-                // 'local_balance' => $local_balance,
-                // 'wallet_balance' => 0,
+                'coin_balance' => 0,
                 'status' => 1,
             ];
             $userId = self::insertGetId($insertData);
@@ -303,60 +301,14 @@ class User extends Base
     }
 
     /**
-     * 添加邀请用户日志记录
-     * @Author qinlh
-     * @param Request $request
-     * @return \think\response\int
-     */
-    public static function addUserInviteLog($user_id='', $invitees_id='', $hash='')
-    {
-        if ($invitees_id !== '') {
-            self::name("invite_log")->insert(['user_id'=>$invitees_id, 'invitees_id'=>$user_id, 'ip'=> getRealIp(),'time' => date("Y-m-d H:i:s"), 'hash' => $hash]);
-        }
-        return true;
-    }
-
-    /**
-     * 创建推荐关系
-     * @author qinlh
-     * @since 2022-06-27
-     */
-    public static function createRecommend($user_id='', $re_address='')
-    {
-        $invitees_id = self::getUserAddress($re_address); //获取邀请人id
-        if ($invitees_id <= 0) { //如果邀请人不存在
-            return false;
-            // $invitees_id = self::insertUserData($re_address);
-        }
-        if ($user_id > 0 && $invitees_id > 0) {
-            // UserLevel::saveUserLevel($user_id, 0, 1); //先判断是否需要添加一级用户信息
-            if ($invitees_id !== $user_id) {  //邀请用户和被邀请用户不能相同
-                // p($user_id);
-                // p($user_id);
-                $userLevelId = UserLevel::saveUserLevel($user_id, $invitees_id, 2); //先判断是否需要添加二级用户信息
-                if ($userLevelId) {
-                    $inviteLog = self::addUserInviteLog($invitees_id, $user_id);
-                    if ($inviteLog) {
-                        return true;
-                    }
-                }
-            } else {
-                return false;
-            }
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * 修改用户余额 - USDT
+     * 修改用户余额 - Coin
      * @params address 用户地址
      * @params amount 数量
      * @params type 1：加 2：减
      * @author qinlh
-     * @since 2022-06-14
+     * @since 2024-08-21
      */
-    public static function setUserLocalBalance($address='', $amount=0, $type=0, $isSaveMediaBalance=true)
+    public static function setUserCoinBalance($address='', $amount=0, $type=0)
     {
         if ($address && $address !== '' && $amount > 0 && $type > 0) {
             self::startTrans();
@@ -364,34 +316,20 @@ class User extends Base
                 $userInfo = self::getUserAddressInfo($address);
                 if ($userInfo && count((array)$userInfo)) {
                     if ($type == 1) {
-                        $res = self::where('address', $address)->setInc('local_balance', $amount);
+                        $res = self::where('address', $address)->setInc('coin_balance', $amount);
                     }
                     if ($type == 2) {
-                        $res = self::where('address', $address)->setDec('local_balance', $amount);
+                        $res = self::where('address', $address)->setDec('coin_balance', $amount);
                     }
                     if ($res) {
-                        $params = [
-                            'address' => $address,
-                            'amount' => $amount,
-                            'type' => $type,
-                        ];
-                        if ($isSaveMediaBalance && getEnvs() === 'prod') {
-                            $dataArr = postCurl(Config::get('h2omedia_api_url').'/api/User/setUserUsdtLocalBalance', http_build_query($params));
-                            // $dataArr = json_decode($response_string, true);
-                            if ($dataArr && $dataArr['code'] == 10000) {
-                                self::commit();
-                                return true;
-                            }
-                        } else {
-                            self::commit();
-                            return true;
-                        }
+                        self::commit();
+                        return true;
                     }
                 }
                 self::rollback();
                 return false;
             } catch (PDOException $e) {
-                p($e);
+                // p($e);
                 self::rollback();
                 return false;
             }

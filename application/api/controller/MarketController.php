@@ -295,6 +295,44 @@ class MarketController extends BaseController
         }
     }
 
+    /**
+     * CFXs转 NFT Coin
+     * @author qinlh
+     * @since 2024-08-21
+     * https://evm.confluxscan.io/tx/0xb4aeed4a072e6db2e11fbc5de48bd0e3c9bed2431d7860107661e61727a87b50
+     */
+    public function exchangeCFXsForECR20721(Request $request)
+    {
+        $cfxsIds = $request->post('cfxsIds/a', [], '');
+        $sendaddr = $request->post('sendaddr', '', 'trim');
+        $hash = $request->post('hash', '', 'trim');
+        $result = MyMarket::exchangeCFXsForECR20721($cfxsIds, $sendaddr, $hash);
+        if ($result && $result['code'] == 1) {
+            return $this->as_json('ok');
+        } else {
+            return $this->as_json('70001', $result['message']);
+        }
+    }
+
+    /**
+     * NFT 转 CFXs
+     * @author qinlh
+     * @since 2024-08-21
+     * https://evm.confluxscan.io/tx/0xa9672132fa60dfc7d3d7d5f28313ddc49192d946c53681addbb2cfd933bb082e
+     */
+    public function ECR20721RedemptionOfCFXs(Request $request)
+    {
+        $cfxsIds = $request->post('cfxsIds/a', [], '');
+        $sendaddr = $request->post('sendaddr', '', 'trim');
+        $hash = $request->post('hash', '', 'trim');
+        $result = MyMarket::ECR20721RedemptionOfCFXs($cfxsIds, $sendaddr, $hash);
+        if ($result && $result['code'] == 1) {
+            return $this->as_json('ok');
+        } else {
+            return $this->as_json('70001', $result['message']);
+        }
+    }
+
 
 }
 

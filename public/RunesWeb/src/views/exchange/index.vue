@@ -57,7 +57,7 @@
           <div class="output">
             <div class="input-title">
               <div>Will Receive</div>
-              <div>Total: {{ CFXsSelectedAmount }}</div>
+              <div v-if="inputName === 'CFXs' && outputName === 'NFT'">Coins: {{ CFXsSelectedAmount }}</div>
               <!-- <div class="textRight">{{ $t('swap:Balance') }}: {{ inputBalance }}</div> -->
             </div>
             <div class="input-box">
@@ -122,7 +122,7 @@
         <div class="btn">
           <!-- <el-button class="exchangeButton" v-if="!inputApproved" :loading="btnLoading" :disabled="btnLoading" @click="startApprove(inputName)">批准 {{ inputName }}</el-button>
           <el-button class="exchangeButton" v-else-if="!outputApproved" :loading="btnLoading" :disabled="btnLoading" @click="startApprove(outputName)">批准 {{ outputName }}</el-button> -->
-          <el-button type="primary" :loading="btnLoading" :disabled="btnLoading || (!inputValue || inputValue <= 0) || (!outputValue || outputValue <= 0)" @click="confirmExchange">{{ 'CONFIRM TRANSFORM' }}</el-button>
+          <el-button type="primary" :loading="btnLoading" :disabled="btnLoading || (!inputValue || inputValue <= 0) || (!outputValue || outputValue <= 0) || (inputName == '' || outputName == '')" @click="confirmExchange">{{ 'CONFIRM TRANSFORM' }}</el-button>
         </div>
       </el-card>
     </div>
@@ -338,7 +338,7 @@ export default {
       this.CFXsSelectedAmount = amount;
       this.inputValue = amount;
       this.selectCfxsDialogShow = false;
-      this.calcOutputValue;
+      this.outputValue = amount;
     },
     getMyMarketplaceData(ServerWhere) {
         if (!ServerWhere || ServerWhere == undefined || ServerWhere.length <= 0) {
@@ -445,7 +445,7 @@ export default {
     },
     async dropdownOutputMenuClick(command) { //OUTPUT 下拉框选择币种事件
         this.outputName = command;
-        this.calcOutputValue;
+        // this.calcOutputValue;
     },
     async getLusdBalance() {  //获取币种余额 及 是否批准
         let inputBalance = await getBalance(TOKEN[this.chainName][this.inputName], 18);
@@ -537,7 +537,7 @@ export default {
         if(this.inputName === 'NFT' && this.outputName === 'CFXs') {
           contractName = ECR20721RedemptionOfCFXs;
         }
-        contractName(this.CFXsSelectedIds).then(async (result)=> {
+        contractName(this.CFXsSelectedIds, this.calcFee).then(async (result)=> {
             if(result) {
               this.btnLoading = false;
             }

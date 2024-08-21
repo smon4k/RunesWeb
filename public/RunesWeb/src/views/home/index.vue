@@ -240,7 +240,7 @@
                     </div>
                     <div class="button-dialog">
                         <span class="text">You will be asked to approve this purchase from your wallet.</span>
-                        <el-button type="primary" @click="startApprove" v-if="!approve" :loading="trading">APPROVE</el-button>
+                        <el-button type="primary" @click="startApprove" v-if="approve" :loading="trading">APPROVE</el-button>
                         <el-button type="primary" v-else :loading="trading" @click="buyNowContract">Buy</el-button>
                     </div>
                 </div>
