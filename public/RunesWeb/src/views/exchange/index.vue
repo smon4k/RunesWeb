@@ -18,7 +18,10 @@
                 <span>Amount</span> 
                 <el-button v-if="inputName === 'CFXs' || inputName === 'NFT'"ize="mini" @click="showSelectDialog">Select</el-button>
               </div>
-              <div v-if="inputName === 'Coin'">Balance: {{ CoinBalance }}</div>
+              <div v-if="inputName === 'Coin'">
+                <span>Balance: {{ CoinBalance }}</span> 
+                <el-button class="max-balance" size="mini" @click="maxBalanceClick">MAX</el-button>
+              </div>
               <div v-else>Total: {{ CFXsSelectedAmount }}</div>
               <!-- <div class="textRight">{{ $t('swap:Balance') }}: {{ inputBalance }}</div> -->
             </div>
@@ -122,7 +125,7 @@
         <div class="btn">
           <!-- <el-button class="exchangeButton" v-if="!inputApproved" :loading="btnLoading" :disabled="btnLoading" @click="startApprove(inputName)">批准 {{ inputName }}</el-button>
           <el-button class="exchangeButton" v-else-if="!outputApproved" :loading="btnLoading" :disabled="btnLoading" @click="startApprove(outputName)">批准 {{ outputName }}</el-button> -->
-          <el-button type="primary" :loading="btnLoading" :disabled="btnLoading || (!inputValue || inputValue <= 0) || (!outputValue || outputValue <= 0) || (inputName == '' || outputName == '')" @click="confirmExchange">{{ 'CONFIRM TRANSFORM' }}</el-button>
+          <el-button type="primary" :loading="btnLoading" :disabled="!calcDisabledButton" @click="confirmExchange">{{ 'CONFIRM TRANSFORM' }}</el-button>
         </div>
       </el-card>
     </div>
@@ -201,7 +204,7 @@
 </template>
 <script>
 import { mapState } from "vuex";
-import TOKEN from '@/wallet/token.js'
+import Address from '@/wallet/address.json'
 import { get } from "@/common/axios.js";
 import { keepDecimalNotRounding, byDecimals} from '@/utils/tools'
 import { clickApprove, swapGTokenTogBuyToken, swapBuyTokenTogToken } from '@/wallet/swap'
@@ -303,24 +306,31 @@ export default {
       }
       return fee;
     },
+    caleMaxBalanceINputValue() {
+      if(this.inputName === 'Coin') {
+        if(this.inputValue > this.CoinBalance) {
+          return false;
+        }
+      }
+      return true;
+    },
+    calcDisabledButton() {
+      if(this.btnLoading || (!this.inputValue || this.inputValue <= 0) || (!this.outputValue || this.outputValue <= 0) || (this.inputName == '' || this.outputName == '') || !this.caleMaxBalanceINputValue) {
+        return false;
+      } else {
+        return true;
+      }
+    }
   },
   watch: {
     isConnected: {
       immediate: true,
       handler(val) {
         if (val) {
-          setTimeout(() => {
-          }, 300);
+          this.getCoinBalance();
         }
       },
     },
-    swapPools: {
-        immediate: true,
-        handler(val) {
-          // console.log(val);
-        },
-        deep: true
-    }
   },
   mounted() {
     window.onresize = () => {
@@ -356,7 +366,12 @@ export default {
       this.dataList.forEach((item, index) => {
           if (this.highlightedIndices.includes(index)) {
             amount += Number(item.amount);
-            selectCFXsids.push(item.chainid);
+            if(this.inputName === 'CFXs') {
+              selectCFXsids.push(item.chainid);
+            }
+            if(this.inputName === 'NFT') {
+              selectCFXsids.push(item.tokenid);
+            }
           }
       });
       this.CFXsSelectedIds = selectCFXsids;
@@ -449,7 +464,7 @@ export default {
     },
     //To Value 触发事件
     async inputChangeValue(toValue) {
-      if (typeof toValue === 'number' && !Number.isInteger(toValue)) {
+      if (!Number.isInteger(toValue)) {
         this.inputValue = Math.floor(toValue);
         this.outputValue = Math.floor(toValue);
       } else {
@@ -459,6 +474,19 @@ export default {
     //out Value 触发事件
     async outputChangeValue(toValue) {
       return;
+    },
+    maxBalanceClick() {
+      this.inputValue = this.CoinBalance;
+      this.outputValue = this.CoinBalance;
+    },
+    registerInputOutputSelect() {
+      this.inputName = '';
+      this.outputName = '';
+      this.inputValue = '';
+      this.outputValue = '';
+      this.CFXsSelectedAmount = '';
+      this.highlightedIndices = [];
+      this.getCoinBalance();
     },
     async dropdownInputMenuClick(command) { //INPUT 下拉框选择币种事件
         this.inputName = command;
@@ -472,36 +500,9 @@ export default {
         this.outputName = command;
         // this.calcOutputValue;
     },
-    async getLusdBalance() {  //获取币种余额 及 是否批准
-        let inputBalance = await getBalance(TOKEN[this.chainName][this.inputName], 18);
-        let outputBalance = await getBalance(TOKEN[this.chainName][this.outputName], 18);
-        console.log("input balance", inputBalance);
-        console.log("output balance", outputBalance);
-        this.inputBalance = keepDecimalNotRounding(inputBalance, 4, true);
-        this.outputBalance = keepDecimalNotRounding(outputBalance, 4, true);
-        let inputApproved = await isApproved(TOKEN[this.chainName][this.inputName], 18, this.inputBalance, this.exchangeAddress);
-        let outputApproved = await isApproved(TOKEN[this.chainName][this.outputName], 18, this.outputBalance, this.exchangeAddress);
-        this.inputApproved = inputApproved;
-        this.outputApproved = outputApproved;
-        console.log("input approved", inputApproved);
-        console.log("output approved", outputApproved);
-        await this.getExchangePrice();
-        return true;
-    },
-    startApprove(name) { //批准LUSD
-        this.btnLoading = true;
-        this.btnDisabled = true;
-        approve(TOKEN[this.chainName][name], this.exchangeAddress).then(async(hash) => {
-            // console.log(result);
-            if(hash) {
-                await this.getLusdBalance();
-                this.btnLoading = false;
-                this.btnDisabled = false;
-            }
-        }).finally(() => {
-            this.btnLoading = false;
-            this.btnDisabled = false;
-        });
+    async getCoinBalance() {  //获取Coin余额
+      const balance = await getBalance(Address.CFXsERC20TokenAddress, 18); //获取余额
+      this.CoinBalance = balance;
     },
     async getExchangePrice() { //获取兑换价格
         if((this.inputName === 'USDT' || this.inputName === 'LUSD') && (this.outputName === 'USDT' || this.outputName === 'LUSD')) { //USDT or LUSD 1:1
@@ -547,26 +548,34 @@ export default {
     },
     //用户开始兑换操作
     confirmExchange() {
-      if(this.CFXsSelectedIds.length > 0) {
+      if(this.calcDisabledButton) {
         this.btnLoading = true
         let contractName = '';
+        const value = this.calcFee * this.CFXsSelectedAmount;
         if(this.inputName === 'CFXs' && this.outputName === 'NFT') {
-          contractName = ExchangeCFXsForECR20721;
+          contractName = ExchangeCFXsForECR20721(this.CFXsSelectedIds, value);
         }
         if(this.inputName === 'CFXs' && this.outputName === 'Coin') {
-          contractName = ExchangeCFXsForOnlyECR20;
+          contractName = ExchangeCFXsForOnlyECR20(this.CFXsSelectedIds, value);
         }
         if(this.inputName === 'Coin' && this.outputName === 'CFXs') {
-          contractName = ECR20RedemptionOfCFXs;
+          const value2 = this.calcFee * this.inputValue;
+          contractName = ECR20RedemptionOfCFXs(this.inputValue, value2);
         }
         if(this.inputName === 'NFT' && this.outputName === 'CFXs') {
-          contractName = ECR20721RedemptionOfCFXs;
+          contractName = ECR20721RedemptionOfCFXs(this.CFXsSelectedIds, value);
         }
-        contractName(this.CFXsSelectedIds, this.calcFee).then(async (result)=> {
+        contractName.then(async (result)=> {
             if(result) {
               this.btnLoading = false;
+              this.registerInputOutputSelect();
             }
-        }).finally(()=>{
+        })
+        .catch(error => {
+          // 处理合约调用错误
+          console.error('Contract call failed:', error);
+        })
+        .finally(()=>{
             this.btnLoading = false
         })
       }
@@ -698,6 +707,12 @@ export default {
                   font-size: 14px;
                   padding: 8px 16px;
                 }
+              }
+              .max-balance {
+                background-color: #525252;
+                border: 0;
+                color: #ad8d65;
+                margin-left: 10px;
               }
             }
             .input-box {
@@ -1056,6 +1071,7 @@ export default {
       .el-dialog {
         height: 668px;
         background-color: #202020;
+        overflow-y: auto;
         .el-dialog__header {
             .el-dialog__title {
                 color: #fff;

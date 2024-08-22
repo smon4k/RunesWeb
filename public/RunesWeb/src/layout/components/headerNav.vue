@@ -132,76 +132,13 @@
                 </div>
             </div>
 
-            <!-- <el-divider></el-divider> -->
-
 
             <!-- 移动端导航 -->
             <el-drawer title="我是标题" :visible.sync="menuDrawerShow" :with-header="false" direction="ltr" size="300px">
                 <div class="sider-inner">
-                    <!-- <div class="logo">
-                        <router-link to="/" class="logo-link">
-                            <img
-                                src="@/assets/log.jpeg"
-                                alt=""
-                                v-if="mainTheme === 'light'"
-                            />
-                            <img src="@/assets/log.jpeg" alt="" v-else />
-                        </router-link>
-                    </div> -->
-                    <!-- <div class="title"> CFXS WORLD </div> -->
-                     <div style="display: block;position: absolute;left: -12px;" @click="menuDrawerShow = false">
+                     <div style="display: block;position: absolute;top: -6px;" @click="menuDrawerShow = false">
                          <svg xmlns="http://www.w3.org/2000/svg" @click="walletDialogShow = false" width="24" height="24" fill="none" viewBox="0 0 24 24"><path stroke="#fff" stroke-linecap="round" stroke-width="1.4" d="M4.929 4.929 19.071 19.07M19.071 4.929 4.929 19.07"></path></svg>                    
                      </div>
-                    <div class="language" style="margin-left: 20px" v-if="false">
-                        <el-dropdown trigger="click" @command="clickLanguageDropdown">
-                            <span class="el-dropdown-link">
-                                <!-- <i class="el-icon-arrow-down el-icon--right"></i> -->
-                                <img src="@/assets/cn.png" alt="" v-if="language === 'CN'" width="18">
-                                <img src="@/assets/tc.png" alt="" v-if="language === 'TC'" width="18">
-                                <img src="@/assets/en-02.png" alt="" v-if="language === 'EN'" width="18">
-                                <span class="name">{{ language }}</span>
-                            </span>
-                            <el-dropdown-menu slot="dropdown" :append-to-body="false" popper-class="popper-select"
-                                class="popper-select">
-                                <el-dropdown-item command="CN">
-                                    <img src="@/assets/zh.png" alt="" width="18">
-                                    <span>CN</span>
-                                </el-dropdown-item>
-                                <el-dropdown-item command="TC">
-                                    <img src="@/assets/zh.png" alt="" width="18">
-                                    <span>TC</span>
-                                </el-dropdown-item>
-                                <el-dropdown-item command="EN">
-                                    <img src="@/assets/en-02.png" alt="" width="18">
-                                    <span>EN</span>
-                                </el-dropdown-item>
-                            </el-dropdown-menu>
-                        </el-dropdown>
-                    </div>
-                    <div class="exchange-balance" v-if="false">
-                        <el-dropdown trigger="click" @command="changeCoinMenuClick" class="mb-xchange-balance">
-                            <!-- 选择币种 -->
-                            <span class="el-dropdown-link">
-                                <img :src="require('@/assets/' + transactionCurrency.toLowerCase() + '.png')" alt=""
-                                    width="18">
-                                {{ transactionSpareCurrency }}
-                                <i class="el-icon-arrow-down el-icon--right"></i>
-                            </span>
-                            <el-dropdown-menu slot="dropdown" :append-to-body="false" popper-class="popper-select"
-                                class="popper-select">
-                                <el-dropdown-item v-for="(item, index) in currencyTokenList" :key="index"
-                                    :command="item.name">
-                                    <img :src="require('@/assets/' + item.logo + '.png')" alt="" width="18">
-                                    <span v-if="item.name === 'GLS'">{{ 'LUCK' }}</span>
-                                    <span v-else>{{ item.name }}</span>
-                                </el-dropdown-item>
-                                <!-- <el-dropdown-item command="LUSD">
-                                    <img src="@/assets/usdt.png" alt="" width="18">
-                                    <span>{{ 'LUSD' }}</span>
-                                </el-dropdown-item> -->
-                            </el-dropdown-menu>
-                        </el-dropdown>
-                    </div>
                 </div>
                 <br><br>
                 <el-menu v-if="navList.length" :default-active="$route.path" class="el-menu-vertical-demo"
@@ -218,83 +155,10 @@
                         </el-submenu>
                     </template>
                 </el-menu>
-                <div class="menu-bottom" v-if="false">
-                    <div class="exchange-balance">
-                        <span class="balance" v-if="versionName == 'chain'">{{ $t('public:Balance') }}: {{ lusdBalance
-                            }}</span>
-                        <span class="balance" v-else>{{ $t('public:Balance') }}: {{
-                        keepDecimalNotRounding(platformBalance,
-                            this.decimalLen, true) }}</span>
-                        <el-dropdown trigger="click" @command="dropdownMenuClick" placement="top">
-                            <!-- 账户 -->
-                            <span class="el-dropdown-link">
-                                <i class="el-icon-user-solid"></i>&nbsp;
-                                {{ $t('game:Account') }}<i class="el-icon-arrow-down el-icon--right"></i>
-                            </span>
-                            <!-- 公链版 出入金 -->
-                            <el-dropdown-menu slot="dropdown" popper-class="popper-select" class="popper-select"
-                                v-if="versionName === 'chain'">
-                                <el-dropdown-item command="deposit">
-                                    <img src="@/assets/deposit.png" alt="" width="20">
-                                    {{ $t('game:Deposit') }}
-                                </el-dropdown-item>
-                                <el-dropdown-item command="withdraw">
-                                    <img src="@/assets/withdraw.png" alt="" width="20">
-                                    {{ $t('game:Withdraw') }}
-                                </el-dropdown-item>
-                                <el-dropdown-item command="financial">
-                                    <img src="@/assets/financing.png" alt="" width="20">
-                                    {{ $t('game:Financial') }}
-                                </el-dropdown-item>
-                            </el-dropdown-menu>
-                            <!-- 极速版 出入金 -->
-                            <el-dropdown-menu slot="dropdown" popper-class="popper-select" class="popper-select" v-else>
-                                <el-dropdown-item command="speed-deposit">
-                                    <img src="@/assets/deposit.png" alt="" width="20">
-                                    {{ $t('game:Deposit') }}
-                                </el-dropdown-item>
-                                <el-dropdown-item command="speed-withdraw">
-                                    <img src="@/assets/withdraw.png" alt="" width="20">
-                                    {{ $t('game:Withdraw') }}
-                                </el-dropdown-item>
-                                <!-- <el-dropdown-item command="financial">
-                                    <img src="@/assets/financing.png" alt="" width="20">
-                                    {{ $t('game:Financial') }}
-                                </el-dropdown-item> -->
-                                <!-- <el-dropdown-item command="withdraw">{{ $t('game:Withdraw') }}</el-dropdown-item> -->
-                            </el-dropdown-menu>
-                        </el-dropdown>
-                    </div>
-                    <!-- 版本 -->
-                    <!-- <div class="exchange-balance">
-                        <span class="el-dropdown" style="cursor: pointer;" v-if="versionName == 'chain'" @click="switchVersion('speed')">{{ $t('game:quickVersion') }}</span>
-                        <span class="el-dropdown" style="cursor: pointer;" v-if="versionName == 'speed'" @click="switchVersion('chain')">{{ $t('game:chainVersion') }}</span>
-                    </div> -->
-                    <!-- 公链版 切换链 -->
-                    <div class="exchange-chain" v-if="versionName === 'chain'">
-                        <el-dropdown trigger="click" @command="dropdownChainMenuClick" placement="top">
-                            <span class="el-dropdown-link">
-                                <!-- <img :src="require(`@/assets/` + chain_name + `.png`)" alt="" width="18"> -->
-                                {{ chain_name }}<i class="el-icon-arrow-down el-icon--right"></i>
-                            </span>
-                            <el-dropdown-menu slot="dropdown" popper-class="popper-select" class="popper-select">
-                                <el-dropdown-item command="HECO">
-                                    <!-- <img src="@/assets/HECO.png" alt="" width="18"> -->
-                                    <span class="chain-name">{{ 'HECO' }}</span>
-                                </el-dropdown-item>
-                                <el-dropdown-item command="ARB">
-                                    <!-- <img src="@/assets/ARB.png" alt="" width="18"> -->
-                                    <span class="chain-name">{{ 'ARB' }}</span>
-                                </el-dropdown-item>
-                            </el-dropdown-menu>
-                        </el-dropdown>
-                    </div>
-                </div>
             </el-drawer>
         </div>
 
-        <el-dialog title="连接钱包" :visible.sync="walletDialogShow" :width="isMobel ? '80%' : '50%'" center
-            class="wallet-dialog">
+        <el-dialog title="连接钱包" :visible.sync="walletDialogShow" :width="isMobel ? '80%' : '50%'" center class="wallet-dialog">
             <el-row :gutter="8">
                 <el-col :span="isMobel ? 24 : 12" align="center">
                     <div class="item" @click="connectWallet(1)">
@@ -965,6 +829,7 @@ export default {
     // }
     .el-menu-vertical-demo {
         width: 250px;
+        margin-top: 16px !important;
         margin-left: 0 !important;
         .el-menu-item {
             background-color: #282828 !important;

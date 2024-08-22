@@ -223,7 +223,7 @@
               </div>
 
             <el-dialog
-                title="Approve Purchase"
+                :title="!approve ? 'Approve Purchase' : 'Purchase'"
                 :visible.sync="buyNowDialogShow"
                 width="35%"
                 :before-close="buyNowDialogClose"
@@ -239,9 +239,10 @@
                         <span class="value">{{ buyNowData.slots }} <span class="title">Slots</span> {{ buyNowData.cfxs }} <span class="title">CFXs</span></span>
                     </div>
                     <div class="button-dialog">
-                        <span class="text">You will be asked to approve this purchase from your wallet.</span>
-                        <el-button type="primary" @click="startApprove" v-if="approve" :loading="trading">APPROVE</el-button>
+                        <span class="text" v-if="!approve">You will be asked to approve this purchase from your wallet.</span>
+                        <el-button type="primary" @click="startApprove" v-if="!approve" :loading="trading">APPROVE</el-button>
                         <el-button type="primary" v-else :loading="trading" @click="buyNowContract">Buy</el-button>
+                        <span class="balance">Balance: {{ toFixed(balance || 0, 4) }} USDT</span>
                     </div>
                 </div>
             </el-dialog>
@@ -311,6 +312,7 @@ export default {
     data() {
         return {
             screenWidth: document.body.clientWidth,
+            balance: 0,
             regmarket: '0',
             trading: false,
             loading: false,
@@ -391,7 +393,7 @@ export default {
             immediate: true,
             async handler(val) {
                 if (val) {
-                    this.refreshData();
+                    this.balance = await getBalance(Address.USDT, 18); //获取余额
                 }
             }
         },
@@ -399,7 +401,6 @@ export default {
             immediate: true,
             async handler(val) {
                 if (val.address) {
-                    // await this.getIsApprove();
                 }
             }
         },
@@ -591,7 +592,6 @@ export default {
         buyNowContract() {
             this.trading = true;
             let usdIds = new Array(this.buyNowData.cfxsIds.length).fill("0");
-            console.log(this.buyNowData.amounts);
             let totalAmount = this.buyNowData.amounts.reduce((accumulator, current) => {
                 return accumulator + Number(fromWei(Number(current), 18));
             }, 0); // 0 是累加器的初始值
@@ -599,6 +599,10 @@ export default {
                 if (hash) {
                     this.approve = true;
                     this.trading = false;
+                    this.buyNowDialogShow = false;
+                    setTimeout(() => {
+                        this.refreshDataClick();
+                    }, 1000);
                 }
             }).finally(() => {
                 this.trading = false;
@@ -912,6 +916,11 @@ export default {
                             .el-button.is-loading {
                                 background-color: hsla(0, 0%, 50%, .2);
                             }
+                            .balance {
+                                display: block;
+                                margin-top: 12px;
+                                font-size: 16px;
+                            }
                         }
                     }
                 }
@@ -974,6 +983,9 @@ export default {
     }
     @media (max-width: 960px) {
         /deep/ {
+            .list {
+                margin-bottom: 100px;
+            }
             .illustrate {
                 .illustrate-right {
                     .title {

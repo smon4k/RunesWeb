@@ -69,6 +69,8 @@ class TransactionTask extends Base
                 7 => 'inscribe',
                 8 => 'exchangeCFXsForECR20721',
                 9 => 'ECR20721RedemptionOfCFXs',
+                10 => 'ExchangeCFXsForOnlyECR20',
+                11 => 'ECR20RedemptionOfCFXs',
             ];
             $messages = [
                 1 => '购买',
@@ -80,6 +82,8 @@ class TransactionTask extends Base
                 7 => '发布',
                 8 => 'CFXs转NFT',
                 9 => 'NFT转CFXs',
+                10 => 'CFXs转Coin',
+                11 => 'Coin转CFXs',
             ];
             return ['method' => $methods[$type], 'name' => $messages[$type]];
         }

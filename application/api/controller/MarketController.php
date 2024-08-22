@@ -333,6 +333,46 @@ class MarketController extends BaseController
         }
     }
 
+    /**
+     * CFXs 转 Coin
+     * @author qinlh
+     * @since 2024-08-22
+     * https://evm.confluxscan.io/tx/0x8560f2fb3778cf3bf2f3a2865eb375bbc38ac7e2901d503cba8b8470fc28af30
+     */
+    public function ExchangeCFXsForOnlyECR20(Request $request)
+    {
+        $cfxsIds = $request->post('cfxsIds/a', [], '');
+        $sendaddr = $request->post('sendaddr', '', 'trim');
+        $hash = $request->post('hash', '', 'trim');
+        $result = MyMarket::ExchangeCFXsForOnlyECR20($cfxsIds, $sendaddr, $hash);
+        if ($result && $result['code'] == 1) {
+            return $this->as_json('ok');
+        } else {
+            return $this->as_json('70001', $result['message']);
+        }
+    }
+
+    /**
+     * Coin 转 CFXs
+     * @author qinlh
+     * @since 2024-08-22
+     * https://evm.confluxscan.io/tx/0x48929dbd5316a5a452670f9d4576e0dd7be34c54f02bd9aafef743ac88848e58
+     */
+    public function ECR20RedemptionOfCFXs(Request $request)
+    {
+        $newCfxId = $request->post('newCfxId', '', 'trim');
+        $amount = $request->post('amount', 0, 'intval');
+        $sendaddr = $request->post('sendaddr', '', 'trim');
+        $hash = $request->post('hash', '', 'trim');
+        $data = $request->post('data', '', 'trim');
+        $result = MyMarket::ECR20RedemptionOfCFXs($newCfxId, $amount, $sendaddr, $hash, $data);
+        if ($result && $result['code'] == 1) {
+            return $this->as_json('ok');
+        } else {
+            return $this->as_json('70001', $result['message']);
+        }
+    }
+
 
 }
 

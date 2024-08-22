@@ -49,6 +49,9 @@ body {
         max-width: 1230px;
       }
     }
+    .v-modal {
+      z-index: 0!important;
+    }
   }
 a {
     text-decoration: none;

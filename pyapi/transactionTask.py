@@ -42,8 +42,8 @@ def check_transaction_status(tx_hash, type):
             return None
         
         cFXsEventData = []
-        if(type == 4 or type == 5):
-            cFXsEventData = get_logs_info_message(receipt)
+        if(type == 4 or type == 5 or type == 11):
+            cFXsEventData = get_logs_info_message(receipt, type)
         txExecErrorMsg = ""
         if receipt and receipt.get('status') == '0x0':
            txExecErrorMsg = receipt.get('txExecErrorMsg', 'Unknown error')
@@ -54,30 +54,45 @@ def check_transaction_status(tx_hash, type):
         return None
 
 # 获取交易日志新生成的id数据
-def get_logs_info_message(receipt):
-    logs = receipt.get('logs', [])
-    CFXIdData = []
+def get_logs_info_message(receipt, type):
+    try:
+        logs = receipt.get('logs', [])
+        CFXIdData = []
+        for log in logs:
+            hex_string = log['data']
+            is_long_hex = is_long_hex_data(hex_string)
+            if is_long_hex:
+                clean_hex_data = hex_string[2:]
+                types = ['uint256', 'address', 'uint256', 'string', 'address']
+                decoded_values = eth_abi.decode(types, bytes.fromhex(clean_hex_data))
+                # print(clean_hex_data, decoded_values)
+                if type == 11:
+                    if decoded_values[3] == "ERC20 Rebuild CFXs":
+                        decoded_item = {
+                            "id": decoded_values[0],
+                            "to": Web3.to_checksum_address(decoded_values[1]),
+                            "amount": decoded_values[2],
+                            "data": decoded_values[3],
+                            "dataCreator": Web3.to_checksum_address(decoded_values[4])
+                        }
+                        CFXIdData.append(decoded_item)
+                else:
+                    decoded_item = {
+                        "id": decoded_values[0],
+                        "to": Web3.to_checksum_address(decoded_values[1]),
+                        "amount": decoded_values[2],
+                        "data": decoded_values[3],
+                        "dataCreator": Web3.to_checksum_address(decoded_values[4])
+                    }
+                    CFXIdData.append(decoded_item)
 
-    for log in logs:
-        hex_string = log['data']
-        is_long_hex = is_long_hex_data(hex_string)
+        return CFXIdData
+    except Exception as e:
+            print(f"Error get logs status: {e}")
+            return None
 
-        if is_long_hex:
-            clean_hex_data = hex_string[2:]
-            types = ['uint256', 'address', 'uint256', 'address']
-            decoded_values = eth_abi.decode(types, bytes.fromhex(clean_hex_data))
 
-            decoded_item = {
-                "id": decoded_values[0],
-                "to": Web3.to_checksum_address(decoded_values[1]),
-                "amount": decoded_values[2],
-                "dataCreator": Web3.to_checksum_address(decoded_values[3])
-            }
-            CFXIdData.append(decoded_item)
-
-    return CFXIdData
-
-def is_long_hex_data(hex_data, length_threshold=128):
+def is_long_hex_data(hex_data, length_threshold=256):
     """
     判断给定的16进制数据是否为长的16进制数据
     :param hex_data: 16进制字符串
@@ -107,7 +122,7 @@ def update_transaction_status(connection, tx_hash, status, msg):
                 update_sql = "UPDATE r_transaction_task SET status = %s, data = '', updatetime = %s WHERE hash = %s"
                 cursor.execute(update_sql, (status, current_time, tx_hash))
                 # print(f"Transaction {tx_hash} succeeded. Status updated to success and attempt count reset.")
-            elif status == 3 and current_status != 2:  # 执行失败，且之前未成功
+            elif status == 3:  # 执行失败，and current_status != 2且之前未成功
                 # print(connection, tx_hash, status, msg)
                 # 增加执行异常次数
                 new_number = current_number + 1
@@ -160,6 +175,17 @@ def call_api_on_success(method, parameter, type, newCFXidData=[]):
                 }
             else:
                 params = payload
+        elif type == 11: # Coin转CFXs
+            if len(newCFXidData) > 0:
+                params = {
+                    "newCfxId": newCFXidData[0]['id'],
+                    "amount": newCFXidData[0]['amount'],
+                    "sendaddr": payload['sendaddr'],
+                    "hash": payload['hash'],
+                    "data": newCFXidData[0]['data']
+                }
+            else:
+                params = payload
         else:
             params = payload
         url = f"{api_url}/Api/Market/{method}"
@@ -173,13 +199,13 @@ def call_api_on_success(method, parameter, type, newCFXidData=[]):
         # 检查响应码是否为 10000，代表成功
         if response_data.get('code') == 10000:
             # print("API call was successful.")
-            return response_data
+            return {'status': response_data.get('code'), 'data': response_data, 'errorMsg': response_data.get('msg')}
         else:
             print("API call failed with code:", response_data.get('code'), "msg:", response_data.get('msg'))
-            return None
+            return {'status': response_data.get('code'), 'data': '', 'errorMsg': response_data.get('msg')}
     except requests.RequestException as e:
         print(f"Error calling API: {e}")
-        return None
+        return {'status': 0, 'data': '', 'errorMsg': e}
     
 def listen_for_transaction_updates():
     """监听数据库中的交易状态并更新"""
@@ -206,9 +232,12 @@ def listen_for_transaction_updates():
                         is_update = update_transaction_status(connection, hash, new_status, receipt['errorMsg'])
                         if(is_update and new_status == 2):
                             api_response = call_api_on_success(method, parameter, type, receipt['data'])
-                            if api_response:
+                            if api_response and api_response['status'] == 10000:
                                 connection.commit()
-                                print(f"API called successfully. Response: {api_response}")
+                                print(f"API called successfully. Response: {api_response['data']}")
+                            else:
+                                update_transaction_status(connection, hash, 3, api_response['errorMsg'])
+                                connection.commit()
                         else:
                             connection.commit()
                         # print(f"Transaction {hash} updated to {new_status }")
@@ -220,5 +249,5 @@ def listen_for_transaction_updates():
 
 if __name__ == "__main__":
     listen_for_transaction_updates()
-    # hash = "0xdffeab2fbb5f01ed3df2f3300711c3913eb0c1470625c5a941f3b7c07d8dc0db"
-    # check_transaction_status(hash, 4)
+    # hash = "0x48929dbd5316a5a452670f9d4576e0dd7be34c54f02bd9aafef743ac88848e58"
+    # check_transaction_status(hash, 11)

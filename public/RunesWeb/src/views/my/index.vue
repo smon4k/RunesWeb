@@ -890,10 +890,9 @@ export default {
         },
         async splitProcessTransactionContract() { //拆分交易
             this.trading = true;
-            let cfxsIds = [];
             let outputs = [];
+            const cfxsIds = [this.splitRowData.chainid];
             if(this.splitType == 1) {
-                cfxsIds = [this.splitRowData.chainid];
                 this.splitNumbers.forEach((item, index) => {
                     outputs.push([this.address, item, ""]);
                 })
@@ -1844,6 +1843,13 @@ export default {
                         }
                     }
                 }
+            }
+        }
+    }
+    @media (max-width: 960px) {
+        /deep/ {
+            .list {
+                margin-bottom: 170px;
             }
         }
     }

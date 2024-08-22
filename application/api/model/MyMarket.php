@@ -52,23 +52,17 @@ class MyMarket extends Base
                 foreach ($cfxsIds as $key => $cfxId) {
                     $marget = Market::getMarketplaceDetailData($cfxId);
                     if($marget) {
-                        $insertData = [
-                            'chainid' => $cfxId,
-                            'amount' => $marget['quantity'], 
-                            'owner' => $sendaddr, 
-                            'regaddr' => $marget['chainto'], 
-                            'useraddr' => '', 
-                            'regmarket' => $marget['regmarket'], 
-                            'data' => $marget['data'], 
+                        $updateData = [
+                            'owner' => $sendaddr,
                             'addtime' => date('Y-m-d H:i:s'), 
                             'modifytime' => date('Y-m-d H:i:s'), 
                             'status' => 1
                         ];
-                        $insertId = self::insert($insertData);
+                        $insertId = self::where('chainid', $cfxId)->update($updateData);
                         if ($insertId > 0) {
                             $delRes = Market::delMarketData($cfxId);
                             if($delRes !== false) {
-                                MarketLog::addMarketLogData($cfxId, $sendaddr, json_encode($insertData), $hash, 1); //记录购买记录
+                                MarketLog::addMarketLogData($cfxId, $sendaddr, json_encode($marget), $hash, 1); //记录购买记录
                                 $insertCount += 1;
                             }
                         }
@@ -149,7 +143,7 @@ class MyMarket extends Base
                     return ['code' => 0, 'message' => 'error'];
                 }
             } catch (\Exception $e) {
-                p($e);
+                // p($e);
                 // 回滚事务
                 self::rollback();
                 $error_msg = json_encode([
@@ -232,8 +226,6 @@ class MyMarket extends Base
                     'chainid' => $newCfxId,
                     'amount' => $amount, 
                     'owner' => $sendaddr, 
-                    'regaddr' => '', 
-                    'useraddr' => '', 
                     'regmarket' => 0, 
                     'data' => '', 
                     'addtime' => date('Y-m-d H:i:s'), 
@@ -286,9 +278,7 @@ class MyMarket extends Base
                             $insertData = [
                                 'chainid' => $val,
                                 'amount' => $amounts[$key], 
-                                'owner' => $sendaddr, 
-                                'regaddr' => '', 
-                                'useraddr' => '', 
+                                'owner' => $sendaddr,
                                 'regmarket' => $marget['regmarket'], 
                                 'data' => '', 
                                 'addtime' => date('Y-m-d H:i:s'), 
@@ -486,14 +476,12 @@ class MyMarket extends Base
                 foreach ($cfxsIds as $key => $cfxId) {
                     $userNftData = UserNft::getUserNftFind($cfxId);
                     if($userNftData) {
-                        $isDelRes = UserNft::delMyMarketData($cfxId);
+                        $isDelRes = UserNft::delUserNftData($cfxId);
                         if($isDelRes) {
                             $insertData = [
                                 'chainid' => $cfxId,
                                 'amount' => $userNftData['amount'], 
                                 'owner' => $userNftData['to'], 
-                                'regaddr' => '', 
-                                'useraddr' => '', 
                                 'regmarket' => 0, 
                                 'data' => '', 
                                 'addtime' => date('Y-m-d H:i:s'), 
@@ -502,10 +490,10 @@ class MyMarket extends Base
                             ];
                             $insertId = self::insert($insertData);
                             if($insertId) {
-                                $intCoinBalance = User::setUserCoinBalance($sendaddr, $marget['amount'], 2); //转Coin
+                                $intCoinBalance = User::setUserCoinBalance($sendaddr, $userNftData['amount'], 2); //转Coin
                                 if($intCoinBalance) {
                                     $insertCount += 1;
-                                    MarketLog::addMarketLogData($cfxId, $sendaddr, json_encode($marget), $hash, 9); 
+                                    MarketLog::addMarketLogData($cfxId, $sendaddr, json_encode($userNftData), $hash, 9); 
                                 }
                             }
                         }
@@ -518,6 +506,102 @@ class MyMarket extends Base
                     self::rollback();
                     return ['code' => 0, 'message' => 'error'];
                 }
+            } catch (\Exception $e) {
+                // p($e);
+                // 回滚事务
+                self::rollback();
+                $error_msg = json_encode([
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'code' => $e->getCode(),
+                ], JSON_UNESCAPED_UNICODE);
+                return ['code' => 0, 'message' => $error_msg];
+            }
+        } else {
+            return ['code' => 0, 'message' => 'parameter error'];
+        }
+    }
+
+    /**
+     * CFXs 转 Coin
+     * @author qinlh
+     * @since 2024-08-22
+     */
+    public static function ExchangeCFXsForOnlyECR20($cfxsIds=[], $sendaddr='', $hash='')
+    {
+        if (count($cfxsIds) > 0 && $sendaddr !== '') {
+            self::startTrans();
+            try {
+                $insertCount = 0;
+                foreach ($cfxsIds as $key => $cfxId) {
+                    $userMarketData = self::getMyMarketFind($cfxId);
+                    if($userMarketData) {
+                        $isSetStatus = self::setMyMarketStatus($cfxId, 0);
+                        if($isSetStatus) {
+                            $intCoinBalance = User::setUserCoinBalance($sendaddr, $userMarketData['amount'], 1); //转Coin
+                            if($intCoinBalance) {
+                                $insertCount += 1;
+                                MarketLog::addMarketLogData($cfxId, $sendaddr, json_encode($userMarketData), $hash, 10); 
+                            }
+                        }
+                    }
+                }
+                if ($insertCount == count($cfxsIds)) {
+                    self::commit();
+                    return ['code' => 1, 'message' => 'ok'];
+                } else {
+                    self::rollback();
+                    return ['code' => 0, 'message' => 'error'];
+                }
+            } catch (\Exception $e) {
+                // p($e);
+                // 回滚事务
+                self::rollback();
+                $error_msg = json_encode([
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'code' => $e->getCode(),
+                ], JSON_UNESCAPED_UNICODE);
+                return ['code' => 0, 'message' => $error_msg];
+            }
+        } else {
+            return ['code' => 0, 'message' => 'parameter error'];
+        }
+    }
+
+    /**
+     * Coin 转 CFXs
+     * @author qinlh
+     * @since 2024-08-22
+     */
+    public static function ECR20RedemptionOfCFXs($newCfxId='', $amount=0, $sendaddr='', $hash='', $data='')
+    {
+        if ($newCfxId !== '' && $sendaddr !== '' && $amount > 0) {
+            self::startTrans();
+            try {
+                $insertData = [
+                    'chainid' => $newCfxId,
+                    'amount' => $amount, 
+                    'owner' => $sendaddr,
+                    'regmarket' => 0, 
+                    'data' => $data, 
+                    'addtime' => date('Y-m-d H:i:s'), 
+                    'modifytime' => date('Y-m-d H:i:s'), 
+                    'status' => 1
+                ];
+                $insertId = self::insert($insertData);
+                if ($insertId) {
+                    $intCoinBalance = User::setUserCoinBalance($sendaddr, $amount, 2); //转Coin
+                    if($intCoinBalance) {
+                        MarketLog::addMarketLogData($newCfxId, $sendaddr, json_encode($insertData), $hash, 11); 
+                        self::commit();
+                        return ['code' => 1, 'message' => 'ok'];
+                    }
+                }
+                self::rollback();
+                return ['code' => 0, 'message' => 'error'];
             } catch (\Exception $e) {
                 // p($e);
                 // 回滚事务
@@ -574,8 +658,8 @@ class MyMarket extends Base
      */
     public static function setMyMarketStatus($chainid = 0, $status=0)
     {
-        if ($chainid > 0 && $status > 0) {
-            if($status == 4 || $status == 5) {
+        if ($chainid > 0 && $status >= 0) {
+            if($status == 0 || $status == 3 || $status == 4) {
                 $updateArr = [
                     'status' => $status,
                     'is_deleted' => 1,

@@ -44,7 +44,7 @@ export const approve =  function (tokenAddress, otherAddress, amount, decimals) 
           console.log('hash', hash);
           if (hash) {
             hashInfo = hash
-            __ownInstance__.$store.dispatch('changeTradePadding' , {  id:timestamp, val:0, hash:hashInfo})
+            __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
           }
         })
         .on('receipt', function (receipt) {
@@ -82,20 +82,20 @@ export const unlockingScriptbatch = async function (cfxsIds=[], amounts=[], usdI
     let hashInfo
     web3.eth.getTransactionCount(address).then(async transactionNonce => {
       let gasPrice = await web3.eth.getGasPrice();
-      // let estimateGas = await web3.eth.estimateGas({
-      //   from: address,
-      //   to: contractAddress,
-      //   data: encodedABI,
-      //   value: amount
-      // })
+      let estimateGas = await web3.eth.estimateGas({
+        from: address,
+        to: contractAddress,
+        data: encodedABI,
+        value: amount
+      })
       // console.log('estimateGas', estimateGas)
       const params = [{
         from: address,
         to: contractAddress,
         data: encodedABI,
         gasPrice: web3.utils.toHex(gasPrice),
-        // gas: web3.utils.toHex(estimateGas),
-        gas: web3.utils.toHex(200000),
+        gas: web3.utils.toHex(estimateGas),
+        // gas: web3.utils.toHex(200000),
         value: web3.utils.toHex(amount) 
       }];
       web3.eth.sendTransaction(params[0])
@@ -103,7 +103,7 @@ export const unlockingScriptbatch = async function (cfxsIds=[], amounts=[], usdI
           console.log('hash', hash);
           if (hash) {
             hashInfo = hash
-            const params = {
+            const queryParams = {
               "address": address,
               "hash": hash,
               "type": 1,
@@ -113,7 +113,7 @@ export const unlockingScriptbatch = async function (cfxsIds=[], amounts=[], usdI
                   "hash": hash,
               }
             };
-            await saveTransactionTask(params);
+            await saveTransactionTask(queryParams);
             __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
           }
         })
@@ -169,7 +169,7 @@ export const lockingScriptbatch = async function (cfxsIds=[], amounts=[], usdIds
           console.log('hash', hash);
           if (hash) {
             hashInfo = hash
-            const params = {
+            const queryParams = {
               "address": address,
               "hash": hash,
               "type": 2,
@@ -181,7 +181,7 @@ export const lockingScriptbatch = async function (cfxsIds=[], amounts=[], usdIds
                   "lockhours": lockhours,
               }
           };
-          await saveTransactionTask(params);
+          await saveTransactionTask(queryParams);
             __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
           }
         })
@@ -237,7 +237,7 @@ export const ownerUnlockingScript = async function (cfxsId='') {
           console.log('hash', hash);
           if (hash) {
             hashInfo = hash
-            const params = {
+            const queryParams = {
               "address": address,
               "hash": hash,
               "type": 3,
@@ -247,7 +247,7 @@ export const ownerUnlockingScript = async function (cfxsId='') {
                   "hash": hash,
               }
             };
-            await saveTransactionTask(params);
+            await saveTransactionTask(queryParams);
             __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
           }
         })
@@ -303,9 +303,9 @@ export const processTransaction = async function (cfxsIds=[], outputs=[], type=0
           console.log('hash', hash);
           if (hash) {
             hashInfo = hash
-            let params = {};
+            let queryParams = {};
             if(type == 4) {
-              params = {
+              queryParams = {
                 "address": address,
                 "hash": hash,
                 "type": type,
@@ -318,7 +318,7 @@ export const processTransaction = async function (cfxsIds=[], outputs=[], type=0
                 }
               };
             } else {
-              params = {
+              queryParams = {
                 "address": address,
                 "hash": hash,
                 "type": type,
@@ -331,7 +331,7 @@ export const processTransaction = async function (cfxsIds=[], outputs=[], type=0
                 }
               };
             }
-            await saveTransactionTask(params);
+            await saveTransactionTask(queryParams);
             __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
           }
         })
@@ -386,7 +386,7 @@ export const transfer = async function (cfxsIds=[], toaddress="") {
           console.log('hash', hash);
           if (hash) {
             hashInfo = hash
-            const params = {
+            const queryParams = {
               "address": address,
               "hash": hash,
               "type": 6,
@@ -397,7 +397,7 @@ export const transfer = async function (cfxsIds=[], toaddress="") {
                   "hash": hash,
               }
             };
-            await saveTransactionTask(params);
+            await saveTransactionTask(queryParams);
             __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
           }
         })
@@ -647,28 +647,28 @@ export const ExchangeCFXsForECR20721 = function (cfxsIds=[], amount=0, decimals=
   const address = __ownInstance__.$store.state.base.address;
   const contractAddress = Address.CFXsERC20BridgeContractAddress;
   const contract = new web3.eth.Contract(CFXsERCBridgeABI, contractAddress);
-  let encodedABI = contract.methods.ExchangeCFXsForECR20721(cfxsIds).encodeABI();
-  let value = toWei(amount, decimals);
-  let timestamp = new Date().getTime().toString()
+  const encodedABI = contract.methods.ExchangeCFXsForECR20721(cfxsIds).encodeABI();
+  const value = toWei(amount, decimals);
+  const timestamp = new Date().getTime().toString();
   __ownInstance__.$store.dispatch('createOrderForm' , {val:0 ,id:timestamp })
   return new Promise((resolve, reject) => {
     let hashInfo
     web3.eth.getTransactionCount(address).then(async transactionNonce => {
       let gasPrice = await web3.eth.getGasPrice();
-      // let estimateGas = await web3.eth.estimateGas({
-      //   from: address,
-      //   to: contractAddress, // 池地址
-      //   data: encodedABI, // Required
-      //   value: web3.utils.toHex(value)
-      // })
+      let estimateGas = await web3.eth.estimateGas({
+        from: address,
+        to: contractAddress, // 池地址
+        data: encodedABI, // Required
+        value: web3.utils.toHex(value)
+      })
       // console.log('estimateGas' ,estimateGas)
       const params = [{
         from: address,
         to: contractAddress, // 池地址
         data: encodedABI, // Required
         gasPrice: web3.utils.toHex(gasPrice), // Optional
-        // gas: web3.utils.toHex(estimateGas), // Optional
-        gas: web3.utils.toHex(500000), // Optional
+        gas: web3.utils.toHex(estimateGas), // Optional
+        // gas: web3.utils.toHex(500000), // Optional
         // chainId: 128,
       }];
       params[0].value =  web3.utils.toHex(value);
@@ -676,7 +676,7 @@ export const ExchangeCFXsForECR20721 = function (cfxsIds=[], amount=0, decimals=
           console.log('hash', hash);
           if (hash) {
             hashInfo = hash
-            const params = {
+            const queryParams = {
               "address": address,
               "hash": hash,
               "type": 8,
@@ -686,7 +686,7 @@ export const ExchangeCFXsForECR20721 = function (cfxsIds=[], amount=0, decimals=
                   "hash": hash,
               }
             };
-            await saveTransactionTask(params);
+            await saveTransactionTask(queryParams);
             __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
           }
         })
@@ -718,7 +718,7 @@ export const ExchangeCFXsForECR20721 = function (cfxsIds=[], amount=0, decimals=
  * @returns 
  */
 export const ECR20721RedemptionOfCFXs = function (cfxsIds=[], amount=0, decimals=18){
-  console.log('ECR20721RedemptionOfCFXs', cfxsIds);
+  console.log('ECR20721RedemptionOfCFXs', cfxsIds, amount);
   // const tokenAddress = __ownInstance__.$store.state.base.tokenAddress
   const address = __ownInstance__.$store.state.base.address;
   const contractAddress = Address.CFXsERC20BridgeContractAddress;
@@ -735,6 +735,7 @@ export const ECR20721RedemptionOfCFXs = function (cfxsIds=[], amount=0, decimals
         from: address,
         to: contractAddress, // 池地址
         data: encodedABI, // Required
+        value: web3.utils.toHex(value)
       })
       // console.log('estimateGas' ,estimateGas)
       const params = [{
@@ -751,7 +752,7 @@ export const ECR20721RedemptionOfCFXs = function (cfxsIds=[], amount=0, decimals
           console.log('hash', hash);
           if (hash) {
             hashInfo = hash
-            const params = {
+            const queryParams = {
               "address": address,
               "hash": hash,
               "type": 9,
@@ -761,7 +762,7 @@ export const ECR20721RedemptionOfCFXs = function (cfxsIds=[], amount=0, decimals
                   "hash": hash,
               }
             };
-            await saveTransactionTask(params);
+            await saveTransactionTask(queryParams);
             __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
           }
         })
@@ -798,18 +799,19 @@ export const ExchangeCFXsForOnlyECR20 = function (cfxsIds=[], amount=0, decimals
   const address = __ownInstance__.$store.state.base.address;
   const contractAddress = Address.CFXsERC20BridgeContractAddress;
   const contract = new web3.eth.Contract(CFXsERCBridgeABI, contractAddress);
-  let encodedABI = contract.methods.ExchangeCFXsForOnlyECR20(cfxsIds).encodeABI();
-  // let value = toWei(amount, decimals);
-  let timestamp = new Date().getTime().toString()
+  const encodedABI = contract.methods.ExchangeCFXsForOnlyECR20(cfxsIds).encodeABI();
+  const value = toWei(amount, decimals);
+  const timestamp = new Date().getTime().toString()
   __ownInstance__.$store.dispatch('createOrderForm' , {val:0 ,id:timestamp })
   return new Promise((resolve, reject) => {
-    let hashInfo
+    let hashInfo = null;
     web3.eth.getTransactionCount(address).then(async transactionNonce => {
       let gasPrice = await web3.eth.getGasPrice();
       let estimateGas = await web3.eth.estimateGas({
         from: address,
         to: contractAddress, // 池地址
         data: encodedABI, // Required
+        value: web3.utils.toHex(value)
       })
       // console.log('estimateGas' ,estimateGas)
       const params = [{
@@ -821,12 +823,23 @@ export const ExchangeCFXsForOnlyECR20 = function (cfxsIds=[], amount=0, decimals
         // gas: web3.utils.toHex(400000), // Optional
         // chainId: 128,
       }];
-      // params[0].value =  web3.utils.toHex(value) 
+      params[0].value =  web3.utils.toHex(value) 
       web3.eth.sendTransaction(params[0])
-        .on('transactionHash', function (hash) {
+        .on('transactionHash', async (hash) => {
           console.log('hash', hash);
           if (hash) {
             hashInfo = hash
+            const queryParams = {
+              "address": address,
+              "hash": hash,
+              "type": 10,
+              "data": {
+                  "cfxsIds": cfxsIds,
+                  "sendaddr": address,
+                  "hash": hash,
+              }
+            };
+            await saveTransactionTask(queryParams);
             __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
           }
         })
@@ -857,15 +870,16 @@ export const ExchangeCFXsForOnlyECR20 = function (cfxsIds=[], amount=0, decimals
  * @param {*} amount 数量
  * @returns 
  */
-export const ECR20RedemptionOfCFXs = function (amount=0, decimals=18){
-  console.log('ECR20RedemptionOfCFXs', amount);
+export const ECR20RedemptionOfCFXs = function (amount=0, fee=0, decimals=18){
+  console.log('ECR20RedemptionOfCFXs', amount, fee);
   // const tokenAddress = __ownInstance__.$store.state.base.tokenAddress
   const address = __ownInstance__.$store.state.base.address;
   const contractAddress = Address.CFXsERC20BridgeContractAddress;
   const contract = new web3.eth.Contract(CFXsERCBridgeABI, contractAddress);
-  let encodedABI = contract.methods.ExchangeCFXsForOnlyECR20(amount).encodeABI();
-  // let value = toWei(amount, decimals);
-  let timestamp = new Date().getTime().toString()
+  const amountWei = toWei(amount, decimals);
+  const encodedABI = contract.methods.ECR20RedemptionOfCFXs(amountWei).encodeABI();
+  const value = toWei(fee, decimals);
+  const timestamp = new Date().getTime().toString()
   __ownInstance__.$store.dispatch('createOrderForm' , {val:0 ,id:timestamp })
   return new Promise((resolve, reject) => {
     let hashInfo
@@ -875,8 +889,9 @@ export const ECR20RedemptionOfCFXs = function (amount=0, decimals=18){
         from: address,
         to: contractAddress, // 池地址
         data: encodedABI, // Required
+        value:  web3.utils.toHex(value)
       })
-      // console.log('estimateGas' ,estimateGas)
+      console.log('estimateGas' ,estimateGas)
       const params = [{
         from: address,
         to: contractAddress, // 池地址
@@ -886,12 +901,24 @@ export const ECR20RedemptionOfCFXs = function (amount=0, decimals=18){
         // gas: web3.utils.toHex(400000), // Optional
         // chainId: 128,
       }];
-      // params[0].value =  web3.utils.toHex(value) 
+      params[0].value =  web3.utils.toHex(value) 
       web3.eth.sendTransaction(params[0])
-        .on('transactionHash', function (hash) {
+        .on('transactionHash', async (hash) => {
           console.log('hash', hash);
           if (hash) {
             hashInfo = hash
+            const queryParams = {
+              "address": address,
+              "hash": hash,
+              "type": 11,
+              "data": {
+                  "amount": amount,
+                  "newCfxId": "",
+                  "sendaddr": address,
+                  "hash": hash,
+              }
+            };
+            await saveTransactionTask(queryParams);
             __ownInstance__.$store.dispatch('changeTradePadding', { val: 3, id: timestamp, hash: hash })
           }
         })
@@ -899,8 +926,6 @@ export const ECR20RedemptionOfCFXs = function (amount=0, decimals=18){
           // 交易成功
           __ownInstance__.$store.dispatch('changeTradeStatus' , {  id:timestamp , val:1 , hash:hashInfo})
           resolve(receipt)
-        })
-        .on('confirmation', function (confirmationNumber, receipt) {
         })
         .on('error', function (err) {
           let isUserDeny = err.code === 4001 
@@ -910,7 +935,7 @@ export const ECR20RedemptionOfCFXs = function (amount=0, decimals=18){
         })
     })
     .catch(err=>{
-      console.log('BuyTokenToLuck001_err',err)
+      console.log('ExchangeCFXsForOnlyECR20_err',err)
       __ownInstance__.$store.dispatch('changeTradeStatus' , {  id:timestamp , val:2, hash:hashInfo})
       reject(err)
     })

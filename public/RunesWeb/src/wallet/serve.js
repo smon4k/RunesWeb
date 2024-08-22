@@ -58,6 +58,38 @@ export const saveTransactionTask = async (params = {}) => {
   return false;
 };
 
+// 获取余额
+export async function getBalance(tokenAddress, decimals, poolAddress) {
+  const address = poolAddress || __ownInstance__.$store.state.base.address
+  if (!address || address == undefined || address == '') {
+    return 0;
+  }
+  if (!tokenAddress || tokenAddress == '') {
+    return 0;
+  }
+  let balance = 0;
+  if (tokenAddress === '0x0000000000000000000000000000000000000000') {
+    balance = await new web3.eth.getBalance(address)
+    return fromWei(balance, decimals)
+  }
+
+  // console.log(balances);
+  try {
+    const contract = new web3.eth.Contract(tokenABI, tokenAddress);
+    await contract.methods.balanceOf(address).call(function (error, result) {
+      if (!error) {
+        // console.log(result);
+        balance = fromWei(result, decimals);
+      } else {
+        console.log('balanceErr', error);
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+  return balance;
+}
+
 
 
 
@@ -91,7 +123,7 @@ export const saveTransactionTask = async (params = {}) => {
  * @param {*} type 
  * @returns 
  */
-export const getMarketplaceList = async function (page=1, limit=20) {
+export const getMarketplaceList = async function (page = 1, limit = 20) {
   const apiUrl = __ownInstance__.$store.state.base.apiUrl
   let result = [];
   let data = await $get(apiUrl + '/Api/Market/getMarketplaceList?page=' + page + '&limit=' + limit);
@@ -156,7 +188,7 @@ export const getUserBalanceInfo = async function (currency) {
 }
 
 // 获取用户平台余额
-export const getUserPlatformBalance = async function (currency, decimal=4) {
+export const getUserPlatformBalance = async function (currency, decimal = 4) {
   // console.log(currency);
   const transactionCurrency = __ownInstance__.$store.state.base.transactionCurrency;
   let transactionCurrencyCase = currency && currency.toLowerCase() || transactionCurrency.toLowerCase();
@@ -166,64 +198,6 @@ export const getUserPlatformBalance = async function (currency, decimal=4) {
   let platformBalance = keepDecimalNotRounding(balance, decimal, true);
   return platformBalance;
 
-}
-
-// 获取余额
-export async function getBalance(tokenAddress, decimals, poolAddress) {
-  const address = poolAddress || __ownInstance__.$store.state.base.address
-  const walletName = poolAddress || __ownInstance__.$store.state.base.walletName
-  const chainName = __ownInstance__.$store.state.base.chainName
-  const transactionCurrency = __ownInstance__.$store.state.base.transactionCurrency
-  if (!address || address == undefined || address == '') {
-    return 0;
-  }
-  if(!tokenAddress || tokenAddress == '') {
-    return 0;
-  }
-  let balance = 0;
-  if (tokenAddress === '0x0000000000000000000000000000000000000000') {
-    balance = await new web3.eth.getBalance(address)
-    return fromWei(balance, decimals)
-  }
-  let Gwei1 = 0;
-  if(decimals !== 18) {
-    Gwei1 = Math.pow(10, decimals);
-  }
-  // console.log(tokenAddress, address);
-  // const contract = await tronLink.tronWeb.contract().at('TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t');
-  // let balances = await contract.balanceOf(address).call();
-  // balances = balances.toNumber() / 10 ** 6; // 将余额从最小单位转换为USDT
-
-  // console.log(balances);
-  try {
-    if(walletName === 'MetaMask') {
-      const contract = new web3.eth.Contract(tokenABI, tokenAddress);
-      await contract.methods.balanceOf(address).call(function (error, result) {
-        if (!error) {
-          // console.log(result);
-          if(decimals == 18) {
-            balance = fromWei(result, decimals);
-          } else {
-            balance = numDiv(result, Gwei1);
-          }
-        } else {
-          console.log('balanceErr', error);
-        }
-      });
-    } else {
-      if(chainName === 'TronGrid' && transactionCurrency === 'TRX') {
-        let result = await tronLink.tronWeb.trx.getBalance(address);
-        balance = result / 10 ** 6; // 将余额从最小单位转换为USDT
-      } else {
-        const contract = await tronLink.tronWeb.contract().at(tokenAddress);
-        let result = await contract.balanceOf(address).call();
-        balance = result.toNumber() / 10 ** 6; // 将余额从最小单位转换为USDT
-      }
-    }
-  } catch (err) {
-    console.log(err);
-  }
-  return balance;
 }
 
 // 是否授权
@@ -254,13 +228,13 @@ export const isApproved = async function (tokenAddress, decimals, amount, otherA
  * @param {*} decimals 位数
  * @returns 
  */
-export async function getDiceDealerBalance(tokenAddress = '', userAddress='', decimals=18) {
+export async function getDiceDealerBalance(tokenAddress = '', userAddress = '', decimals = 18) {
   const address = userAddress || __ownInstance__.$store.state.base.address;
   const contractAddress = tokenAddress;
   console.log(tokenAddress);
   const contract = new web3.eth.Contract(DicePoolsABI, contractAddress);
   let num = 0;
-  try{
+  try {
     let balance = await getDiceBalanceOf(tokenAddress);
     let lusdshares = await getDiceLusdShares(tokenAddress, address);
     let sharesTotal = await getDiceSharesTotal(tokenAddress);
@@ -273,7 +247,7 @@ export async function getDiceDealerBalance(tokenAddress = '', userAddress='', de
 }
 
 // 庄家 用户每个庄家的股份数
-export async function getDiceLusdShares(tokenAddress = '', userAddress='', decimals=18) {
+export async function getDiceLusdShares(tokenAddress = '', userAddress = '', decimals = 18) {
   const address = userAddress || __ownInstance__.$store.state.base.address;
   const contractAddress = tokenAddress;
   const contract = new web3.eth.Contract(DicePoolsABI, contractAddress);
@@ -290,7 +264,7 @@ export async function getDiceLusdShares(tokenAddress = '', userAddress='', decim
 }
 
 //庄家 获取币的总余额
-export async function getDiceBalanceOf(tokenAddress = '', decimals=18) {
+export async function getDiceBalanceOf(tokenAddress = '', decimals = 18) {
   const contractAddress = tokenAddress;
   const chainName = __ownInstance__.$store.state.base.chainName;
   const contract = new web3.eth.Contract(erc20ABI, TOKEN[chainName].LUSD);
@@ -306,7 +280,7 @@ export async function getDiceBalanceOf(tokenAddress = '', decimals=18) {
 }
 
 //庄家 获取合约总股份余额
-export async function getDiceSharesTotal(tokenAddress = '', decimals=18) {
+export async function getDiceSharesTotal(tokenAddress = '', decimals = 18) {
   const contractAddress = tokenAddress;
   const contract = new web3.eth.Contract(DicePoolsABI, contractAddress);
   let num = 0;
@@ -357,37 +331,37 @@ export const saveNotifyStatus = async function (status, type = true) {
 }
 
 //获取庄家余额
-export const getUserDealerBalance = async function (type=0, version_type=1, user_address='') {
-    const apiUrl = __ownInstance__.$store.state.base.apiUrl;
-    const address = user_address || __ownInstance__.$store.state.base.address;
-    const chainName = __ownInstance__.$store.state.base.chainName;
-    const transactionCurrency = __ownInstance__.$store.state.base.transactionCurrency;
-    let result = [];
-    if(type) {
-      let data = await $get(apiUrl + '/Api/Dealerrecord/getUserDealerBalance?address='+address+'&game_type=' + type + '&version_type=' + version_type + '&transactionCurrency=' + transactionCurrency);
-      if (data && data.code == 10000) {
-        result = data.data;
-      }
-    }
-    return result;
-}
-
-//获取我的GLS余额汇总
-export const getUserGlsBalance = async function (type=0, user_address='') {
-    const apiUrl = __ownInstance__.$store.state.base.apiUrl;
-    const address = user_address || __ownInstance__.$store.state.base.address;
-    const chainName = __ownInstance__.$store.state.base.chainName;
-    const transactionCurrency = __ownInstance__.$store.state.base.transactionCurrency;
-    let result = [];
-    let data = await $get(apiUrl + '/Api/Bet/getUserGlsBalance?address='+address+'&transactionCurrency=' + transactionCurrency);
+export const getUserDealerBalance = async function (type = 0, version_type = 1, user_address = '') {
+  const apiUrl = __ownInstance__.$store.state.base.apiUrl;
+  const address = user_address || __ownInstance__.$store.state.base.address;
+  const chainName = __ownInstance__.$store.state.base.chainName;
+  const transactionCurrency = __ownInstance__.$store.state.base.transactionCurrency;
+  let result = [];
+  if (type) {
+    let data = await $get(apiUrl + '/Api/Dealerrecord/getUserDealerBalance?address=' + address + '&game_type=' + type + '&version_type=' + version_type + '&transactionCurrency=' + transactionCurrency);
     if (data && data.code == 10000) {
       result = data.data;
     }
-    return result;
+  }
+  return result;
+}
+
+//获取我的GLS余额汇总
+export const getUserGlsBalance = async function (type = 0, user_address = '') {
+  const apiUrl = __ownInstance__.$store.state.base.apiUrl;
+  const address = user_address || __ownInstance__.$store.state.base.address;
+  const chainName = __ownInstance__.$store.state.base.chainName;
+  const transactionCurrency = __ownInstance__.$store.state.base.transactionCurrency;
+  let result = [];
+  let data = await $get(apiUrl + '/Api/Bet/getUserGlsBalance?address=' + address + '&transactionCurrency=' + transactionCurrency);
+  if (data && data.code == 10000) {
+    result = data.data;
+  }
+  return result;
 }
 
 //获取币种价格
-export const getCurrencyPrice = async function (type=0, user_address='') {
+export const getCurrencyPrice = async function (type = 0, user_address = '') {
   const apiUrl = __ownInstance__.$store.state.base.apiUrl;
   const address = user_address || __ownInstance__.$store.state.base.address;
   const transactionCurrency = __ownInstance__.$store.state.base.transactionCurrency;
@@ -400,23 +374,23 @@ export const getCurrencyPrice = async function (type=0, user_address='') {
 }
 
 //获取所有用户钱包地址列表
-export const getUserProfitData = async function (chainName='', type=0, version_type=1) {
-    const apiUrl = __ownInstance__.$store.state.base.apiUrl;
-    const address = __ownInstance__.$store.state.base.address;
-    const transactionCurrency = __ownInstance__.$store.state.base.transactionCurrency;
-    // const chainName = __ownInstance__.$store.state.base.chainName;
-    let result = [];
-    if(type) {
-      let data = await $get(apiUrl + '/Api/Bet/getUserProfitData?page=1&game_type=' + type + '&chain=' + chainName + '&version_type=' + version_type + '&transactionCurrency=' + transactionCurrency);
-      if (data && data.code == 10000) {
-        result = data.data;
-      }
+export const getUserProfitData = async function (chainName = '', type = 0, version_type = 1) {
+  const apiUrl = __ownInstance__.$store.state.base.apiUrl;
+  const address = __ownInstance__.$store.state.base.address;
+  const transactionCurrency = __ownInstance__.$store.state.base.transactionCurrency;
+  // const chainName = __ownInstance__.$store.state.base.chainName;
+  let result = [];
+  if (type) {
+    let data = await $get(apiUrl + '/Api/Bet/getUserProfitData?page=1&game_type=' + type + '&chain=' + chainName + '&version_type=' + version_type + '&transactionCurrency=' + transactionCurrency);
+    if (data && data.code == 10000) {
+      result = data.data;
     }
-    return result;
+  }
+  return result;
 }
 
 //获取估值
-export const getSwapPoolsAmountsOut = async function (routerContractAddress, tk0Address, tk1Address, bnbAddress, decimals=18) {
+export const getSwapPoolsAmountsOut = async function (routerContractAddress, tk0Address, tk1Address, bnbAddress, decimals = 18) {
   // console.log(routerContractAddress, tk0Address, tk1Address);
 
   const contract = new web3.eth.Contract(mdexABI, routerContractAddress);
@@ -431,11 +405,11 @@ export const getSwapPoolsAmountsOut = async function (routerContractAddress, tk0
   // const Gwei1 = 1000000000;
   let Gwei1;
   let Gwei2;
-  if(decimals == 18) {
+  if (decimals == 18) {
     Gwei1 = Math.pow(10, 9);
     Gwei2 = Math.pow(10, 9);
   }
-  if(decimals == 6) {
+  if (decimals == 6) {
     Gwei1 = Math.pow(10, 15);
     Gwei2 = Math.pow(10, 3);
   }
@@ -456,7 +430,7 @@ export const getSwapPoolsAmountsOut = async function (routerContractAddress, tk0
 
 
 //获取 Pools 池子数据
-export async function getPoolsTokensData(goblinAddress, currencyToken, pId){
+export async function getPoolsTokensData(goblinAddress, currencyToken, pId) {
   const address = __ownInstance__.$store.state.base.address
   const decimals = __ownInstance__.$store.state.base.tokenDecimals
   const chainName = __ownInstance__.$store.state.base.chainName;
@@ -470,11 +444,11 @@ export async function getPoolsTokensData(goblinAddress, currencyToken, pId){
   let YearPerAPR = 0;
   // reward = await getPositionRewardBalance(pId, decimals); //获取奖励
   // console.log(pId, reward);
-  if(address && address !== undefined && address !== '') {
+  if (address && address !== undefined && address !== '') {
     userBalance = await getPoolsUserInfo(goblinAddress); //获取我的存款余额
   }
   reward = await getPoolsPendingBonus(goblinAddress); //获取奖励
-  
+
   let bonusPerShare = await getPoolsAccBonusPerShare(goblinAddress); //累计收益
   let lastAccBonusPerShare = await getPoolsLastAccBonusPerShare(goblinAddress); //上次累计收益
   // let lusdPrice = await getSwapPoolsAmountsOut(TOKEN[chainName].MdexRouter, TOKEN[chainName].LUSD, TOKEN[chainName].USDC) //获取lusd价格
@@ -482,14 +456,14 @@ export async function getPoolsTokensData(goblinAddress, currencyToken, pId){
   let glsPrice = 1; //获取GLS价格
   let accBonus = (bonusPerShare - lastAccBonusPerShare) * 12;
   // console.log(accBonus);
-  if(accBonus > 0) {
-    YearPer =  (Math.pow((accBonus * lusdPrice / glsPrice / Math.pow(10, 12)) + 1, 365) - 1) * 100;
-    YearPerAPR =  calcDailyDefault0(YearPer / 100, false); //apy or apr
+  if (accBonus > 0) {
+    YearPer = (Math.pow((accBonus * lusdPrice / glsPrice / Math.pow(10, 12)) + 1, 365) - 1) * 100;
+    YearPerAPR = calcDailyDefault0(YearPer / 100, false); //apy or apr
     console.log(YearPerAPR);
   }
   // console.log(pId, bonusPerShare, tokenPrice)
-  
-   
+
+
   let reObj = {
     totalTvl: totalTvl,
     tokenPrice: tokenPrice,
@@ -510,8 +484,8 @@ export const getPoolsTotalShare = async function (goblinAddress, decimals) {
     if (!error) {
       // console.log(result);
       total = fromWei(result, decimals);
-    }else {
-      console.log('totalShareErr' , error);
+    } else {
+      console.log('totalShareErr', error);
     }
   });
   return total;
@@ -527,23 +501,23 @@ export async function getPoolsUserInfo(contractAddr, userAddress) {
   await contract.methods.userInfo(address).call(function (error, result) {
     if (!error) {
       // console.log(result);
-      if(result && result['shares']) {
+      if (result && result['shares']) {
         balance = keepDecimalNotRounding(byDecimals(result['shares'], 18), 6, true)
       }
-    }else{
-      console.log('userInfo' ,error);
+    } else {
+      console.log('userInfo', error);
     }
   });
   return balance;
 }
 
 // 获取Pools池子奖励
-export async function getPoolsPendingBonus(goblinAddress, number=6) {
+export async function getPoolsPendingBonus(goblinAddress, number = 6) {
   const address = __ownInstance__.$store.state.base.address;
   const contractAddress = goblinAddress || __ownInstance__.$store.state.base.h2oPoolAddress
   const contract = new web3.eth.Contract(DicePoolsABI, contractAddress);
   let num = 0;
-  if(!address || address == undefined || address == '') {
+  if (!address || address == undefined || address == '') {
     return num;
   }
   await contract.methods.pendingBonus(address).call((error, result) => {
@@ -552,8 +526,8 @@ export async function getPoolsPendingBonus(goblinAddress, number=6) {
       // console.log(fromWei(result, 18));
       // num = keepDecimalNotRounding(fromWei(result, 18), number, true)
       num = fromWei(result, 18);
-    }else{
-      console.log('pendingBonus' ,error);
+    } else {
+      console.log('pendingBonus', error);
     }
   });
   return num;
@@ -567,8 +541,8 @@ export async function getPoolsAccBonusPerShare(goblinAddress) {
   await contract.methods.accBonusPerShare().call((error, result) => {
     if (!error) {
       num = result;
-    }else{
-      console.log('accBonusPerShare' ,error);
+    } else {
+      console.log('accBonusPerShare', error);
     }
   });
   return num;
@@ -582,8 +556,8 @@ export async function getPoolsLastAccBonusPerShare(goblinAddress) {
   await contract.methods.lastAccBonusPerShare().call((error, result) => {
     if (!error) {
       num = result
-    }else{
-      console.log('lastAccBonusPerShare' ,error);
+    } else {
+      console.log('lastAccBonusPerShare', error);
     }
   });
   return num;
@@ -598,8 +572,8 @@ export async function keccak256LVerify(cardsAddress) {
   await contract.methods.verify(cardsAddress).call((error, result) => {
     if (!error) {
       receipt = result
-    }else{
-      console.log('verify' ,error);
+    } else {
+      console.log('verify', error);
     }
   });
   return receipt;
@@ -612,12 +586,12 @@ export async function getPastEvents(tableAddress) {
   const contract = new web3.eth.Contract(DicePoolsABI, contractAddress);
   let receipt = 0;
   // console.log(contract);
-  await contract.getPastEvents('Dealed', {filter: {}, fromBlock: 10000, toBlock: 'latest'}).call((error, result) => {
+  await contract.getPastEvents('Dealed', { filter: {}, fromBlock: 10000, toBlock: 'latest' }).call((error, result) => {
     if (!error) {
       console.log(result);
       receipt = result
-    }else{
-      console.log('getPastEvents' ,error);
+    } else {
+      console.log('getPastEvents', error);
     }
   });
   return receipt;
@@ -636,11 +610,11 @@ export async function getDepWithUserInfo(token) {
   await contract.methods.userInfo(token, address).call(function (error, result) {
     if (!error) {
       // console.log(result);
-      if(result && result['shares']) {
+      if (result && result['shares']) {
         balance = keepDecimalNotRounding(byDecimals(result['shares'], 18), 6, true)
       }
-    }else{
-      console.log('userInfo' ,error);
+    } else {
+      console.log('userInfo', error);
     }
   });
   return balance;
@@ -676,13 +650,13 @@ export const getRelations = async () => {
     if (!error) {
       console.log('我的上级邀请', result);
       result.forEach(item => {
-        if(item !== "0x0000000000000000000000000000000000000000") {
+        if (item !== "0x0000000000000000000000000000000000000000") {
           resultArr.push(item);
         }
       })
       // console.log(resultArr);
-    }else{
-      console.log('getRelations' ,error);
+    } else {
+      console.log('getRelations', error);
     }
   });
   return resultArr;
@@ -715,13 +689,13 @@ export const setRelations = async (relations = {}) => {
  * @param {*} type 
  * @returns 
  */
-export const getMyInvitationList = async function(){
+export const getMyInvitationList = async function () {
   const apiUrl = __ownInstance__.$store.state.base.apiUrl
   const address = __ownInstance__.$store.state.base.address;
   let result = [];
-  if(address && address !== '') {
-    let data = await $get(apiUrl + '/Api/User/getUserRecommended?address='+address)
-    if(data && data.code == 10000) {
+  if (address && address !== '') {
+    let data = await $get(apiUrl + '/Api/User/getUserRecommended?address=' + address)
+    if (data && data.code == 10000) {
       result = data.data;
     }
   }
@@ -859,23 +833,23 @@ export const setStatiscData = async function (type = 0, hashId = 0) {
  * @param {*} type 
  * @returns 
  */
-export const getPoolBtcData = async function(){
+export const getPoolBtcData = async function () {
   const apiUrl = __ownInstance__.$store.state.base.apiUrl
   const address = __ownInstance__.$store.state.base.address;
   let result = [];
   let data = await $get('https://www.h2o.live/getPoolBtc')
-  if(data) {
+  if (data) {
     result = data;
   }
   return result;
 }
 
 //获取 HashPowerPools 池子数据
-export async function getHashPowerPoolsTokensData(goblinAddress, currencyToken, pId, id){
+export async function getHashPowerPoolsTokensData(goblinAddress, currencyToken, pId, id) {
   const address = __ownInstance__.$store.state.base.address
   const decimals = __ownInstance__.$store.state.base.tokenDecimals
   let HashpowerDetail = await getHashpowerDetail(id); //获取算力币详情
-  if(!HashpowerDetail || HashpowerDetail.length < 0) {
+  if (!HashpowerDetail || HashpowerDetail.length < 0) {
     return false;
   }
   let totalTvl = await getPledgeNumber(id);
@@ -908,18 +882,18 @@ export async function getHashPowerPoolsTokensData(goblinAddress, currencyToken, 
   let used_profit = 0
   let end_profit = 0
   let total_luck_income = 0
-  if(id) {
+  if (id) {
     // const transaction = await new web3.eth.getTransaction("0x8247f33547a65ae8e774442a5091c8ce613b6614fd1b5fe815d4ae9126fb0de7");
     // console.log(transaction);
     let rewardHarved = await getUserIncomeHarvestedNumber(id);
-    if(rewardHarved) {
+    if (rewardHarved) {
       btcbReward = rewardHarved.btcb_amount;
       luckReward = rewardHarved.luck_amount;
     }
     // console.log(rewardHarved);
     // h2oReward = await getPositionRewardBalance(pId, decimals); //获取H2O奖励
     // btcbReward = await getH2OPendingBonus(goblinAddress, 8); //获取BTCB奖励
-    if(address && address !== undefined && address !== '') {
+    if (address && address !== undefined && address !== '') {
       userBalance = await getPledgeNumber(id, address);
     }
     // console.log(pId, totalTvl, tokenPrice, userBalance)
@@ -949,7 +923,7 @@ export async function getHashPowerPoolsTokensData(goblinAddress, currencyToken, 
     end_profit = HashpowerDetail.end_profit //已使用收益数量
     total_luck_income = HashpowerDetail.total_luck_income //已使用收益数量
     hash_balance = HashpowerDetail.hash_balance //用户算力余额
-  } 
+  }
   let reObj = {
     totalTvl: totalTvl,
     tokenPrice: tokenPrice,
@@ -984,48 +958,48 @@ export async function getHashPowerPoolsTokensData(goblinAddress, currencyToken, 
 }
 
 //获取算力币详情
-export const getHashpowerDetail = async function(hashId){
+export const getHashpowerDetail = async function (hashId) {
   const apiUrl = __ownInstance__.$store.state.base.apiUrl;
   const address = __ownInstance__.$store.state.base.address;
   let result = [];
-  let data = await $get(apiUrl + '/Hashpower/Hashpower/getHashpowerDetail?hashId='+hashId+'&address='+address);
-  if(data && data.code == 10000) {
+  let data = await $get(apiUrl + '/Hashpower/Hashpower/getHashpowerDetail?hashId=' + hashId + '&address=' + address);
+  if (data && data.code == 10000) {
     result = data.data;
   }
   return result;
 }
 
 //获取用户购买算力币余额
-export const getUserHashpowerBalance = async function(hashId){
+export const getUserHashpowerBalance = async function (hashId) {
   const apiUrl = __ownInstance__.$store.state.base.apiUrl;
   const address = __ownInstance__.$store.state.base.address;
   let result = [];
-  let data = await $get(apiUrl + '/Hashpower/Hashpower/getUserHashpowerBalance?hashId='+hashId+'&address='+address);
-  if(data && data.code == 10000) {
+  let data = await $get(apiUrl + '/Hashpower/Hashpower/getUserHashpowerBalance?hashId=' + hashId + '&address=' + address);
+  if (data && data.code == 10000) {
     result = data.data;
   }
   return result;
 }
 
 //获取用户购买质押余额
-export const getUserHashpowerPledgeBalance = async function(hashId){
+export const getUserHashpowerPledgeBalance = async function (hashId) {
   const apiUrl = __ownInstance__.$store.state.base.apiUrl;
   const address = __ownInstance__.$store.state.base.address;
   let result = [];
-  let data = await $get(apiUrl + '/Hashpower/Hashpower/getUserHashpowerPledgeBalance?hashId='+hashId+'&address='+address);
-  if(data && data.code == 10000) {
+  let data = await $get(apiUrl + '/Hashpower/Hashpower/getUserHashpowerPledgeBalance?hashId=' + hashId + '&address=' + address);
+  if (data && data.code == 10000) {
     result = data.data;
   }
   return result;
 }
 
 //获取用户购买质押余额
-export const getPledgeNumber = async function(hashId){
+export const getPledgeNumber = async function (hashId) {
   const apiUrl = __ownInstance__.$store.state.base.apiUrl;
   const address = __ownInstance__.$store.state.base.address;
   let result = [];
-  let data = await $get(apiUrl + '/Hashpower/Hashpower/getPledgeNumber?hashId='+hashId+'&address='+address);
-  if(data && data.code == 10000) {
+  let data = await $get(apiUrl + '/Hashpower/Hashpower/getPledgeNumber?hashId=' + hashId + '&address=' + address);
+  if (data && data.code == 10000) {
     // console.log(data);
     result = data.data;
   }
@@ -1033,12 +1007,12 @@ export const getPledgeNumber = async function(hashId){
 }
 
 //获取用户收益待收获数量
-export const getUserIncomeHarvestedNumber = async function(hashId){
+export const getUserIncomeHarvestedNumber = async function (hashId) {
   const apiUrl = __ownInstance__.$store.state.base.apiUrl;
   const address = __ownInstance__.$store.state.base.address;
   let result = [];
-  let data = await $get(apiUrl + '/Hashpower/Hashpower/getUserIncomeNumber?hashId='+hashId+'&address='+address);
-  if(data && data.code == 10000) {
+  let data = await $get(apiUrl + '/Hashpower/Hashpower/getUserIncomeNumber?hashId=' + hashId + '&address=' + address);
+  if (data && data.code == 10000) {
     // console.log(data);
     result = data.data;
   }
