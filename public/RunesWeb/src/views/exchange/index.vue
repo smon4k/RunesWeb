@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="content">
-      <el-card shadow="hover" v-loading="receiveLoading">
+      <el-card v-loading="receiveLoading">
         <div slot="header" class="header">
           <div>
             <span>{{ 'Transform' }}</span>
@@ -1100,6 +1100,11 @@ export default {
         }
       }
     }
+  }
+  @media (max-width: 960px) {
+    .el-card {
+      padding: 16px!important;
+    } 
   }
 }
 </style>

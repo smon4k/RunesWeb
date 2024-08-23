@@ -143,6 +143,7 @@ export const disconnectWallet = async () => {
   __ownInstance__.$store.dispatch("disconnectMetaMask");
   localStorage.removeItem('connectorId');
   localStorage.removeItem('WEB3_CONNECT_CACHED_PROVIDER');
+  __ownInstance__.$store.commit("isConnected", false);
 };
 
 export const networkSetup = async (chainNameId) => { //切换网络
@@ -201,8 +202,6 @@ async function getBaseData(chainId, accounts, address) {
     __ownInstance__.$store.commit("getAccounts", accounts);
     __ownInstance__.$store.commit("getAddress", address);
     localStorage.setItem('connectorId', 'injected');
+    __ownInstance__.$store.commit("isConnected", true);
   }
-  const versionName = localStorage.getItem('versionName');
-  // __ownInstance__.$store.dispatch('poolsTokenList') //获取pools池子数据
-  __ownInstance__.$store.commit("isConnected", true);
 }

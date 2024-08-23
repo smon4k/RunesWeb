@@ -62,8 +62,11 @@ class MyMarket extends Base
                         if ($insertId > 0) {
                             $delRes = Market::delMarketData($cfxId);
                             if($delRes !== false) {
-                                MarketLog::addMarketLogData($cfxId, $sendaddr, json_encode($marget), $hash, 1); //记录购买记录
-                                $insertCount += 1;
+                                $insertTranData = TransactionData::saveTransactionData($sendaddr, $marget['chainto'], $cfxId, $marget['quantity'], $marget['amount']); //记录成交
+                                if($insertTranData) {
+                                    MarketLog::addMarketLogData($cfxId, $sendaddr, json_encode($marget), $hash, 1); //记录购买记录
+                                    $insertCount += 1;
+                                }
                             }
                         }
                     }
@@ -76,7 +79,7 @@ class MyMarket extends Base
                     return ['code' => 0, 'message' => 'error'];
                 }
             } catch (\Exception $e) {
-                // p($e);
+                p($e);
                 // 回滚事务
                 self::rollback();
                 $error_msg = json_encode([
@@ -707,6 +710,19 @@ class MyMarket extends Base
             }
         }
         return;
+    }
+
+     /**
+     * 获取所有持有slots数量
+     * @author qinlh
+     * @since 2024-08-14
+     */
+    public static function getUserSlotsNumber() {
+        $result = self::where('status', 'in', [1, 2])->distinct(true)->field('owner')->select();
+        if($result) {
+            return $result->toArray();
+        }
+        return [];
     }
 
 

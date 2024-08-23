@@ -36,17 +36,17 @@
             </el-row>
         </div>
         <div class="no-more">
-                <span v-if="isNoMoreData">No More</span>
-                <div v-else class="load-more">
-                    <div v-if="!loading" @click="onLoadMoreDataClick">Load more</div>
-                    <div v-if="loading" class="loading-icon">
-                        <div class="loading-container">
-                            <div class="loading-spinner"></div>
-                        </div>
-                        <span>加载中</span>
+            <span v-if="isNoMoreData">No More</span>
+            <div v-else class="load-more">
+                <div v-if="!loading" @click="onLoadMoreDataClick">Load more</div>
+                <div v-if="loading" class="loading-icon">
+                    <div class="loading-container">
+                        <div class="loading-spinner"></div>
                     </div>
+                    <span>加载中</span>
                 </div>
             </div>
+        </div>
     </div>
 </template>
 <script>

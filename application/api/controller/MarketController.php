@@ -17,6 +17,7 @@ use app\api\model\MyMarket;
 use app\api\model\MarketLog;
 use app\api\model\UserNft;
 use app\api\model\Task;
+use app\api\model\TransactionData;
 use think\Request;
 use think\Controller;
 use think\Db;
@@ -373,7 +374,19 @@ class MarketController extends BaseController
         }
     }
 
-
+    /**
+     * 获取统计数据
+     * @author qinlh
+     * @since 2024-08-23
+     */
+    public function getStatisticsData() {
+        $result = TransactionData::getStatisticsData();
+        if ($result) {
+            return $this->as_json($result);
+        } else {
+            return $this->as_json('70001', $result['message']);
+        }
+    }
 }
 
 

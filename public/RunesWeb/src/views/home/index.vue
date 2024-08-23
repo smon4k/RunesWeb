@@ -49,55 +49,55 @@
                     <el-col :xs="8" :sm="4" :md="3">
                         <div class="content">
                             <div class="name">Floor</div>
-                            <div class="price">$0.40</div>
+                            <div class="price">${{ statisticsData.floor }}</div>
                         </div>
                     </el-col>
                     <el-col :xs="8" :sm="4" :md="3">
                         <div class="content">
-                            <div class="name">Floor</div>
-                            <div class="price">$0.40</div>
+                            <div class="name">Unit Price</div>
+                            <div class="price">${{ statisticsData.unit_price }}</div>
                         </div>
                     </el-col>
                     <el-col :xs="8" :sm="4" :md="3">
                         <div class="content">
-                            <div class="name">Floor</div>
-                            <div class="price">$0.40</div>
+                            <div class="name">24h Volume</div>
+                            <div class="price">${{ statisticsData['24h_volume'] }}</div>
                         </div>
                     </el-col>
                     <el-col :xs="8" :sm="4" :md="3">
                         <div class="content">
-                            <div class="name">Floor</div>
-                            <div class="price">$0.40</div>
+                            <div class="name">24h Sales</div>
+                            <div class="price">{{ statisticsData['24h_sales'] }}</div>
                         </div>
                     </el-col>
                     <el-col :xs="8" :sm="4" :md="3">
                         <div class="content">
-                            <div class="name">Floor</div>
-                            <div class="price">$0.40</div>
+                            <div class="name">Total Volume</div>
+                            <div class="price">{{ statisticsData.total_volume }}</div>
                         </div>
                     </el-col>
                     <el-col :xs="8" :sm="4" :md="3">
                         <div class="content">
-                            <div class="name">Floor</div>
-                            <div class="price">$0.40</div>
+                            <div class="name">Total Sales</div>
+                            <div class="price">{{ statisticsData.total_sales }}</div>
                         </div>
                     </el-col>
                     <el-col :xs="8" :sm="4" :md="2">
                         <div class="content">
-                            <div class="name">Floor</div>
-                            <div class="price">$0.40</div>
+                            <div class="name">Owners</div>
+                            <div class="price">{{ statisticsData.owners }}</div>
                         </div>
                     </el-col>
                     <el-col :xs="8" :sm="4" :md="2">
                         <div class="content">
-                            <div class="name">Floor</div>
-                            <div class="price">$0.40</div>
+                            <div class="name">Listed</div>
+                            <div class="price">{{ statisticsData.listed }}</div>
                         </div>
                     </el-col>
                     <el-col :xs="8" :sm="4" :md="2">
                         <div class="content">
-                            <div class="name">Floor</div>
-                            <div class="price">$0.40</div>
+                            <div class="name">Market Cap</div>
+                            <div class="price">{{ statisticsData.market_cap }}</div>
                         </div>
                     </el-col>
                 </el-row>
@@ -340,6 +340,7 @@ export default {
                 cfxs: 0,
             },
             searchDialogShow: false,
+            statisticsData: {}
         }
     },
     mounted() {
@@ -386,6 +387,7 @@ export default {
     created() {
         try {
             this.getMarketplaceList();
+            this.getStatisticsData();
         } catch (err) { }
     },
     watch: {
@@ -531,6 +533,16 @@ export default {
         onLoadMoreData() {
             this.currPage += 1;
             this.getMarketplaceList();
+        },
+        getStatisticsData() { //获取产品日收益列表
+            get(this.apiUrl + "/Api/Market/getStatisticsData", {}, async json => {
+                console.log(json);
+                if (json.code == 10000) {
+                    this.statisticsData = json.data;
+                } else {
+                    this.$message.error("加载数据失败");
+                }
+            });
         },
         getMarketplaceList(ServerWhere) { //获取产品日收益列表
             if (!ServerWhere || ServerWhere == undefined || ServerWhere.length <= 0) {
@@ -696,6 +708,7 @@ export default {
                     background-color: transparent;
                     border-radius: 4px;
                     margin-bottom: 10px;
+                    min-width: 100px;
                     .name {
                         text-align: left;
                         color: #aaa;

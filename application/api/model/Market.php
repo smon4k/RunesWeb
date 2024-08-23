@@ -129,4 +129,30 @@ class Market extends Base
         }
         return;
     }
+
+    /**
+     * 获取最小出售价格
+     * @author qinlh
+     * @since 2024-08-23
+     */
+    public static function getMinSellPrice() {
+        $res = self::min('amount');
+        if ($res) {
+            return $res;
+        }
+        return 0;
+    }
+
+    /**
+     * 获取所有挂单数量
+     * @author qinlh
+     * @since 2024-08-23
+     */
+    public static function getAllSellAmount() {
+        $amount = self::sum('quantity');
+        if ($amount) {
+            return $amount;
+        }
+        return 0;
+    }
 }

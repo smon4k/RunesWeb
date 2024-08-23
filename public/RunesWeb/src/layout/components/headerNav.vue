@@ -33,101 +33,114 @@
                         </el-menu>
                     </div>
                 </div>
-                
-                <div class="language" v-show="screenWidth > adaptiveSize" v-if="false">
-                    <!-- <el-button v-if="language === 'en'" @click="clickLanguageDropdown('zh')">中文</el-button>
-                      <el-button v-else @click="clickLanguageDropdown('en')">英文</el-button> -->
-                    <el-dropdown trigger="click" @command="clickLanguageDropdown">
-                        <span class="el-dropdown-link">
-                            <!-- <i class="el-icon-arrow-down el-icon--right"></i> -->
-                            <img src="@/assets/cn.png" alt="" v-if="language === 'CN'" width="18">
-                            <img src="@/assets/tc.png" alt="" v-if="language === 'TC'" width="18">
-                            <img src="@/assets/en-02.png" alt="" v-if="language === 'EN'" width="18">
-                            <span class="name">{{ language }}</span>
-                        </span>
-                        <el-dropdown-menu slot="dropdown" :append-to-body="false" popper-class="popper-select"
-                            class="popper-select">
-                            <el-dropdown-item command="CN">
-                                <img src="@/assets/cn.png" alt="" width="22">
-                                <span>CN</span>
-                            </el-dropdown-item>
-                            <el-dropdown-item command="TC">
-                                <img src="@/assets/tc.png" alt="" width="22">
-                                <span>TC</span>
-                            </el-dropdown-item>
-                            <el-dropdown-item command="EN">
-                                <img src="@/assets/en-02.png" alt="" width="22">
-                                <span>EN</span>
-                            </el-dropdown-item>
-                        </el-dropdown-menu>
-                    </el-dropdown>
-                </div>
-                <div class="exchange-balance" v-show="screenWidth > adaptiveSize" v-if="false">
-                    <span class="balance" v-if="versionName == 'chain'">{{ $t('public:Balance') }}: {{ lusdBalance }}{{
-                        transactionSpareCurrency }}</span>
-                    <span class="balance" v-else>{{ $t('public:Balance') }}: {{ keepDecimalNotRounding(platformBalance,
-                        this.decimalLen,
-                        true) }}{{ transactionSpareCurrency }}</span>
-                    <el-dropdown trigger="click" @command="dropdownMenuClick">
-                        <!-- 账户 -->
-                        <span class="el-dropdown-link">
-                            <i class="el-icon-user-solid"></i>&nbsp;
-                            {{ $t('game:Account') }}<i class="el-icon-arrow-down el-icon--right"></i>
-                        </span>
-                        <!-- 公链版 出入金 -->
-                        <el-dropdown-menu slot="dropdown" :append-to-body="false" popper-class="popper-select"
-                            class="popper-select" v-if="versionName === 'chain'">
-                            <el-dropdown-item command="deposit">
-                                <img src="@/assets/deposit.png" alt="" width="20">
-                                {{ $t('game:Deposit') }}
-                            </el-dropdown-item>
-                            <el-dropdown-item command="withdraw">
-                                <img src="@/assets/withdraw.png" alt="" width="20">
-                                {{ $t('game:Withdraw') }}
-                            </el-dropdown-item>
-                            <el-dropdown-item command="financial">
-                                <img src="@/assets/financing.png" alt="" width="20">
-                                {{ $t('game:Financial') }}
-                            </el-dropdown-item>
-                        </el-dropdown-menu>
-                        <!-- 极速版 出入金 -->
-                        <el-dropdown-menu slot="dropdown" :append-to-body="false" popper-class="popper-select"
-                            class="popper-select" v-else>
-                            <el-dropdown-item command="speed-deposit">
-                                <img src="@/assets/deposit.png" alt="" width="20">
-                                {{ $t('game:Deposit') }}
-                            </el-dropdown-item>
-                            <el-dropdown-item command="speed-withdraw">
-                                <img src="@/assets/withdraw.png" alt="" width="20">
-                                {{ $t('game:Withdraw') }}
-                            </el-dropdown-item>
-                            <!-- <el-dropdown-item command="financial">
-                                <img src="@/assets/financing.png" alt="" width="20">
-                                {{ $t('game:Financial') }}
-                            </el-dropdown-item> -->
-                            <!-- <el-dropdown-item command="withdraw">{{ $t('game:Withdraw') }}</el-dropdown-item> -->
-                        </el-dropdown-menu>
-                    </el-dropdown>
-                    <!-- <span class="el-dropdown" style="cursor: pointer;" v-if="versionName === 'speed'" @click="depositWithdraw()">充提</span> -->
-                </div>
 
                 <div class="mobile-log" v-if="screenWidth <= adaptiveSize">
                     <div class="logo">
                         <router-link to="/" class="logo-link">
-                            <img src="@/assets/log.png" alt="" v-if="mainTheme === 'light'" width="25"/>
-                            <img src="@/assets/log.png" alt="" v-else width="25" />
+                            <img :src="require('@/assets/svg/cfxs-world.svg')" alt="" width="124">
                         </router-link>
                     </div>
-                    <div class="title"> CFXS WORLD </div>
+                    <!-- <div class="title"> CFXS WORLD </div> -->
                 </div>
                 
-                <div class="connent" v-if="isConnected">
-                    <div class="connectWallet" v-if="screenWidth > adaptiveSize">
-                        <img src="@/assets/log.png" alt="" />
+                <div class="connent">
+                    <div class="connectWallet" v-if="screenWidth > adaptiveSize && isConnected">
+                        <img :src="require('@/assets/svg/espace.svg')" alt="" width="24">
                         <span>sSpace</span>
                     </div>
-                    <div class="connectWallet" @click="connectWalletShowFun">
-                        {{ isConnected ? addressStr : $t('public:ConnectWallet') }}
+                    <el-popover
+                        v-if="isConnected"
+                        placement="bottom"
+                        title=""
+                        width="350"
+                        trigger="click"
+                        popper-class="wallet-popover"
+                        @show="walletPopoverShow"
+                        v-model="walletPopoverIsShow">
+                        <div class="wallet-info">
+                            <div class="userinfo">
+                                <div class="left">
+                                    <img :src="require('@/assets/svg/user.svg')" alt="" width="46">
+                                    <div>{{ addressStr }}</div>
+                                    <img :src="require('@/assets/svg/copy.svg')" alt="" width="14" @click="copyAddress">
+                                </div>
+                                <div class="right">
+                                    <img :src="require('@/assets/svg/outlogin.svg')" alt="" width="24" @click="outContentAddress">
+                                </div>
+                            </div>
+                            <div class="button-market">
+                                <el-button type="primary" @click="hrefMarketRouter">CFXs MARKET</el-button>
+                                <el-button type="primary" @click="buyCoinHref">BUY COIN</el-button>
+                            </div>
+                            <div class="tab-list">
+                                <el-tabs v-model="typeName" @tab-click="tabClickSelect">
+                                    <el-tab-pane label="CFXs" name="0">
+                                        <div class="data-list">
+                                            <div class="item" v-for="(item, index) in dataList" :key="index">
+                                                <div class="left">
+                                                    <img :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="40">
+                                                    <span>#{{ item.chainid }}</span>
+                                                </div>
+                                                <div class="right">{{ item.amount }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="no-more">
+                                            <span v-if="isNoMoreData">No More</span>
+                                            <div v-else class="load-more">
+                                                <div v-if="!loading" @click="onLoadMoreDataClick">Load more</div>
+                                                <div v-if="loading" class="loading-icon">
+                                                    <div class="loading-container">
+                                                        <div class="loading-spinner"></div>
+                                                    </div>
+                                                    <span>加载中</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </el-tab-pane>
+                                    <el-tab-pane label="NFT" name="1">
+                                        <div class="data-list">
+                                            <div class="item" v-for="(item, index) in dataList" :key="index">
+                                                <div class="left">
+                                                    <img :src="require('@/assets/svg/cfxs-red.svg')" alt="" width="40">
+                                                    <span>#{{ item.tokenid }}</span>
+                                                </div>
+                                                <div class="right">value: {{ item.amount }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="no-more">
+                                            <span v-if="isNoMoreData">No More</span>
+                                            <div v-else class="load-more">
+                                                <div v-if="!loading" @click="onLoadMoreDataClick">Load more</div>
+                                                <div v-if="loading" class="loading-icon">
+                                                    <div class="loading-container">
+                                                        <div class="loading-spinner"></div>
+                                                    </div>
+                                                    <span>加载中</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </el-tab-pane>
+                                    <el-tab-pane label="Coin" name="2">
+                                        <div class="data-list">
+                                            <div class="item">
+                                                <div class="left">
+                                                    <img :src="require('@/assets/svg/cfxs-white.svg')" alt="" width="40">
+                                                </div>
+                                                <div class="right">{{ CoinBalance }}</div>
+                                            </div>
+                                        </div>
+                                    </el-tab-pane>
+                                </el-tabs>
+                            </div>
+                        </div>
+                        <div slot="reference" class="connectWallet">
+                            <img :src="require('@/assets/svg/online.svg')" alt="" width="12">
+                            {{ addressStr }}
+                        </div>
+                    </el-popover>
+                    <div class="connect-wallect-btn" v-else>
+                        <el-button type="primary" @click="connectWalletShowFun" v-if="screenWidth > adaptiveSize"><img :src="require('@/assets/svg/wallet.svg')" alt="" width="20">CONNECT WALLET</el-button>
+                        <div @click="connectWalletShowFun" v-else><img :src="require('@/assets/svg/wallet-yello.svg')" alt="" width="20"></div>
                     </div>
                 </div>
             </div>
@@ -183,7 +196,8 @@
     </div>
 </template>
 <script>
-import axios from 'axios'
+import { get } from "@/common/axios.js";
+import Address from '@/wallet/address.json'
 import { networkSetup, getChainNameId } from '@/wallet/connect/metaMask'
 import { connect } from '@/wallet/connect/tronWeb'
 import { walletConnect, disconnectWallet } from '@/wallet/connect/walletConnect'
@@ -212,6 +226,15 @@ export default {
             chain_name: 'HECO',
             currencyTokenList: [],
             walletDialogShow: false,
+            typeName: '0',
+            isNoMoreData: false, 
+            loading: false,
+            currPage: 1, //当前页
+            pageSize: 18, //每页显示条数
+            total: 100, //总条数
+            dataList: [],
+            CoinBalance: 0,
+            walletPopoverIsShow: false,
         }
     },
     components: {
@@ -231,11 +254,6 @@ export default {
             apiUrl: state => state.base.apiUrl,
             isAdmin: state => state.base.isAdmin,
             isMobel: state => state.comps.isMobel,
-            versionName: state => state.base.versionName,
-            transactionCurrency: state => state.base.transactionCurrency,
-            transactionSpareCurrency: state => state.base.transactionSpareCurrency,
-            platformBalance: state => state.base.platformBalance,
-            decimalLen: state => state.base.decimalLen,
             adaptiveSize: state => state.comps.adaptiveSize,
         }),
         ...mapGetters(['pendingOrderAmount']),
@@ -261,35 +279,35 @@ export default {
             let arr = [
                 // 市场
                 {
-                    name: this.$t('nav:Market'),
+                    name: 'Market',
                     path: "/home",
                     children: [],
                     isHref: false,
                 },
                 // 兑换
                 {
-                    name: this.$t('nav:Wormhole'),
+                    name: 'Wormhole',
                     path: "/exchange/deposit",
                     children: [],
                     isHref: false,
                 },
                 // 我的
                 {
-                    name: this.$t('nav:My'),
+                    name: 'My',
                     path:"/my",
                     children: [],
                     isHref: false,
                 },
                 // 发布
                 {
-                    name: this.$t('nav:Inscribe'),
+                    name: 'Inscribe',
                     path: "/inscribe",
                     children: [],
                     isHref: false,
                 },
                 //文档
                 {
-                    name: this.$t('nav:Documents'),
+                    name: 'Documents',
                     path: "/documents",
                     children: [],
                     isHref: false,
@@ -341,10 +359,15 @@ export default {
             immediate: true,
             async handler(val) {
                 if (val) {
-                    console.log(val);
                     this.walletDialogShow = false;
-                    await this.getLusdBalance();
+                    await this.getCoinBalance();
                 }
+            }
+        },
+        isConnected: {
+            immediate: true,
+            async handler(val) {
+                console.log(val);
             }
         },
         currentPath: {
@@ -362,119 +385,113 @@ export default {
         }
     },
     methods: {
-        async switchVersion(val) { //切换版本
-            if (val === 'chain') { //公链版
-                if (this.chainName !== 'HECO') {
-                    let switchRes = await this.dropdownChainMenuClick('HECO', false);
-                    console.log(switchRes);
-                    if (switchRes) {
-                        this.$store.commit('setVersion', val);
-                        localStorage.setItem('versionName', val);
-                        this.$router.push({ path: '/NumRange' });
-                        setTimeout(async () => {
-                            location.reload(); //网络切换成功 刷新页面
-                        }, 300)
-
-                    }
-                } else {
-                    this.$store.commit('setVersion', val);
-                    localStorage.setItem('versionName', val);
-                    this.$router.push({ path: '/NumRange' });
-                    setTimeout(async () => {
-                        location.reload(); //网络切换成功 刷新页面
-                    }, 300)
-                }
-            } else {
-                localStorage.setItem('versionName', val)
-                this.$router.push({ path: '/NumRangeSpeed' });
-                setTimeout(async () => {
-                    location.reload(); //网络切换成功 刷新页面
-                }, 300)
-            }
-            this.$forceUpdate();
+        walletPopoverShow() {
+          this.typeName = "0";
+          this.resettingList();
+          this.getCfxsList();
         },
-        async dropdownMenuClick(command) { //兑换 下拉框事件
-            console.log(command);
-            let location = this.$route.params.assets;
-            if (command === 'deposit') {
-                if (location !== 'deposit') {
-                    this.$router.push({ path: '/exchange/deposit' })
-                }
-            } else if (command === 'withdraw') {
-                if (location !== 'withdraw') {
-                    this.$router.push({ path: '/exchange/withdraw' })
-                }
-            } else if (command === 'financial') {
-                // console.log(this.$route.name, command);
-                if (this.versionName === 'chain') {
-                    if (this.$route.name !== 'PoolsList') {
-                        this.$router.push({ path: '/PoolsList' })
-                    }
-                } else {
-                    if (this.$route.name !== 'PoolsListSpeed') {
-                        this.$router.push({ path: '/PoolsListSpeed' })
-                    }
-                }
-            } else if (command === 'speed-deposit') { //极速版入金
-                if (this.$route.path !== '/depositWithdrawal/1') {
-                    console.log(this.$route.name, command);
-                    this.$router.push({
-                        path: '/depositWithdrawal/1',
-                        query: {
-                            // type: 1,
+        resettingList() {
+            this.dataList = [];
+            this.isNoMoreData = false;
+            this.currPage = 1;
+        },
+        onLoadMoreDataClick() {
+            this.pageSize = 1;
+            if(this.typeName === 'CFXs') {
+                this.getCfxsList();
+            }
+        },
+        tabClickSelect(tab) {
+            this.resettingList();
+            if(tab.index == "0") {
+                this.getCfxsList();
+            }
+            if(tab.index == "1") {
+                this.getMyNftData();
+            }
+            if(tab.index == "2") {
+                this.getCoinBalance();
+            }
+        },
+        getCfxsList(ServerWhere) { //获取CFXs列表
+            if (!ServerWhere || ServerWhere == undefined || ServerWhere.length <= 0) {
+                ServerWhere = {
+                    limit: this.pageSize,
+                    page: this.currPage,
+                    owner: this.address,
+                };
+            }
+            this.loading = true;
+            get(this.apiUrl + "/Api/Market/getMyMarketplaceData", ServerWhere, async json => {
+                console.log(json);
+                if (json.code == 10000) {
+                    let list = (json.data && json.data.lists) || [];
+                    // console.log(list);
+                    if (Array.isArray(list) && Array.isArray(this.dataList)) {
+                        this.dataList = this.dataList.concat(list);
+                        if(list.length < this.pageSize) {
+                            this.isNoMoreData = true;
                         }
-                    }, () => { })
+                    }
+                    this.loading = false;
+                    this.total = json.data.count;
+                    this.$forceUpdate();
+                } else {
+                    this.$message.error("加载数据失败");
                 }
-            } else if (command === 'speed-withdraw') { //极速版出金
-                if (this.$route.push !== '/depositWithdrawal/2') {
-                    console.log(this.$route, command);
-                    this.$router.push({
-                        path: '/depositWithdrawal/2',
-                        query: {
-                            // type: 2,
+            });
+        },
+        getMyNftData(ServerWhere) {
+            if (!ServerWhere || ServerWhere == undefined || ServerWhere.length <= 0) {
+                ServerWhere = {
+                    limit: this.pageSize,
+                    page: this.currPage,
+                    owner: this.address,
+                };
+            }
+            this.loading = true;
+            this.isNoMoreData = false;
+            get(this.apiUrl + "/Api/Market/getMyNftData", ServerWhere, async json => {
+                if (json.code == 10000) {
+                    let list = (json.data && json.data.lists) || [];
+                    // console.log(list);
+                    if (Array.isArray(list) && Array.isArray(this.dataList)) {
+                        this.dataList = this.dataList.concat(list);
+                        if(list.length < this.pageSize) {
+                            this.isNoMoreData = true;
                         }
-                    }, () => { })
+                    }
+                    this.loading = false;
+                    this.total = json.data.count;
+                    this.$forceUpdate();
+                } else {
+                    this.$message.error("加载数据失败");
                 }
-            }
+            });
         },
-        async dropdownChainMenuClick(command, isRefresh = true) { //切换链 下拉事件
-            // console.log(command);
-            // localStorage.setItem('chainName', command);
-            let chainId = await getChainNameId(command);
-            let netWorkRes = await networkSetup(chainId, command);
-            console.log(chainId, netWorkRes);
-            if (netWorkRes) {
-                this.chain_name = command;
-                localStorage.setItem('chainName', command);
-                if (isRefresh) {
-                    location.reload(); //网络切换成功 刷新页面
-                }
-                return true;
-            }
-            return false;
+        async getCoinBalance() {  //获取Coin余额
+            const balance = await getBalance(Address.CFXsERC20TokenAddress, 18); //获取余额
+            this.CoinBalance = balance;
         },
-        async getLusdBalance() {  //获取余额
-            let balance = 0;
-            if (this.versionName === 'chain') {
-                balance = await getBalance(TOKEN[this.chainName].LUSD, 18);
-                console.log("LUSD balance", balance);
-            }
-            // else {
-            //     balance = await getUserPlatformBalance();
-            //     console.log("平台 balance", balance);
-            // }
-            this.lusdBalance = keepDecimalNotRounding(balance, 2, true);
+        hrefMarketRouter() {
+            this.$router.push({ path: '/home' })
+        },
+        buyCoinHref() {
+            window.open('https://app.swappi.io/#/swap', '_blank');
+        },
+        async copyAddress() {
+            await navigator.clipboard.writeText(this.address);
         },
         handleSelect(index, path) { //菜单激活时事件
             // console.log(index, path);
             this.menuDrawerShow = false;
         },
         connectWalletShowFun() {
-            if (this.address && this.address !== undefined && this.address !== '') {
-                this.$disconnect();
-            } else {
-                this.walletDialogShow = true;
-            }
+            this.walletDialogShow = true;
+        },
+        outContentAddress() {
+            this.$disconnect();
+            this.walletPopoverIsShow = false;
         },
         async connectWallet(index) {
             // return false;
@@ -552,29 +569,6 @@ export default {
                 this.$router.push({ path: '/position' })
             }
         },
-        SecurityAudit() {
-            window.open("https://www.certik.com/projects/h2ofinance")
-        },
-        clickLanguageDropdown(command) {
-            if (command) {
-                this.language = command;
-                // 获取当前语言
-                let curLng = this.$i18n.i18next.language
-                // 切换语言
-                this.$i18n.i18next.changeLanguage(command);
-            }
-            // console.log(item);
-        },
-        changeCoinMenuClick(command) { //选择币种
-            console.log(command);
-            if (command) {
-                localStorage.setItem('transactionCurrency', command);
-                // localStorage.setItem(this.chain_name + '_transactionCurrency', command);
-                setTimeout(async () => {
-                    location.reload(); //网络切换成功 刷新页面
-                }, 300);
-            }
-        },
         substring(str) {
             var str1 = str.replace(str.substring(8, str.length - 4), "****");
             return str1;
@@ -605,9 +599,6 @@ export default {
                 this.$router.push({ path: '/depositWithdrawal' })
             }
         },
-        async getCurrencyTokenList() { //获取币种列表
-            this.currencyTokenList = await getCurrencyTokenList();
-        }
     }
 }
 </script>
@@ -696,6 +687,146 @@ export default {
         border-top-color: transparent;
     }
 }
+.wallet-popover {
+    background: #202020;
+    flex-direction: column;
+    display: flex;
+    border: 0 solid #e5e7eb;
+    box-sizing: border-box;
+    color: #aaa;
+    padding: 32px 24px;
+    .wallet-info {
+        display: block;
+        .userinfo {
+            display: flex;
+            justify-content: space-between;
+            .left {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 10px;
+                img {
+                    cursor: pointer;
+                }
+            }
+            .right {
+                display: flex;
+                align-items: center;
+                img {
+                    cursor: pointer;
+                }
+            }
+        }
+        .button-market {
+            display: grid;
+            margin-top: 24px;
+            margin-bottom: 24px;
+            gap: 12px;
+            .el-button {
+                gap: 12px;
+                background-color: #ad8d65;
+                border: 0;
+                color: rgb(12, 12, 12);
+                width: 100%;
+                height: 48px;
+            }
+            .el-button+.el-button {
+                margin-left: 0;
+            }
+        }
+        .tab-list {
+            .el-tabs__item {
+                color: #aaa;
+                font-weight: 600;
+            }
+            .el-tabs__item.is-active {
+                color: #ad8d65;
+            }
+            .el-tabs__nav-wrap::after {
+                height: 0;
+            }
+            .el-tabs__content {
+                height: 300px;
+                overflow-y: auto;
+            }
+            .data-list {
+                display: grid;
+                grid-template-columns: repeat(1, 1fr);
+                gap: 16px;
+                padding-top: 20px;
+                .item {
+                    display: flex;
+                    justify-content: space-between;
+                    gap: 16px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: #fff;
+                    .left {
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                    }
+                    .right {
+                        display: flex;
+                        align-items: center;
+                    }
+                }
+            }
+            .no-more {
+                width: 100%;
+                height: 60px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-bottom: 20px;
+                font-size: 14px;
+                .load-more {
+                    color: #ad8d65;
+                    cursor: pointer;
+                    .loading-icon {
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        gap: 5px;
+                    }
+                    /* 定义动画名称为 spinner */
+                    @keyframes spinner {
+                        from {
+                            transform: rotate(0deg);
+                        }
+                        to {
+                            transform: rotate(360deg);
+                        }
+                    }
+        
+                    /* 应用动画到加载圈的类 */
+                    .loading-spinner {
+                        border: 3px solid #282828; /* 灰色边框 */
+                        border-top: 3px solid #ad8d65; /* 蓝色顶部边框 */
+                        border-radius: 50%; /* 圆形 */
+                        width: 10px;
+                        height: 10px;
+                        animation: spinner 1s linear infinite; /* 应用动画 */
+                    }
+        
+                    /* 可选：添加一些样式来隐藏加载圈的溢出 */
+                    .loading-container {
+                        display: inline-block;
+                        position: relative;
+                        overflow: hidden;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 960px) {
+    .wallet-popover {
+        width: 100%!important;
+        left: 0!important;
+    } 
+}
 </style>
 <style lang="scss" scoped>
 /deep/ {
@@ -768,6 +899,26 @@ export default {
 
     .connent {
         display: flex;
+        gap: 20px;
+        .connect-wallect-btn {
+            display: grid;
+            gap: 12px;
+            .el-button {
+                gap: 12px;
+                background-color: #ad8d65;
+                border: 0;
+                color: rgb(12, 12, 12);
+                width: 100%;
+                span {
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+            }
+            .el-button+.el-button {
+                margin-left: 0;
+            }
+        }
     }
 
     .mobile-log {
