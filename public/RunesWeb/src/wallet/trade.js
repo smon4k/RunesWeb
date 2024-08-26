@@ -68,7 +68,7 @@ export const approve =  function (tokenAddress, otherAddress, amount, decimals) 
 }
 
 // 购买
-export const unlockingScriptbatch = async function (cfxsIds=[], amounts=[], usdIds=[], totalAmount=0) {
+export const unlockingScriptbatch = async function (cfxsIds=[], amounts=[], usdIds=[], buyCurrency="1") {
   console.log(cfxsIds, amounts, usdIds);
   const address = __ownInstance__.$store.state.base.address;
   const contractAddress = Address.CFXsContractAddress;
@@ -111,6 +111,7 @@ export const unlockingScriptbatch = async function (cfxsIds=[], amounts=[], usdI
                   "cfxsIds": cfxsIds,
                   "sendaddr": address,
                   "hash": hash,
+                  "currency": buyCurrency === '1' ? 'CFX' : 'USDT'
               }
             };
             await saveTransactionTask(queryParams);
@@ -137,7 +138,7 @@ export const unlockingScriptbatch = async function (cfxsIds=[], amounts=[], usdI
 }
 
 // 出售
-export const lockingScriptbatch = async function (cfxsIds=[], amounts=[], usdIds=[], lockhours=24) {
+export const lockingScriptbatch = async function (cfxsIds=[], amounts=[], usdIds=[], lockhours=24, sellCurrency="1") {
   console.log(cfxsIds, amounts);
   const address = __ownInstance__.$store.state.base.address;
   const contractAddress = Address.CFXsContractAddress;
@@ -179,6 +180,7 @@ export const lockingScriptbatch = async function (cfxsIds=[], amounts=[], usdIds
                   "sendaddr": address,
                   "hash": hash,
                   "lockhours": lockhours,
+                  "currency": sellCurrency === '1' ? 'CFX' : 'USDT'
               }
           };
           await saveTransactionTask(queryParams);

@@ -27,7 +27,11 @@
                         </div>
                         <div class="bottom">
                             <div class="ids-num">
-                                <div class="num">
+                                <div class="num" v-if="item.currency === 'CFX'">
+                                    <img :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="16">
+                                    <div class="">CFX</div>
+                                </div>
+                                <div class="num" v-if="item.currency === 'USDT'">
                                     <img :src="require('@/assets/svg/usdt.svg')" alt="" width="16">
                                     <div class="">USDT</div>
                                 </div>

@@ -23,8 +23,8 @@ class TransactionData extends Base
      * @author qinlh
      * @since 2024-08-23
      */
-    public static function saveTransactionData($address='', $formaddress='', $chainid='', $amount=0, $price=0) {
-        if($address !== '' && $formaddress !== '' && $chainid !== '' && $amount > 0 && $price > 0) {
+    public static function saveTransactionData($address='', $formaddress='', $chainid='', $amount=0, $price=0, $currency='') {
+        if($address !== '' && $formaddress !== '' && $chainid !== '' && $amount > 0 && $price > 0 && $currency !== '') {
             try {
                 $insertData = [
                     "address" => $address,
@@ -32,6 +32,7 @@ class TransactionData extends Base
                     "chainid" => $chainid,
                     "amount" => $amount,
                     "price" => $price,
+                    "currency" => $currency,
                     "date" => date("Y-m-d H:i:s")
                 ];
                 $insertId = self::insert($insertData);

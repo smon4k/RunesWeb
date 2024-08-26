@@ -22,7 +22,8 @@
                             <div class="ids-num">
                                 <div class="ids">#{{ item.chainid }}</div>
                                 <div class="num">
-                                    <img :src="require('@/assets/svg/usdt.svg')" alt="" width="16">
+                                    <img :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="16" v-if="item.currency === 'CFX'">
+                                    <img :src="require('@/assets/svg/usdt.svg')" alt="" width="16" v-if="item.currency === 'USDT'">
                                     <div class="">{{ item.amount }}</div>
                                 </div>
                             </div>

@@ -101,9 +101,9 @@ class MyMarket extends Base
      * @author qinlh
      * @since 2024-08-06
      */
-    public static function lockingScriptbatch($cfxsIds=[], $amounts=[], $sendaddr='', $lockhours=0, $hash='')
+    public static function lockingScriptbatch($cfxsIds=[], $amounts=[], $sendaddr='', $lockhours=0, $currency='', $hash='')
     {
-        if (count($cfxsIds) > 0 && count($amounts) > 0 && $sendaddr !== '' && $lockhours >= 24) {
+        if (count($cfxsIds) > 0 && count($amounts) > 0 && $sendaddr !== '' && $currency !== '' && $lockhours >= 24) {
             self::startTrans();
             try {
                 $insertCount = 0;
@@ -121,6 +121,7 @@ class MyMarket extends Base
                                 'unitprice' => $sellUnPrice, 
                                 'quantity' => $marget['amount'], 
                                 'regmarket' => $marget['regmarket'], 
+                                'currency' => $currency, 
                                 'data' => $marget['data'], 
                                 'addtime' => date('Y-m-d H:i:s'), 
                                 'locktime' => $twentyFourHoursLater, 

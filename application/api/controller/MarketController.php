@@ -37,6 +37,7 @@ class MarketController extends BaseController
      */
     public function getMarketplaceList(Request $request)
     {
+        $currency = $request->request('currency', '', 'trim');
         $regmarket = $request->request('regmarket', 0, 'intval');
         $page = $request->request('page', 1, 'intval');
         $limit = $request->request('limit', 20, 'intval');
@@ -50,6 +51,7 @@ class MarketController extends BaseController
         $where = [];
         $where['status'] = 1;
         $order = "id desc";
+        $where['currency'] = $currency;
         if ($regmarket && $regmarket > 0) {
             $where['regmarket'] = $regmarket;
         }
@@ -184,9 +186,10 @@ class MarketController extends BaseController
         $cfxsIds = $request->post('cfxsIds/a', [], '');
         $amounts = $request->post('amounts/a', [], '');
         $sendaddr = $request->post('sendaddr', '', 'trim');
+        $currency = $request->post('currency', '', 'trim');
         $hash = $request->post('hash', '', 'trim');
         $lockhours = $request->post('lockhours', 0, 'intval');
-        $result = MyMarket::lockingScriptbatch($cfxsIds, $amounts, $sendaddr, $lockhours, $hash);
+        $result = MyMarket::lockingScriptbatch($cfxsIds, $amounts, $sendaddr, $lockhours, $currency, $hash);
         if ($result && $result['code'] == 1) {
             return $this->as_json('ok');
         } else {

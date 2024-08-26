@@ -290,7 +290,26 @@
                         <span><el-checkbox v-model="samePriceChecked" v-if="this.selectDataList.length > 1">Same price</el-checkbox></span>
                     </div>
                     <div class="set-unit-price">
+
                         <div class="title">Set unit price</div>
+
+                        <div class="select-currency">
+                            <el-select v-model="sellCurrency" placeholder="Select Currenty">
+                                <div slot="prefix" class="currency-img">
+                                    <img v-if="sellCurrency === '1'" :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="20">
+                                    <img v-if="sellCurrency === '2'" :src="require('@/assets/usdt.png')" alt="" width="20">
+                                </div>
+                                <el-option label="CFX" value="1">
+                                    <img :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="18">
+                                    <span style="margin-left: 5px;">CFX</span>
+                                </el-option>
+                                <el-option label="USDT" value="2">
+                                    <img :src="require('@/assets/usdt.png')" alt="" width="18">
+                                    <span style="margin-left: 5px;">USDT</span>
+                                </el-option>
+                            </el-select>
+                        </div>
+
 
                         <div v-for="(item, index) in selectDataList" :key="index">
                             <div class="input-price">
@@ -300,12 +319,19 @@
                                 </div>
                                 <div class="input-number">
                                     <el-input v-model="sellPriceValues[item.id]" placeholder="0.00" @input="sellPriceInput">
-                                        <div slot="suffix"> <img :src="require('@/assets/usdt.png')" alt="" width="18"> USDT</div>
+                                        <div slot="suffix" v-if="sellCurrency === '1'"> 
+                                            <img :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="18">
+                                            <span style="margin-left: 5px;">CFX</span>
+                                        </div>
+                                        <div slot="suffix" v-if="sellCurrency === '2'"> 
+                                            <img :src="require('@/assets/usdt.png')" alt="" width="18">
+                                            <span style="margin-left: 5px;">USDT</span>
+                                        </div>
                                     </el-input>
                                 </div>
                                 <div class="total-price">
                                     <span>Total Price</span>
-                                    <span>{{ sellPriceValues[item.chainid] > 0 ? new Intl.NumberFormat('en-US').format(sellPriceValues[item.chainid]) : 0 }}</span>
+                                    <span>{{ sellPriceValues[item.id] > 0 ? new Intl.NumberFormat('en-US').format(sellPriceValues[item.id]) : 0 }}</span>
                                 </div>
                             </div>
                         </div>
@@ -327,7 +353,7 @@
                     </div>
                     <div class="sale-price">
                         <span>Sale price</span>
-                        <span class="number">{{ totalSellPrice }} USDT</span>
+                        <span class="number">{{ totalSellPrice }} {{ sellCurrency === '1' ? 'CFX' : 'USDT' }}</span>
                     </div>
                     <div class="market-fee">
                         <span>Market fee</span>
@@ -335,7 +361,7 @@
                     </div>
                     <div class="total-potear">
                         <span>Total potentail earnings</span>
-                        <span class="number">{{ totalSellPrice }} USDT</span>
+                        <span class="number">{{ totalSellPrice }} {{ sellCurrency === '1' ? 'CFX' : 'USDT' }}</span>
                     </div>
                     <div class="button-dialog">
                         <el-button type="primary" :disabled="trading || totalSellPrice <= 0" :loading="trading" @click="lockingSellContract" >COMPLETE LISTING</el-button>
@@ -478,6 +504,7 @@ export default {
             splitErrMesageDivShow: false,
             splitType: "1",
             clsCfxId: "",
+            sellCurrency: "1",
         }
     },
     mounted() {
@@ -833,13 +860,14 @@ export default {
             const cfxsIds = indexArray.filter((value, index) => {
                 return value !== null && value !== "" && value !== undefined;
             });
-            const usdIds = new Array(cfxsIds.length).fill("0");
+
+            const usdIds = new Array(cfxsIds.length).fill(this.sellCurrency === '1' ? "1" : "0");
             
             const prices = valueArray.filter((value, index) => {
                 return value !== null && value !== "" && value !== undefined;
             });
             // console.log(cfxsIds, prices);
-            lockingScriptbatch(cfxsIds, prices, usdIds, this.hoursDifference).then(async (hash) => {
+            lockingScriptbatch(cfxsIds, prices, usdIds, this.hoursDifference, this.sellCurrency).then(async (hash) => {
                 if (hash) {
                     this.trading = false;
                     this.quickListDialogShow = false;
@@ -1706,6 +1734,27 @@ export default {
                             .total-price {
                                 display: flex;
                                 justify-content: space-between;
+                            }
+                        }
+                        .select-currency {
+                            .currency-img {
+                                display: flex;
+                                align-items: center;
+                            }
+                            .el-select {
+                                width: 100%;
+                                border: 0;
+                                .el-input__inner {
+                                    display: flex;
+                                    align-items: center;
+                                    background-color: transparent;
+                                    border-color: #525252;
+                                    color: #fff;
+                                }
+                                .el-input__prefix {
+                                    display: flex;
+                                    align-items: center;
+                                }
                             }
                         }
                     }

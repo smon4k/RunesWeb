@@ -107,6 +107,20 @@
                 <el-tabs v-model="regmarket" @tab-click="handleClickData">
                     <el-form :inline="true" :model="formSearch" :class="{ 'justify-content-between': screenWidth <= adaptiveSize }">
                         <span v-if="screenWidth > adaptiveSize">
+                            <el-select class="select-currency" v-model="buyCurrency" placeholder="Select Currenty" style="width: 180px;" @change="buyCurrencyChange">
+                                <div slot="prefix" class="currency-img">
+                                    <img v-if="buyCurrency === '1'" :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="20">
+                                    <img v-if="buyCurrency === '2'" :src="require('@/assets/usdt.png')" alt="" width="20">
+                                </div>
+                                <el-option label="CFX" value="1">
+                                    <img :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="18">
+                                    <span style="margin-left: 5px;">CFX</span>
+                                </el-option>
+                                <el-option label="USDT" value="2">
+                                    <img :src="require('@/assets/usdt.png')" alt="" width="18">
+                                    <span style="margin-left: 5px;">USDT</span>
+                                </el-option>
+                            </el-select>
                             <el-form-item label="">
                                 <el-select v-model="formSearch.searchName" placeholder="请选择">
                                     <el-option label="Price low to high" value="1">
@@ -200,7 +214,7 @@
                         <div class="clear" @click="clearSelectAll()">Clear</div>
                     </div>
                     <div class="right">
-                        <div class="total">Total: <font color="#ad8d65">{{ calcTotalNumber.totalUSDT }} USDT</font></div>
+                        <div class="total">Total: <font color="#ad8d65">{{ calcTotalNumber.totalUSDT }} {{ calcCurrencyName }}</font></div>
                         <div class="sweep-button">
                             <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" class="search-button" type="primary" @click="sweepClick" :disabled="highlightedIndices.length <= 0">SWEEP</el-button>
                         </div>
@@ -212,7 +226,7 @@
                             <el-checkbox v-model="checked" @change="selectAllChange">Select All</el-checkbox>
                             <div class="item-num">{{ calcTotalNumber.totalSlots }} item</div>
                         </div>
-                        <div class="total">Total: <font color="#ad8d65">{{ calcTotalNumber.totalUSDT }} USDT</font></div>
+                        <div class="total">Total: <font color="#ad8d65">{{ calcTotalNumber.totalUSDT }} {{ calcCurrencyName }}</font></div>
                     </div>
                     <div class="right">
                         <div class="sweep-button">
@@ -232,7 +246,7 @@
                 <div class="dialog-content">
                     <div class="you-wall-pay">
                         <span class="title">You will pay</span>
-                        <span class="value">{{ buyNowData.youWillPay }} USDT</span>
+                        <span class="value">{{ buyNowData.youWillPay }} {{ calcCurrencyName }}</span>
                     </div>
                     <div class="for">
                         <span class="title">For</span>
@@ -240,9 +254,10 @@
                     </div>
                     <div class="button-dialog">
                         <span class="text" v-if="!approve">You will be asked to approve this purchase from your wallet.</span>
-                        <el-button type="primary" @click="startApprove" v-if="!approve" :loading="trading">APPROVE</el-button>
+                        <el-button type="primary" @click="startApprove" v-if="!approve && buyCurrency === '2'" :loading="trading">APPROVE</el-button>
                         <el-button type="primary" v-else :loading="trading" @click="buyNowContract">Buy</el-button>
-                        <span class="balance">Balance: {{ toFixed(balance || 0, 4) }} USDT</span>
+                        <span class="balance" v-if="buyCurrency === '1'">Balance: {{ toFixed(cfxBalance || 0, 4) }} {{ calcCurrencyName }}</span>
+                        <span class="balance" v-if="buyCurrency === '2'">Balance: {{ toFixed(usdtBalance || 0, 4) }} {{ calcCurrencyName }}</span>
                     </div>
                 </div>
             </el-dialog>
@@ -312,7 +327,8 @@ export default {
     data() {
         return {
             screenWidth: document.body.clientWidth,
-            balance: 0,
+            usdtBalance: 0,
+            cfxBalance: 0,
             regmarket: '0',
             trading: false,
             loading: false,
@@ -340,7 +356,8 @@ export default {
                 cfxs: 0,
             },
             searchDialogShow: false,
-            statisticsData: {}
+            statisticsData: {},
+            buyCurrency: '1',
         }
     },
     mounted() {
@@ -382,6 +399,13 @@ export default {
                 }
             });
             return { totalUSDT, totalSlots, totalCfxs, cfxsIds, amounts };
+        },
+        calcCurrencyName() {
+            if(this.buyCurrency === '1') {
+                return 'CFX';
+            } else {
+                return 'USDT';
+            }
         }
     },
     created() {
@@ -395,7 +419,8 @@ export default {
             immediate: true,
             async handler(val) {
                 if (val) {
-                    this.balance = await getBalance(Address.USDT, 18); //获取余额
+                    this.cfxBalance = await getBalance(Address.CFX, 18); //获取余额
+                    this.usdtBalance = await getBalance(Address.USDT, 18); //获取余额
                 }
             }
         },
@@ -544,12 +569,21 @@ export default {
                 }
             });
         },
+        buyCurrencyChange(value) {
+            if(value) {
+                this.isNoMoreData = false;
+                this.currPage = 1;
+                this.dataList = [];
+                this.getMarketplaceList();
+            }
+        },
         getMarketplaceList(ServerWhere) { //获取产品日收益列表
             if (!ServerWhere || ServerWhere == undefined || ServerWhere.length <= 0) {
                 ServerWhere = {
                     limit: this.pageSize,
                     page: this.currPage,
                     regmarket: this.regmarket,
+                    currency: this.buyCurrency === '1' ? 'CFX' : 'USDT',
                 };
             }
             this.loading = true;
@@ -570,15 +604,6 @@ export default {
                 } else {
                     this.$message.error("加载数据失败");
                 }
-            });
-        },
-        async getIsApprove() { //获取余额 查看是否授权
-            let balance = await getBalance(Address.BUSDT, 18); //获取余额
-            console.log("DUSD balance", balance);
-            this.dusdBalance = keepDecimalNotRounding(balance, 8, true);
-            isApproved(Address.BUSDT, 18, balance, this.gamesFillingAddress).then((bool) => {
-                console.log("isApprove", bool);
-                this.approve = bool ? true : false;
             });
         },
         startApprove() {
@@ -603,11 +628,11 @@ export default {
         },
         buyNowContract() {
             this.trading = true;
-            let usdIds = new Array(this.buyNowData.cfxsIds.length).fill("0");
-            let totalAmount = this.buyNowData.amounts.reduce((accumulator, current) => {
-                return accumulator + Number(fromWei(Number(current), 18));
-            }, 0); // 0 是累加器的初始值
-            unlockingScriptbatch(this.buyNowData.cfxsIds, this.buyNowData.amounts, usdIds, this.buyNowData.cfxs).then(async (hash) => {
+            let usdIds = new Array(this.buyNowData.cfxsIds.length).fill(this.buyCurrency === '1' ? "1" : "0");
+            // let totalAmount = this.buyNowData.amounts.reduce((accumulator, current) => {
+            //     return accumulator + Number(fromWei(Number(current), 18));
+            // }, 0); // 0 是累加器的初始值
+            unlockingScriptbatch(this.buyNowData.cfxsIds, this.buyNowData.amounts, usdIds, this.buyCurrency).then(async (hash) => {
                 if (hash) {
                     this.approve = true;
                     this.trading = false;
@@ -740,10 +765,16 @@ export default {
                 .el-select {
                     width: 300px;
                 }
+                .el-input__prefix {
+                    display: flex;
+                    align-items: center;
+                }
                 .el-input__inner {
                     color: #aaa;
                     border-color: #525252;
                     background-color: transparent;
+                    display: flex;
+                    align-items: center;
                 }
                 .search-button {
                     background-color: #ad8d65;
