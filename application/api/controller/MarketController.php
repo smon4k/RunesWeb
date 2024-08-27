@@ -167,7 +167,8 @@ class MarketController extends BaseController
         // $amounts = $request->post('amounts/a', [], '');
         $sendaddr = $request->post('sendaddr', '', 'trim');
         $hash = $request->post('hash', '', 'trim');
-        $result = MyMarket::batchUnlockingScript($cfxsIds, $sendaddr, $hash);
+        $currency = $request->post('currency', '', 'trim');
+        $result = MyMarket::batchUnlockingScript($cfxsIds, $sendaddr, $currency, $hash);
         if ($result && $result['code'] == 1) {
             return $this->as_json('ok');
         } else {

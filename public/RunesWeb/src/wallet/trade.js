@@ -73,7 +73,7 @@ export const unlockingScriptbatch = async function (cfxsIds=[], amounts=[], usdI
   const address = __ownInstance__.$store.state.base.address;
   const contractAddress = Address.CFXsContractAddress;
   const contract = new web3.eth.Contract(CFXsContractMainABI, contractAddress);
-  const amount = toWei("0", 18);
+  const amount = toWei("0.01", 18);
   // console.log(totalAmount, amount);
   let encodedABI = contract.methods.UnlockingScriptbatch(cfxsIds, usdIds, amounts).encodeABI();
   let timestamp = new Date().getTime().toString();

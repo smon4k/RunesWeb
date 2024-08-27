@@ -43,9 +43,9 @@ class MyMarket extends Base
      * @author qinlh
      * @since 2024-08-05
      */
-    public static function batchUnlockingScript($cfxsIds=[], $sendaddr='', $hash='')
+    public static function batchUnlockingScript($cfxsIds=[], $sendaddr='', $currency='', $hash='')
     {
-        if (count($cfxsIds) > 0 && $sendaddr !== '') {
+        if (count($cfxsIds) > 0 && $sendaddr !== '' && $currency !== '') {
             self::startTrans();
             try {
                 $insertCount = 0;
@@ -62,7 +62,7 @@ class MyMarket extends Base
                         if ($insertId > 0) {
                             $delRes = Market::delMarketData($cfxId);
                             if($delRes !== false) {
-                                $insertTranData = TransactionData::saveTransactionData($sendaddr, $marget['chainto'], $cfxId, $marget['quantity'], $marget['amount']); //记录成交
+                                $insertTranData = TransactionData::saveTransactionData($sendaddr, $marget['chainto'], $cfxId, $marget['quantity'], $marget['amount'], $currency); //记录成交
                                 if($insertTranData) {
                                     MarketLog::addMarketLogData($cfxId, $sendaddr, json_encode($marget), $hash, 1); //记录购买记录
                                     $insertCount += 1;
