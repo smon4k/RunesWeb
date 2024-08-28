@@ -22,4 +22,5 @@ database.php
 /runtime/cache
 database_hp*.php
 /log.xml
+/pyapi/db.conf
 
