@@ -214,7 +214,7 @@ def listen_for_transaction_updates():
     connection = pymysql.connect(**db_config)
 
     try:
-        end_time = time.time() + timeout  # 脚本将在1分钟后停止
+        end_time = time.time() + float(timeout)  # 脚本将在1分钟后停止
 
         with connection.cursor() as cursor:
             # 设置隔离级别为 READ COMMITTED
