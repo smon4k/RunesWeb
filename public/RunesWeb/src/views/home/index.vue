@@ -632,7 +632,7 @@ export default {
             // let totalAmount = this.buyNowData.amounts.reduce((accumulator, current) => {
             //     return accumulator + Number(fromWei(Number(current), 18));
             // }, 0); // 0 是累加器的初始值
-            unlockingScriptbatch(this.buyNowData.cfxsIds, this.buyNowData.amounts, usdIds, this.buyCurrency).then(async (hash) => {
+            unlockingScriptbatch(this.buyNowData.cfxsIds, this.buyNowData.amounts, usdIds, this.buyNowData.youWillPay, this.buyCurrency).then(async (hash) => {
                 if (hash) {
                     this.approve = true;
                     this.trading = false;

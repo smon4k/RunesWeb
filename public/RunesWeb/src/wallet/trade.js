@@ -68,12 +68,17 @@ export const approve =  function (tokenAddress, otherAddress, amount, decimals) 
 }
 
 // 购买
-export const unlockingScriptbatch = async function (cfxsIds=[], amounts=[], usdIds=[], buyCurrency="1") {
+export const unlockingScriptbatch = async function (cfxsIds=[], amounts=[], usdIds=[], cfxPrice=0, buyCurrency="1") {
   console.log(cfxsIds, amounts, usdIds);
   const address = __ownInstance__.$store.state.base.address;
   const contractAddress = Address.CFXsContractAddress;
   const contract = new web3.eth.Contract(CFXsContractMainABI, contractAddress);
-  const amount = toWei("0.01", 18);
+  let amount = 0;
+  if(buyCurrency === "1") {
+    amount = toWei(cfxPrice, 18);
+  } else {
+    amount = toWei("0", 18);
+  }
   // console.log(totalAmount, amount);
   let encodedABI = contract.methods.UnlockingScriptbatch(cfxsIds, usdIds, amounts).encodeABI();
   let timestamp = new Date().getTime().toString();

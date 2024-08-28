@@ -391,6 +391,24 @@ class MarketController extends BaseController
             return $this->as_json('70001', $result['message']);
         }
     }
+
+    /**
+     * 手动插入一个mint的数据
+     * @author qinlh
+     * @since 2024-08-23
+     */
+    public function mnualInsertMarket(Request $request) {
+        $cfxid = $request->post('cfxid', '', 'trim');
+        $amount = $request->post('amount', 0, 'intval');
+        $owner = $request->post('owner', '', 'trim');
+        $regmarket = $request->post('regmarket', 0, 'intval');
+        $result = MyMarket::mnualInsertMarket($cfxid, $amount, $owner, $regmarket);
+        if ($result && $result['code'] == 1) {
+            return $this->as_json('ok');
+        } else {
+            return $this->as_json('70001', $result['message']);
+        }
+    }
 }
 
 

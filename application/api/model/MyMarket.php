@@ -624,6 +624,50 @@ class MyMarket extends Base
     }
 
     /**
+     * 手动插入mint数据
+     * @author qinlh
+     * @since 2024-08-28
+     */
+    public static function mnualInsertMarket($cfxid='', $amount=0, $owner='', $regmarket=0) {
+        if ($cfxid !== '' && $owner !== '' && $amount > 0) {
+            self::startTrans();
+            try {
+                $insertData = [
+                    'chainid' => $cfxid,
+                    'amount' => $amount, 
+                    'owner' => $owner,
+                    'regmarket' => $regmarket, 
+                    'data' => '', 
+                    'addtime' => date('Y-m-d H:i:s'), 
+                    'modifytime' => date('Y-m-d H:i:s'), 
+                    'status' => 1
+                ];
+                $insertId = self::insert($insertData);
+                if ($insertId) {
+                    MarketLog::addMarketLogData($cfxid, $owner, json_encode($insertData), '', 12); 
+                    self::commit();
+                    return ['code' => 1, 'message' => 'ok'];
+                }
+                self::rollback();
+                return ['code' => 0, 'message' => 'error'];
+            } catch (\Exception $e) {
+                // p($e);
+                // 回滚事务
+                self::rollback();
+                $error_msg = json_encode([
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'code' => $e->getCode(),
+                ], JSON_UNESCAPED_UNICODE);
+                return ['code' => 0, 'message' => $error_msg];
+            }
+        } else {
+            return ['code' => 0, 'message' => 'parameter error'];
+        }
+    }
+
+    /**
      * 获取符文数据详情
      * @author qinlh
      * @since 2024-08-06
@@ -725,9 +769,4 @@ class MyMarket extends Base
         }
         return [];
     }
-
-
-
-
-    // https://evm.confluxscan.io/tx/0xa550c92633890c85175128c05cc10cf7d54a7e35f43ec2a66175cab1208aec8e  https://evm.confluxscan.io/tx/0x9620cec9686f285900a8a83229ca8a062614525895713a8f5d6e4dfcb5915210 发布符文
 }
