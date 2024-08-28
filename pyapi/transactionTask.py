@@ -6,6 +6,7 @@ import datetime
 import json
 from web3 import Web3
 import eth_abi
+import threading
 
 # 读取配置文件
 config = configparser.ConfigParser()
@@ -24,6 +25,7 @@ db_config = {
 # 获取RPC URL
 rpc_url = config.get('config', 'rpcUrls')
 api_url = config.get('config', 'apiUrl')
+timeout = config.get('config', 'timeout')
 
 def check_transaction_status(tx_hash, type):
     """检查交易状态"""
@@ -211,26 +213,31 @@ def listen_for_transaction_updates():
     """监听数据库中的交易状态并更新"""
     connection = pymysql.connect(**db_config)
 
-    # print(connection)
     try:
+        end_time = time.time() + timeout  # 脚本将在1分钟后停止
+
         with connection.cursor() as cursor:
             # 设置隔离级别为 READ COMMITTED
             cursor.execute("SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;")
 
-        while True:
+        while time.time() < end_time:
             with connection.cursor() as cursor:
-                sql = "SELECT hash, status, number, method, parameter, type FROM r_transaction_task WHERE status = 1 OR status = 3 LIMIT 10"
+                sql = """
+                SELECT hash, status, number, method, parameter, type 
+                FROM r_transaction_task 
+                WHERE status = 1 OR status = 3 
+                LIMIT 10
+                """
                 cursor.execute(sql)
                 pending_transactions = cursor.fetchall()
+
                 for row in pending_transactions:
                     hash, status, number, method, parameter, type = row
                     receipt = check_transaction_status(hash, type)
-                    # print(receipt)
                     if receipt is not None:
                         new_status = 2 if receipt['status'] == '0x1' else 3
-                        # if new_status != status:
                         is_update = update_transaction_status(connection, hash, new_status, receipt['errorMsg'])
-                        if(is_update and new_status == 2):
+                        if is_update and new_status == 2:
                             api_response = call_api_on_success(method, parameter, type, receipt['data'])
                             if api_response and api_response['status'] == 10000:
                                 connection.commit()
@@ -240,10 +247,9 @@ def listen_for_transaction_updates():
                                 connection.commit()
                         else:
                             connection.commit()
-                        # print(f"Transaction {hash} updated to {new_status }")
-            
             # 每隔 2 秒检查一次
             time.sleep(2)
+
     finally:
         connection.close()
 
