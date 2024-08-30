@@ -225,7 +225,7 @@
                         <div class="clear" @click="clearSelectAll()">Clear</div>
                     </div>
                     <div class="right">
-                        <div class="total">Total: <font color="#ad8d65">{{ calcTotalNumber.totalUSDT }} {{ calcCurrencyName }}</font></div>
+                        <div class="total">Total: <font color="#ad8d65">{{ toFixed(calcTotalNumber.totalUSDT, 4) }} {{ calcCurrencyName }}</font></div>
                         <div class="sweep-button">
                             <el-button :class="{ 'batch-listing': highlightedIndices.length > 0 }" class="search-button" type="primary" @click="sweepClick" :disabled="highlightedIndices.length <= 0">SWEEP</el-button>
                         </div>
@@ -237,7 +237,7 @@
                             <el-checkbox v-model="checked" @change="selectAllChange">Select All</el-checkbox>
                             <div class="item-num">{{ calcTotalNumber.totalSlots }} item</div>
                         </div>
-                        <div class="total">Total: <font color="#ad8d65">{{ calcTotalNumber.totalUSDT }} {{ calcCurrencyName }}</font></div>
+                        <div class="total">Total: <font color="#ad8d65">{{ toFixed(calcTotalNumber.totalUSDT, 4) }} {{ calcCurrencyName }}</font></div>
                     </div>
                     <div class="right">
                         <div class="sweep-button">
@@ -404,15 +404,19 @@ export default {
             let totalCfxs = 0;  
             let cfxsIds = [];
             let amounts = [];
+            let isOneseAddress = false;
             this.dataList.forEach((item, index) => {
                 if (this.highlightedIndices.includes(index)) {
                     totalUSDT += Number(item.amount);
                     totalCfxs += Number(item.quantity);
                     cfxsIds.push(item.chainid);
                     amounts.push(toWei(item.unitprice, 18));
+                    if(item.chainto.toLowerCase() === this.address.toLowerCase()) {
+                        isOneseAddress = true;
+                    }
                 }
             });
-            return { totalUSDT, totalSlots, totalCfxs, cfxsIds, amounts };
+            return { totalUSDT, totalSlots, totalCfxs, cfxsIds, amounts, isOneseAddress };
         },
         calcCurrencyName() {
             if(this.buyCurrency === '1') {
@@ -643,6 +647,14 @@ export default {
             });
         },
         buyNowContract() {
+            const sweepData = this.calcTotalNumber;
+            if(sweepData.isOneseAddress) {
+                this.$message({
+                    message: 'Cannot buy what you sell for yourself',
+                    type: 'warning'
+                });
+                return false;
+            }
             this.trading = true;
             let usdIds = new Array(this.buyNowData.cfxsIds.length).fill(this.buyCurrency === '1' ? "1" : "0");
             // let totalAmount = this.buyNowData.amounts.reduce((accumulator, current) => {
