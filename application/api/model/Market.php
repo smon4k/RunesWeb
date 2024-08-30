@@ -24,21 +24,34 @@ class Market extends Base
      */
     public static function getMarketplaceList($where, $page, $limit, $order='')
     {
-        if ($limit <= 0) {
-            $limit = config('paginate.list_rows');// 获取总条数
+        try {
+            if ($limit <= 0) {
+                $limit = config('paginate.list_rows');// 获取总条数
+            }
+            $count = self::where($where)->count();//计算总页面
+            $allpage = intval(ceil($count / $limit));
+            $lists = self::where($where)
+                        ->page($page, $limit)
+                        ->order($order)
+                        ->field("*")
+                        ->select()
+                        ->toArray();
+            if (!$lists) {
+                return false;
+            }
+            return ['count'=>$count,'allpage'=>$allpage,'lists'=>$lists];
+        } catch (\Exception $e) {
+            p($e);
+            // 回滚事务
+            self::rollback();
+            $error_msg = json_encode([
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'code' => $e->getCode(),
+            ], JSON_UNESCAPED_UNICODE);
+            return ['code' => 0, 'message' => $error_msg];
         }
-        $count = self::where($where)->count();//计算总页面
-        $allpage = intval(ceil($count / $limit));
-        $lists = self::where($where)
-                    ->page($page, $limit)
-                    ->order($order)
-                    ->field("*")
-                    ->select()
-                    ->toArray();
-        if (!$lists) {
-            return false;
-        }
-        return ['count'=>$count,'allpage'=>$allpage,'lists'=>$lists];
     }
 
     /**
@@ -48,22 +61,35 @@ class Market extends Base
      */
     public static function getSellOrdersData($where, $page, $limit)
     {
-        if ($limit <= 0) {
-            $limit = config('paginate.list_rows');// 获取总条数
+        try {
+            if ($limit <= 0) {
+                $limit = config('paginate.list_rows');// 获取总条数
+            }
+            $count = self::alias('a')->where($where)->count();//计算总页面
+            $allpage = intval(ceil($count / $limit));
+            $lists = self::alias('a')
+                        ->where($where)
+                        ->page($page, $limit)
+                        ->order("id desc")
+                        ->field("a.*")
+                        ->select()
+                        ->toArray();
+            if (!$lists) {
+                return false;
+            }
+            return ['count'=>$count,'allpage'=>$allpage,'lists'=>$lists];
+        } catch (\Exception $e) {
+            // p($e);
+            // 回滚事务
+            self::rollback();
+            $error_msg = json_encode([
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'code' => $e->getCode(),
+            ], JSON_UNESCAPED_UNICODE);
+            return ['code' => 0, 'message' => $error_msg];
         }
-        $count = self::alias('a')->where($where)->count();//计算总页面
-        $allpage = intval(ceil($count / $limit));
-        $lists = self::alias('a')
-                    ->where($where)
-                    ->page($page, $limit)
-                    ->order("id desc")
-                    ->field("a.*")
-                    ->select()
-                    ->toArray();
-        if (!$lists) {
-            return false;
-        }
-        return ['count'=>$count,'allpage'=>$allpage,'lists'=>$lists];
     }
 
      /**

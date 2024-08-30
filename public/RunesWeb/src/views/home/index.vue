@@ -122,7 +122,7 @@
                                 </el-option>
                             </el-select>
                             <el-form-item label="">
-                                <el-select v-model="formSearch.searchName" placeholder="请选择">
+                                <el-select v-model="formSearch.searchName" placeholder="Please select">
                                     <el-option label="Price low to high" value="1">
                                         <img :src="require('@/assets/svg/price-high-low.svg')" alt="" width="20">
                                         <span style="margin-left: 5px;">Price low to high</span>
@@ -160,12 +160,23 @@
                             </el-form-item>
                         </span>
                         <span v-else>
-                            <el-form-item label="">
-                                <el-input v-model="formSearch.idAddress" placeholder="ID or owner address"></el-input>
-                            </el-form-item>
+                            <el-select class="select-currency" v-model="buyCurrency" placeholder="Select Currenty" style="width: 180px;" @change="buyCurrencyChange">
+                                <div slot="prefix" class="currency-img">
+                                    <img v-if="buyCurrency === '1'" :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="20">
+                                    <img v-if="buyCurrency === '2'" :src="require('@/assets/usdt.png')" alt="" width="20">
+                                </div>
+                                <el-option label="CFX" value="1">
+                                    <img :src="require('@/assets/svg/cfxs-black.svg')" alt="" width="18">
+                                    <span style="margin-left: 5px;">CFX</span>
+                                </el-option>
+                                <el-option label="USDT" value="2">
+                                    <img :src="require('@/assets/usdt.png')" alt="" width="18">
+                                    <span style="margin-left: 5px;">USDT</span>
+                                </el-option>
+                            </el-select>
                         </span>
                         <span v-if="screenWidth <= adaptiveSize" @click="searchDialogClick"><img :src="require('@/assets/svg/search.svg')" alt="" width="42"></span>
-                        <el-form-item>
+                        <el-form-item v-if="screenWidth > adaptiveSize">
                             <el-button class="search-button" type="primary" @click="onApplySearch">Apply</el-button>
                         </el-form-item>
                     </el-form>
@@ -272,7 +283,10 @@
                 <div class="dialog-content">
                     <el-form :inline="true" :model="formSearch" :class="{ 'justify-content-between': screenWidth <= adaptiveSize }">
                         <el-form-item label="">
-                            <el-select v-model="formSearch.searchName" placeholder="请选择">
+                            <el-input v-model="formSearch.idAddress" placeholder="ID or owner address"></el-input>
+                        </el-form-item>
+                        <el-form-item label="">
+                            <el-select v-model="formSearch.searchName" placeholder="Please select">
                                 <el-option label="Price low to high" value="1">
                                     <span style="margin-left: 5px;">Price low to high</span>
                                 </el-option>
@@ -472,6 +486,7 @@ export default {
                 limit: this.pageSize,
                 page: this.currPage,
                 regmarket: this.regmarket,
+                currency: this.buyCurrency === '1' ? 'CFX' : 'USDT',
             };
             this.dataList = [];
             if(this.formSearch.searchName == 1) {
@@ -501,6 +516,7 @@ export default {
             if(this.formSearch.idAddress && this.formSearch.idAddress !== '') {
                 SearchWhere.id_address = this.formSearch.idAddress;
             }
+            this.isNoMoreData = false;
             this.getMarketplaceList(SearchWhere);
         },
         sweepClick() { //批量购买
