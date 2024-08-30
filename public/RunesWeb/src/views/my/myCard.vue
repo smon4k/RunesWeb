@@ -1,8 +1,8 @@
 <template>
     <div>
         <div class="card">
-            <el-row :gutter="screenWidth > adaptiveSize ? 24 : 10">
-                <el-col :xs="12" :sm="5" :md="4" v-for="(item, index) in dataList" :key="index">
+            <div class="card-list">
+                <div v-for="(item, index) in dataList" :key="index">
                     <div class="content" :class="{ 'highlight-border': isSelected(index) }" ref="card" @click.stop="toggleHighlightEvent(index)">
                         <div class="top">
                             <div class="currency">
@@ -26,8 +26,8 @@
                             <el-button @click.stop="handleClick(item)">List for sale</el-button>
                         </div>
                     </div>
-                </el-col>
-            </el-row>
+                </div>
+            </div>
         </div>
         <div class="no-more">
             <span v-if="isNoMoreData">No More</span>
@@ -108,95 +108,116 @@ export default {
 </script>
 <style lang="scss" scoped>
     .card {
-        .content {
-            display: block;
-            background-color: #181818;
-            border: 2px solid #202020;
-            border-radius: 8px;
-            // height: 276px;
-            margin-bottom: 24px;
-            margin-top: 32px;
-            cursor: pointer;
-            .top {
-                padding: 16px;
-                .currency {
-                    display: flex;
-                    align-items: center;
-                    justify-content: space-between;
-                    .left {
+        .card-list {
+            display: grid;
+            gap: 24px;
+            grid-template-columns: repeat(6, 1fr);
+            @media (max-width: 1390px) {
+                grid-template-columns: repeat(5, 1fr);
+            }
+            @media (max-width: 1168px) {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            @media (max-width: 930px) {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            @media (max-width: 705px) {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            @media (max-width: 398px) {
+                grid-template-columns: repeat(1, 1fr);
+            }
+            width: 100%;
+            .content {
+                display: block;
+                background-color: #181818;
+                border: 2px solid #202020;
+                border-radius: 8px;
+                // height: 276px;
+                margin-bottom: 24px;
+                margin-top: 32px;
+                cursor: pointer;
+                .top {
+                    padding: 16px;
+                    .currency {
                         display: flex;
-                        gap: 8px;
+                        align-items: center;
+                        justify-content: space-between;
+                        .left {
+                            display: flex;
+                            gap: 8px;
+                        }
+                        .ids {
+                            font-size: 16px;
+                            color: #aaa;
+                        }
+                        .currency-name {
+                            color: #ad8d65;
+                            font-size: 16px;
+                            // margin-left: 8px;
+                        }
                     }
-                    .ids {
-                        font-size: 16px;
-                        color: #aaa;
+                    .quantity {
+                        display: block;
+                        justify-content: center;
+                        margin-top: 16px;
+                        margin-bottom: 16px;
+                        text-align: center;
+                        .count-num {
+                            font-size: 24px;
+                            font-weight: 500;
+                            color: #fff;
+                        }
                     }
-                    .currency-name {
+                }
+                .bottom {
+                    display: flex;
+                    // height: 77px;
+                    padding-bottom: 16px;
+                    // background-color: #282828;
+                    justify-content: space-between;
+                    flex-direction: column;
+                    border-bottom-left-radius: 8px; 
+                    border-bottom-right-radius: 8px; 
+                    font-size: 12px;
+                    .el-button {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border-color: #ad8d65;
+                        background-color: transparent;
+                        height: 32px;
+                        width: 100%;
                         color: #ad8d65;
-                        font-size: 16px;
-                        // margin-left: 8px;
                     }
                 }
-                .quantity {
-                    display: block;
-                    justify-content: center;
-                    margin-top: 16px;
-                    margin-bottom: 16px;
-                    text-align: center;
-                    .count-num {
-                        font-size: 24px;
-                        font-weight: 500;
-                        color: #fff;
+                .bottom-split {
+                    display: flex;
+                    padding-bottom: 16px;
+                    gap: 12px;
+                    justify-content: space-between;
+                    border-bottom-left-radius: 8px; 
+                    border-bottom-right-radius: 8px; 
+                    font-size: 12px;
+                    .split-box {
+                        display: flex;
+                        width: 36px;
+                        // height: 36px;
+                        border: 1px solid #ad8d65;
+                        border-radius: 4px;
+                        justify-content: center;
+                        align-items: center;
                     }
-                }
-            }
-            .bottom {
-                display: flex;
-                // height: 77px;
-                padding-bottom: 16px;
-                // background-color: #282828;
-                justify-content: space-between;
-                flex-direction: column;
-                border-bottom-left-radius: 8px; 
-                border-bottom-right-radius: 8px; 
-                font-size: 12px;
-                .el-button {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-color: #ad8d65;
-                    background-color: transparent;
-                    height: 32px;
-                    width: 100%;
-                    color: #ad8d65;
-                }
-            }
-            .bottom-split {
-                display: flex;
-                padding-bottom: 16px;
-                gap: 12px;
-                justify-content: space-between;
-                border-bottom-left-radius: 8px; 
-                border-bottom-right-radius: 8px; 
-                font-size: 12px;
-                .split-box {
-                    display: flex;
-                    width: 36px;
-                    // height: 36px;
-                    border: 1px solid #ad8d65;
-                    border-radius: 4px;
-                    justify-content: center;
-                    align-items: center;
-                }
-                .el-button {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    border-color: #ad8d65;
-                    background-color: transparent;
-                    height: 36px;
-                    width: 80%;
-                    color: #ad8d65;
+                    .el-button {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border-color: #ad8d65;
+                        background-color: transparent;
+                        height: 36px;
+                        width: 80%;
+                        color: #ad8d65;
+                    }
                 }
             }
         }

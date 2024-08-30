@@ -4,7 +4,7 @@
             <div class="tab-nav">
                 <el-tabs v-model="activeName" @tab-click="tabOrderClick">
                     <el-tab-pane label="My CFXs" name="1">
-                        <div class="new-world" v-if="screenWidth > adaptiveSize">
+                        <!-- <div class="new-world" v-if="screenWidth > adaptiveSize">
                             <div class="flag"><img :src="require('@/assets/svg/flag.svg')" alt="" width="24"></div>
                             <div class="text">
                                 <div class="world-text">
@@ -39,7 +39,7 @@
                             <div class="check-button">
                                 <el-button>CHECK ON eSPACE</el-button>
                             </div>
-                        </div>
+                        </div> -->
                         <div class="list">
                             <el-tabs v-model="regmarket" @tab-click="regmarketClick">
                                 <el-form :inline="true" :model="formSearch" :class="{ 'mobile-form': screenWidth <= adaptiveSize }">

@@ -52,6 +52,8 @@ class MarketController extends BaseController
         $where['status'] = 1;
         $order = "id desc";
         $where['currency'] = $currency;
+        $currentTime = date('Y-m-d H:i:s');
+        $where['locktime'] = ['>', $currentTime];
         if ($regmarket && $regmarket > 0) {
             $where['regmarket'] = $regmarket;
         }
