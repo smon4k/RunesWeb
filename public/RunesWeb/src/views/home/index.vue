@@ -239,7 +239,7 @@
             <el-dialog
                 :title="!approve ? 'Approve Purchase' : 'Purchase'"
                 :visible.sync="buyNowDialogShow"
-                width="35%"
+                :width="screenWidth > adaptiveSize ? '35%' : '90%'"
                 :before-close="buyNowDialogClose"
                 class="buy-now-dialog"
                 top="30vh">
