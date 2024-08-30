@@ -406,7 +406,7 @@ export default {
             let amounts = [];
             this.dataList.forEach((item, index) => {
                 if (this.highlightedIndices.includes(index)) {
-                    totalUSDT += Number(item.unitprice);
+                    totalUSDT += Number(item.amount);
                     totalCfxs += Number(item.quantity);
                     cfxsIds.push(item.chainid);
                     amounts.push(toWei(item.unitprice, 18));
