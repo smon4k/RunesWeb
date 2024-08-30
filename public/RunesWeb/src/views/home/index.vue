@@ -61,7 +61,7 @@
                     <el-col :xs="8" :sm="4" :md="3">
                         <div class="content">
                             <div class="name">24h Volume</div>
-                            <div class="price">${{ statisticsData['24h_volume'] }}</div>
+                            <div class="price">${{ toFixed(statisticsData['24h_volume'], 4) }}</div>
                         </div>
                     </el-col>
                     <el-col :xs="8" :sm="4" :md="3">
@@ -73,7 +73,7 @@
                     <el-col :xs="8" :sm="4" :md="3">
                         <div class="content">
                             <div class="name">Total Volume</div>
-                            <div class="price">{{ statisticsData.total_volume }}</div>
+                            <div class="price">{{ toFixed(statisticsData.total_volume, 4) }}</div>
                         </div>
                     </el-col>
                     <el-col :xs="8" :sm="4" :md="3">

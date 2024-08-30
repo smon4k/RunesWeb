@@ -418,5 +418,5 @@ function CurlRequest($url, $header, $content=array(), $backHeader=0, $cookie='')
         $convertedValue = $wei / pow(10, $units[$unit]);
     
         // 返回格式化后的数值，保留小数点后若干位
-        return number_format($convertedValue, 2);
+        return number_format($convertedValue, 8);
     }
