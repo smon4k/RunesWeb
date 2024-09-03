@@ -801,7 +801,7 @@ export const ECR20721RedemptionOfCFXs = function (cfxsIds=[], amount=0, decimals
  * @returns 
  */
 export const ExchangeCFXsForOnlyECR20 = function (cfxsIds=[], amount=0, decimals=18){
-  console.log('ExchangeCFXsForOnlyECR20', cfxsIds);
+  console.log('ExchangeCFXsForOnlyECR20', cfxsIds, amount);
   // const tokenAddress = __ownInstance__.$store.state.base.tokenAddress
   const address = __ownInstance__.$store.state.base.address;
   const contractAddress = Address.CFXsERC20BridgeContractAddress;

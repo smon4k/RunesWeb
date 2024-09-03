@@ -106,7 +106,7 @@
               </el-col>
               <el-col :span="19" style="text-align: right">
                   <span>
-                    <span>{{ calcFee }}</span>
+                    <span>{{ inputValue * calcFee }}</span>
                     <span>{{ 'CFX' }}</span>
                     <!-- <span> {{ $t('swap:Per') }} {{ inputName }}</span> -->
                   </span>
@@ -376,7 +376,7 @@ export default {
       });
       this.CFXsSelectedIds = selectCFXsids;
       this.CFXsSelectedAmount = amount;
-      this.inputValue = amount;
+      this.inputValue = this.highlightedIndices.length;
       this.selectCfxsDialogShow = false;
       this.outputValue = amount;
     },
@@ -551,7 +551,7 @@ export default {
       if(this.calcDisabledButton) {
         this.btnLoading = true
         let contractName = '';
-        const value = this.calcFee * this.CFXsSelectedAmount;
+        const value = this.calcFee * this.inputValue;
         if(this.inputName === 'CFXs' && this.outputName === 'NFT') {
           contractName = ExchangeCFXsForECR20721(this.CFXsSelectedIds, value);
         }
