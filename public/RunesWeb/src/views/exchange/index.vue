@@ -106,7 +106,7 @@
               </el-col>
               <el-col :span="19" style="text-align: right">
                   <span>
-                    <span>{{ inputValue * calcFee }}</span>
+                    <span>{{ calcFee }}</span>
                     <span>{{ 'CFX' }}</span>
                     <!-- <span> {{ $t('swap:Per') }} {{ inputName }}</span> -->
                   </span>
@@ -284,18 +284,18 @@ export default {
     },
     calcFee() {
       let fee = 0;
-      if(this.inputName !== '' && this.outputName !== '') {
+      if(this.inputName !== '' && this.outputName !== '' && this.inputValue >= 0) {
         if(this.inputName === 'CFXs') {
           if(this.outputName === 'NFT') {
-            fee = 0.1;
+            fee = (this.inputValue * 0.1).toFixed(2);
           } 
           if(this.outputName === 'Coin') {
-            fee = 0.01;
+            fee = (this.inputValue * 0.01).toFixed(2);
           }
         }
         if(this.inputName === 'NFT') {
           if(this.outputName === 'CFXs') {
-            fee = 0.02;
+            fee = (this.inputValue * 0.02).toFixed(2);
           } 
         }
         if(this.inputName === 'Coin') {
@@ -359,26 +359,6 @@ export default {
       if(this.inputName === 'NFT') {
         this.getMyNftData();
       }
-    },
-    selectCfxConfirm() { //确认选择CFXs
-      let amount = 0;
-      let selectCFXsids = [];
-      this.dataList.forEach((item, index) => {
-          if (this.highlightedIndices.includes(index)) {
-            amount += Number(item.amount);
-            if(this.inputName === 'CFXs') {
-              selectCFXsids.push(item.chainid);
-            }
-            if(this.inputName === 'NFT') {
-              selectCFXsids.push(item.tokenid);
-            }
-          }
-      });
-      this.CFXsSelectedIds = selectCFXsids;
-      this.CFXsSelectedAmount = amount;
-      this.inputValue = this.highlightedIndices.length;
-      this.selectCfxsDialogShow = false;
-      this.outputValue = amount;
     },
     getMyMarketplaceData(ServerWhere) {
         if (!ServerWhere || ServerWhere == undefined || ServerWhere.length <= 0) {
@@ -488,6 +468,32 @@ export default {
       this.highlightedIndices = [];
       this.getCoinBalance();
     },
+    selectCfxConfirm() { //弹框确认选择CFXs
+      let amount = 0;
+      let selectCFXsids = [];
+      this.dataList.forEach((item, index) => {
+          if (this.highlightedIndices.includes(index)) {
+            amount += Number(item.amount);
+            if(this.inputName === 'CFXs') {
+              selectCFXsids.push(item.chainid);
+            }
+            if(this.inputName === 'NFT') {
+              selectCFXsids.push(item.tokenid);
+            }
+          }
+      });
+      this.CFXsSelectedIds = selectCFXsids;
+      this.CFXsSelectedAmount = amount;
+      this.inputValue = this.highlightedIndices.length;
+      this.selectCfxsDialogShow = false;
+      if(this.outputName !== '') {
+        if(this.outputName === 'Coin') {
+          this.outputValue = amount;
+        } else {
+          this.outputValue = this.highlightedIndices.length;
+        }
+      }
+    },
     async dropdownInputMenuClick(command) { //INPUT 下拉框选择币种事件
         this.inputName = command;
         this.outputName = '';
@@ -498,7 +504,9 @@ export default {
     },
     async dropdownOutputMenuClick(command) { //OUTPUT 下拉框选择币种事件
         this.outputName = command;
-        // this.calcOutputValue;
+        if(this.inputValue > 0 && (this.inputName === 'CFXs' || this.inputName === 'NFT')) {
+          this.selectCfxConfirm();
+        }
     },
     async getCoinBalance() {  //获取Coin余额
       const balance = await getBalance(Address.CFXsERC20TokenAddress, 18); //获取余额
@@ -551,7 +559,7 @@ export default {
       if(this.calcDisabledButton) {
         this.btnLoading = true
         let contractName = '';
-        const value = this.calcFee * this.inputValue;
+        const value = this.calcFee;
         if(this.inputName === 'CFXs' && this.outputName === 'NFT') {
           contractName = ExchangeCFXsForECR20721(this.CFXsSelectedIds, value);
         }
@@ -559,8 +567,7 @@ export default {
           contractName = ExchangeCFXsForOnlyECR20(this.CFXsSelectedIds, value);
         }
         if(this.inputName === 'Coin' && this.outputName === 'CFXs') {
-          const value2 = this.calcFee * this.inputValue;
-          contractName = ECR20RedemptionOfCFXs(this.inputValue, value2);
+          contractName = ECR20RedemptionOfCFXs(this.inputValue, value);
         }
         if(this.inputName === 'NFT' && this.outputName === 'CFXs') {
           contractName = ECR20721RedemptionOfCFXs(this.CFXsSelectedIds, value);
