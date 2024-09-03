@@ -371,14 +371,14 @@ class MyMarket extends Base
      * @author qinlh
      * @since 2024-08-14
      */
-    public static function inscribe($cfxsId='', $sendaddr='', $data='', $hash='')
+    public static function inscribe($cfxsId='', $sendaddr='', $data='', $regmarket=0, $hash='')
     {
         if ($cfxsId !== '' && $sendaddr !== '' && $data !== '') {
             self::startTrans();
             try {
                 $marget = self::getMyMarketFind($cfxsId);
                 if($marget) {
-                    $isSetData = self::setMyMarketData($cfxsId, $data);
+                    $isSetData = self::setMyMarketData($cfxsId, $regmarket, $data);
                     if($isSetData) {
                         $inscribeData = [
                             "cfxsId" => $cfxsId,
@@ -746,10 +746,10 @@ class MyMarket extends Base
      * @author qinlh
      * @since 2024-08-14
      */
-    public static function setMyMarketData($chainid = 0, $data='')
+    public static function setMyMarketData($chainid = 0, $regmarket=0, $data='')
     {
         if ($chainid !== '' && $data !== '') {
-            $res = self::where('chainid', $chainid)->update(['data' => $data]);
+            $res = self::where('chainid', $chainid)->update(['data' => $data, 'regmarket' => $regmarket]);
             if ($res !== false) {
                 return true;
             }

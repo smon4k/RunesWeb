@@ -293,8 +293,9 @@ class MarketController extends BaseController
         $cfxsId = $request->post('cfxsId', '', 'trim');
         $sendaddr = $request->post('sendaddr', '', 'trim');
         $data = $request->post('data', '', 'trim');
+        $regmarket = $request->post('regmarket', 0, 'intval');
         $hash = $request->post('hash', '', 'trim');
-        $result = MyMarket::inscribe($cfxsId, $sendaddr, $data, $hash);
+        $result = MyMarket::inscribe($cfxsId, $sendaddr, $data, $regmarket, $hash);
         if ($result && $result['code'] == 1) {
             return $this->as_json('ok');
         } else {

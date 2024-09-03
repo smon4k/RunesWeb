@@ -7,7 +7,7 @@
                     <span>Inscribe CFXs</span>
                 </div>
                 <!-- 上传文件 -->
-                <el-tabs v-model="activeName" @tab-click="tabsFileHandleClick">
+                <el-tabs v-model="regmarket" @tab-click="tabsFileHandleClick">
                     <!-- <el-tab-pane label="File" name="1">
                         <el-upload
                         class="upload-demo"
@@ -19,7 +19,7 @@
                         </el-upload>
                         <el-checkbox v-model="checked">Publish On IPFs</el-checkbox>
                     </el-tab-pane> -->
-                    <el-tab-pane label="Text" name="2">
+                    <el-tab-pane label="Text" name="3">
                         <el-input type="textarea" placeholder="Enter text here" v-model="data"></el-input>
                     </el-tab-pane>
                 </el-tabs>
@@ -102,7 +102,7 @@ export default {
     data() {
         return {
             screenWidth: document.body.clientWidth,
-            activeName: '2',//tab默认初始加载选中
+            regmarket: '2',//tab默认初始加载选中
             activeName2: '1',//tab默认初始加载选中
             loading: false,
             approve: false,
@@ -253,6 +253,7 @@ export default {
                                     "sendaddr": this.address,
                                     "data": this.data,
                                     "hash": hash,
+                                    "regmarket": this.regmarket
                                 }
                             };
                             await saveTransactionTask(params);
