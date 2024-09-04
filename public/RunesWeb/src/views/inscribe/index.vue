@@ -102,7 +102,7 @@ export default {
     data() {
         return {
             screenWidth: document.body.clientWidth,
-            regmarket: '2',//tab默认初始加载选中
+            regmarket: '3',//tab默认初始加载选中
             activeName2: '1',//tab默认初始加载选中
             loading: false,
             approve: false,

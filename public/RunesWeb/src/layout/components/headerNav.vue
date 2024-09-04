@@ -6,14 +6,13 @@
                     <!-- v-if="screenWidth < 1280" -->
                     <div class="logo" v-if="screenWidth > adaptiveSize">
                         <router-link to="/" class="logo-link">
-                            <img src="@/assets/log.png" alt="" v-if="mainTheme === 'light'" />
-                            <img src="@/assets/log.png" alt="" v-else />
+                            <img src="@/assets/svg/logo-cfxs.svg" alt="" />
                         </router-link>
                     </div>
                     <div class="menu" @click="menuDrawerShow = true" v-else>
                         <img src="@/assets/menu.png" alt="" />
                     </div>
-                    <div class="title" v-show="screenWidth > adaptiveSize"> CFXS WORLD </div>
+                    <!-- <div class="title" v-show="screenWidth > adaptiveSize"> CFXS WORLD </div> -->
                     <!-- PC端导航 -->
                     <div v-if="screenWidth > adaptiveSize">
                         <el-menu class="el-menu-demo" v-if="navList.length" :default-active="$route.path"
@@ -871,7 +870,7 @@ export default {
         .logo {
             margin-left: 20px;
             margin-right: 10px;
-            height: 30px;
+            height: 40px;
             box-sizing: border-box;
 
             .logo-link {
@@ -880,9 +879,7 @@ export default {
                 text-align: center;
 
                 img {
-                    height: 30px;
-                    margin-left: -24px;
-                    border-radius: 50%;
+                    height: 40px;
                 }
 
                 span {
